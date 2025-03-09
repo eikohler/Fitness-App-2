@@ -33,7 +33,7 @@ const styles = StyleSheet.create({
     },
     title: {
         color: colors.primaryText,
-        fontSize: 28,
+        fontSize: 32,
         textTransform: "uppercase",
         fontWeight: "900",
         fontStyle: "italic",

@@ -9,8 +9,8 @@ export default function Workouts() {
 
       <Header title={'Workouts'} subtext={'Week 3'} bolt={true} />
 
-      <View style={styles.wrapper}>
-        <View style={styles.buttonsList}>
+      <View style={mainStyles.buttonsDivider}>
+        <View style={mainStyles.buttonsList}>
           <WorkoutButton />
           <WorkoutButton />
           <WorkoutButton />
@@ -25,16 +25,3 @@ export default function Workouts() {
     </View>
   );
 }
-
-
-const styles = StyleSheet.create({
-  wrapper: {
-    flex: 1,
-    display: "flex",
-    justifyContent: "space-between"
-  },
-  buttonsList: {
-    display: "flex",
-    gap: 25
-  }
-});

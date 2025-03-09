@@ -22,7 +22,7 @@ export const mainStyles = StyleSheet.create({
         paddingTop: 80,
         paddingBottom: 50,
         display: "flex",
-        gap: 40,
+        gap: 25,
         height: "100%"
     },
     buttonsWrapper: {
@@ -30,6 +30,15 @@ export const mainStyles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "space-between",
         gap: 10
+    },
+    buttonsList: {
+        display: "flex",
+        gap: 18
+    },
+    buttonsDivider: {
+        flex: 1,
+        display: "flex",
+        justifyContent: "space-between"
     }
 });
 
@@ -49,7 +58,7 @@ export const arrowButton = StyleSheet.create({
     },
     title: {
         color: colors.primaryText,
-        fontSize: 22,
+        fontSize: 20,
         textTransform: "uppercase",
         fontWeight: 600
     },
@@ -83,14 +92,14 @@ export const toggleButton = StyleSheet.create({
 
 export const largeButton = StyleSheet.create({    
     wrapper: {
-        borderRadius: 35,
+        borderRadius: 32,
         backgroundColor: colors.largeButtonBG,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         paddingHorizontal: 16,
-        paddingVertical: 32,
-        width: "90%",
+        paddingVertical: 30,
+        width: "80%",
         marginHorizontal: "auto",
         boxShadow: "-10 10 0 #000000"        
     },
@@ -98,7 +107,7 @@ export const largeButton = StyleSheet.create({
         color: colors.primaryText,
         fontWeight: 700,
         textTransform: "uppercase",
-        fontSize: 25,
+        fontSize: 22,
         letterSpacing: 1
     }
 });
