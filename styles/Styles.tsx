@@ -2,26 +2,38 @@ import { StyleSheet } from "react-native";
 
 export const colors = {
     primaryText: "#BCC2E1",
-    arrowButtonBG: "#171775",
-    weekText: "#6363FF"
+    arrowButtonBG: "#0D0D46",
+    weekText: "#6363FF",
+    largeButtonBG: "#3030EF"
 };
+
 
 export const fonts = {
     mainFont: "Inter"
 }
 
+
 export const mainStyles = StyleSheet.create({
     wrapper: {
         width: "90%",
-        marginHorizontal: "auto"    
+        marginHorizontal: "auto",
+        paddingTop: 80,
+        paddingBottom: 50,
+        display: "flex",
+        gap: 40,
+        height: "100%"
     },
     buttonsWrapper: {
         display: "flex",
         flexDirection: "row",
         justifyContent: "space-between",
         gap: 10
-    },
-    arrowButton: {
+    }
+});
+
+
+export const arrowButton = StyleSheet.create({
+    wrapper: {
         backgroundColor: colors.arrowButtonBG,
         paddingTop: 10,
         paddingBottom: 8,
@@ -33,19 +45,23 @@ export const mainStyles = StyleSheet.create({
         borderRadius: 10,
         flex: 1
     },
-    arrowButtonTitle: {
+    title: {
         color: colors.primaryText,
         fontSize: 22,
         textTransform: "uppercase",
         fontWeight: 600
     },
-    arrowButtonSubText: {
+    subText: {
         color: colors.primaryText,
         textTransform: "uppercase",
         marginBottom: 4,
         fontSize: 12
-    },
-    toggleButton: {
+    }
+});
+
+
+export const toggleButton = StyleSheet.create({    
+    wrapper: {
         borderRadius: 10,
         borderWidth: 1,
         borderColor: colors.primaryText,
@@ -54,10 +70,33 @@ export const mainStyles = StyleSheet.create({
         justifyContent: "center",
         aspectRatio: 1/1
     },
-    toggleButtonText: {
+    text: {
         color: colors.primaryText,
         fontWeight: 600,
         textTransform: "uppercase",
         fontSize: 18
+    }
+});
+
+
+export const largeButton = StyleSheet.create({    
+    wrapper: {
+        borderRadius: 35,
+        backgroundColor: colors.largeButtonBG,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        paddingHorizontal: 16,
+        paddingVertical: 32,
+        width: "90%",
+        marginHorizontal: "auto",
+        boxShadow: "-10 10 1 #000"
+    },
+    text: {
+        color: colors.primaryText,
+        fontWeight: 700,
+        textTransform: "uppercase",
+        fontSize: 25,
+        letterSpacing: 1
     }
 });

@@ -1,26 +1,21 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text } from 'react-native';
 import React from 'react';
-import { colors, mainStyles } from '@/styles/Styles';
+import { arrowButton, colors, mainStyles, toggleButton } from '@/styles/Styles';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 export default function WorkoutButton() {
   return (
     <View style={mainStyles.buttonsWrapper}>
-        <View style={mainStyles.arrowButton}>
+        <View style={arrowButton.wrapper}>
             <View>
-                <Text style={mainStyles.arrowButtonSubText}>FEB. 24 / 4 EXERCISES</Text>
-                <Text style={mainStyles.arrowButtonTitle}>Push</Text>
+                <Text style={arrowButton.subText}>FEB. 24 / 4 EXERCISES</Text>
+                <Text style={arrowButton.title}>Push</Text>
             </View>
             <MaterialIcons name="arrow-forward" size={35} color={colors.primaryText} />
         </View>
-        <View style={mainStyles.toggleButton}>
-            <Text style={mainStyles.toggleButtonText}>DL</Text>
+        <View style={toggleButton.wrapper}>
+            <Text style={toggleButton.text}>DL</Text>
         </View>
     </View>
   )
 }
-
-
-const styles = StyleSheet.create({
-  
-});

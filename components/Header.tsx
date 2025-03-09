@@ -1,34 +1,17 @@
 import { View, Text, StyleSheet } from 'react-native';
 import React from 'react';
-import { colors, fonts, mainStyles } from '@/styles/Styles';
+import { colors, fonts } from '@/styles/Styles';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
-interface HeaderRequiredProps {
-    title: string, 
-    subtext: string
-}
-
-interface HeaderOptionalProps {
-    bolt: boolean
-}
-
-interface HeaderProps extends HeaderRequiredProps, HeaderOptionalProps {}
-
-const defaultProps: HeaderOptionalProps = {
-    bolt: false
-};
-
-Header.defaultProps = defaultProps;
-
-export default function Header(props: HeaderProps) {
+export default function Header(props: {title: string, subtext: string, bolt?: boolean}) {
 
     const { title, subtext, bolt } = props;
 
     return (
-        <View style={[styles.wrapper, mainStyles.wrapper]}>
+        <View style={styles.wrapper}>
             <View>
-                <View style={styles.subtextWrapper}>
-                    <Text style={[styles.subtext, bolt && styles.weektext]}>{subtext}</Text>
+                <View style={styles.subTextWrapper}>
+                    <Text style={[styles.subText, bolt && styles.weekText]}>{subtext}</Text>
                     {bolt && <MaterialIcons name="bolt" size={18} color={colors.weekText} />}
                 </View>
                 <Text style={styles.title}>{title}</Text>
@@ -39,8 +22,7 @@ export default function Header(props: HeaderProps) {
 }
 
 const styles = StyleSheet.create({
-    wrapper: {        
-        paddingTop: 80,
+    wrapper: {                
         display: "flex",
         flexDirection: 'row',
         alignItems: "flex-end",
@@ -58,19 +40,19 @@ const styles = StyleSheet.create({
         fontFamily: fonts.mainFont,
         letterSpacing: -3
     },
-    subtextWrapper: {
+    subTextWrapper: {
         marginBottom: 5,        
         display: "flex",
         flexDirection: "row",
         alignItems: "center"
     },
-    subtext: {
+    subText: {
         fontFamily: fonts.mainFont,
         color: colors.primaryText,
         textTransform: "uppercase",
         fontSize: 16,
     },
-    weektext: {
+    weekText: {
         color: colors.weekText,
         marginRight: -2
     }
