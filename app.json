@@ -4,12 +4,22 @@
     "slug": "fitness-app-2",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/logo.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.eikohler.fitnessapp2",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "splash": {        
+        "image": "./assets/images/splash-icon.png",
+        "imageWidth": 10,
+        "resizeMode": "contain",
+        "backgroundColor": "#0D0D0D"                  
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -30,12 +40,26 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#0D0D0D"
+        }
+      ],
+      [
+        "expo-font",
+        {
+          "fonts": ["./assets/fonts/Inter.ttf"]
         }
       ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "96dcf9cd-797f-49f8-b5b2-b2a1dde76cf9"
+      }
     }
   }
 }
