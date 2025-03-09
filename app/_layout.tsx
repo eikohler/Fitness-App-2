@@ -4,6 +4,7 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import * as SplashScreen from 'expo-splash-screen';
+import { colors } from "@/styles/Styles";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -27,8 +28,8 @@ export default function RootLayout() {
     ...DarkTheme,
     colors: {
       ...DarkTheme.colors,
-      background: '#0D0D0D',
-      text: '#BCC2E1',
+      background: colors.mainBG,
+      text: colors.primaryText,
     },
   };
 

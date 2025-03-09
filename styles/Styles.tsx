@@ -1,7 +1,9 @@
 import { StyleSheet } from "react-native";
 
 export const colors = {
-    primaryText: "#BCC2E1",
+    mainBG: "#0D0D0D",
+    primaryText: "#ffffff",
+    secondText: "#BCC2E1",
     arrowButtonBG: "#0D0D46",
     weekText: "#6363FF",
     largeButtonBG: "#3030EF"
@@ -52,7 +54,7 @@ export const arrowButton = StyleSheet.create({
         fontWeight: 600
     },
     subText: {
-        color: colors.primaryText,
+        color: colors.secondText,
         textTransform: "uppercase",
         marginBottom: 4,
         fontSize: 12
@@ -90,7 +92,7 @@ export const largeButton = StyleSheet.create({
         paddingVertical: 32,
         width: "90%",
         marginHorizontal: "auto",
-        boxShadow: "-10 10 1 #000"
+        boxShadow: "-10 10 0 #000000"        
     },
     text: {
         color: colors.primaryText,

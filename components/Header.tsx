@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
     },
     subText: {
         fontFamily: fonts.mainFont,
-        color: colors.primaryText,
+        color: colors.secondText,
         textTransform: "uppercase",
         fontSize: 16,
     },
