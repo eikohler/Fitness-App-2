@@ -1,22 +1,32 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import React from 'react';
-import { colors, fonts } from '@/styles/Styles';
+import { backButton, colors, fonts } from '@/styles/Styles';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { Href, router } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
 
-export default function Header(props: {title: string, subtext: string, bolt?: boolean}) {
+export default function Header(props: {title: string, subtext: string, bolt?: boolean, backBtn?: boolean}) {
 
-    const { title, subtext, bolt } = props;
+    const { title, subtext, bolt, backBtn } = props;
+    const navigation = useNavigation();
 
     return (
         <View style={styles.wrapper}>
-            <View>
-                <View style={styles.subTextWrapper}>
-                    <Text style={[styles.subText, bolt && styles.weekText]}>{subtext}</Text>
-                    {bolt && <MaterialIcons name="bolt" size={18} color={colors.weekText} />}
+            <View style={styles.content}>
+                {backBtn && (
+                    <Pressable style={backButton.wrapper} onPress={() => navigation.goBack()}>
+                        <MaterialIcons name="arrow-back" size={28} color={colors.mainBG} />
+                    </Pressable>
+                )}
+                <View>
+                    <View  style={styles.subTextWrapper}>
+                        <Text style={[styles.subText, bolt && styles.weekText]}>{subtext}</Text>
+                        {bolt && <MaterialIcons name="bolt" size={18} color={colors.weekText} />}
+                    </View>
+                    <Text style={styles.title}>{title}</Text>
                 </View>
-                <Text style={styles.title}>{title}</Text>
             </View>
-            <MaterialIcons style={{marginBottom: 1}} name="edit" size={30} color={colors.primaryText} />
+            <MaterialIcons style={{marginBottom: 3}} name="edit" size={30} color={colors.primaryText} />
         </View>
     )
 }
@@ -30,6 +40,12 @@ const styles = StyleSheet.create({
         borderBottomColor: colors.primaryText,
         borderBottomWidth: 1,
         paddingBottom: 10
+    },
+    content: {
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "flex-end",
+        gap: 20
     },
     title: {
         color: colors.primaryText,

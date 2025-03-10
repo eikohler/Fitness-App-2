@@ -2,8 +2,7 @@ import ExerciseButton from "@/components/ExerciseButton";
 import Header from "@/components/Header";
 import { largeButton, mainStyles } from "@/styles/Styles";
 import { useLocalSearchParams } from "expo-router";
-import { useEffect } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Text, View } from "react-native";
 
 export default function SingleWorkout() {
 
@@ -12,7 +11,7 @@ export default function SingleWorkout() {
   return (
     <View style={mainStyles.wrapper}>
 
-      <Header title={'PUSH'} subtext={'FEB. 24 / 4 EXERCISES'} />
+      <Header title={'PUSH'} subtext={'FEB. 24 / 4 EXERCISES'} backBtn={true} />
 
       <View style={mainStyles.buttonsDivider}>
         <View style={mainStyles.buttonsList}>
