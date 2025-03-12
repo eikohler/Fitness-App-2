@@ -5,28 +5,35 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Href, router } from 'expo-router';
 import { useNavigation } from '@react-navigation/native';
 
-export default function Header(props: {title: string, subtext: string, bolt?: boolean, backBtn?: boolean}) {
+export default function Header(props: {title: string, subtext: string, notes?: string, bolt?: boolean, backBtn?: boolean}) {
 
-    const { title, subtext, bolt, backBtn } = props;
+    const { title, subtext, notes, bolt, backBtn } = props;
     const navigation = useNavigation();
 
+    const fixedTitle = title.replace(" ", "  ");
+
     return (
-        <View style={styles.wrapper}>
-            <View style={styles.content}>
-                {backBtn && (
-                    <Pressable style={backButton.wrapper} onPress={() => navigation.goBack()}>
-                        <MaterialIcons name="arrow-back" size={28} color={colors.mainBG} />
-                    </Pressable>
-                )}
-                <View>
-                    <View  style={styles.subTextWrapper}>
-                        <Text style={[styles.subText, bolt && styles.weekText]}>{subtext}</Text>
-                        {bolt && <MaterialIcons name="bolt" size={18} color={colors.weekText} />}
+        <View>
+            <View style={styles.wrapper}>
+                <View style={styles.content}>
+                    {backBtn && (
+                        <Pressable style={backButton.wrapper} onPress={() => navigation.goBack()}>
+                            <MaterialIcons name="arrow-back" size={28} color={colors.mainBG} />
+                        </Pressable>
+                    )}
+                    <View>
+                        <View  style={styles.subTextWrapper}>
+                            <Text style={[styles.subText, bolt && styles.weekText]}>{subtext}</Text>
+                            {bolt && <MaterialIcons name="bolt" size={18} color={colors.weekText} />}
+                        </View>
+                        <Text style={styles.title}>{fixedTitle}</Text>
                     </View>
-                    <Text style={styles.title}>{title}</Text>
                 </View>
+                <MaterialIcons style={{marginBottom: 3}} name="edit" size={30} color={colors.primaryText} />
             </View>
-            <MaterialIcons style={{marginBottom: 3}} name="edit" size={30} color={colors.primaryText} />
+            { notes && (
+                <Text style={styles.notesText}>{notes}</Text>
+            )}
         </View>
     )
 }
@@ -39,7 +46,7 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         borderBottomColor: colors.primaryText,
         borderBottomWidth: 1,
-        paddingBottom: 10
+        paddingBottom: 10        
     },
     content: {
         display: "flex",
@@ -60,7 +67,7 @@ const styles = StyleSheet.create({
         marginBottom: 5,        
         display: "flex",
         flexDirection: "row",
-        alignItems: "center"
+        alignItems: "center",
     },
     subText: {
         fontFamily: fonts.mainFont,
@@ -71,5 +78,11 @@ const styles = StyleSheet.create({
     weekText: {
         color: colors.weekText,
         marginRight: -2
+    },
+    notesText: {
+        paddingTop: 10,
+        color: colors.secondText,
+        fontSize: 14,
+        fontFamily: fonts.mainFont
     }
 });

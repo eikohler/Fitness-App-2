@@ -6,6 +6,9 @@ export const colors = {
     secondText: "#BCC2E1",
     backButtonBG: "#BCC2E1",
     arrowButtonBG: "#000074",
+    pastSetBG: "#000074",
+    newSetBG: "#BCC2E1",
+    plusButtonBG: "#BCC2E1",
     weekText: "#6363FF",
     largeButtonBG: "#0059FF"
 };
@@ -20,7 +23,7 @@ export const mainStyles = StyleSheet.create({
     wrapper: {
         width: "90%",
         marginHorizontal: "auto",
-        paddingTop: 80,
+        paddingTop: 70,
         paddingBottom: 50,
         display: "flex",
         gap: 25,
@@ -34,7 +37,7 @@ export const mainStyles = StyleSheet.create({
     },
     buttonsList: {
         display: "flex",
-        gap: 18
+        gap: 25
     },
     buttonsDivider: {
         flex: 1,
@@ -74,13 +77,15 @@ export const arrowButton = StyleSheet.create({
         color: colors.primaryText,
         fontSize: 20,
         textTransform: "uppercase",
-        fontWeight: 600
+        fontWeight: 600,
+        fontFamily: fonts.mainFont
     },
     subText: {
         color: colors.secondText,
         textTransform: "uppercase",
         marginBottom: 4,
-        fontSize: 12
+        fontSize: 12,
+        fontFamily: fonts.mainFont
     }
 });
 
@@ -99,7 +104,8 @@ export const toggleButton = StyleSheet.create({
         color: colors.primaryText,
         fontWeight: 600,
         textTransform: "uppercase",
-        fontSize: 18
+        fontSize: 18,
+        fontFamily: fonts.mainFont
     }
 });
 
@@ -121,7 +127,8 @@ export const largeButton = StyleSheet.create({
         color: colors.primaryText,
         fontWeight: 700,
         textTransform: "uppercase",
-        fontSize: 22,
-        letterSpacing: 1
+        fontSize: 20,
+        letterSpacing: 1,
+        fontFamily: fonts.mainFont
     }
 });
