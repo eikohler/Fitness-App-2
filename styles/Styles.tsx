@@ -152,7 +152,7 @@ export const editButton1 = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "center",
-        gap: 20
+        gap: 10
     },
     textWrapper: {
         borderRadius: 10,
@@ -170,5 +170,77 @@ export const editButton1 = StyleSheet.create({
         fontWeight: 600,
         color: colors.primaryText,
         textTransform: "uppercase"
+    }
+});
+
+
+export const editButton2 = StyleSheet.create({
+    wrapper: {
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 10
+    },
+    content: {
+        display: "flex",
+        gap: 8,
+        flex: 1,
+    },
+    title: {
+        fontFamily: fonts.mainFont,
+        color: colors.primaryText,
+        fontWeight: 600,
+        fontSize: 18,
+        textTransform: "uppercase"
+    },    
+    notesWrapper: {
+        borderRadius: 10,
+        borderColor: colors.primaryText,
+        borderWidth: 1,
+        padding: 10,
+    },
+    notes: {
+        fontFamily: fonts.mainFont,
+        color: colors.primaryText,
+        textTransform: "uppercase"
+    },
+    settingsWrapper: {
+        display: "flex",
+        flexDirection: "row",
+        gap: 6
+    },
+    setting: {
+        flex: 1,
+        display: "flex",
+        gap: 5,
+    },
+    inputWrapper: {
+        borderRadius: 10,
+        borderColor: colors.primaryText,
+        borderWidth: 1,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 8
+    },
+    inputText: {
+        fontFamily: fonts.mainFont,
+        color: colors.primaryText,
+        fontWeight: 500,
+        fontSize: 24,
+        textTransform: "uppercase",
+    },
+    inputTitle: {
+        fontFamily: fonts.mainFont,
+        color: colors.primaryText,
+        fontSize: 14,
+        textTransform: "uppercase",
+        textAlign: 'center'
+    },
+    dividerLine: {
+        width: "100%",
+        borderColor: colors.primaryText,
+        borderBottomWidth: 1 
     }
 });

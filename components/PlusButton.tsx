@@ -20,7 +20,6 @@ const styles = StyleSheet.create({
         display: "flex",
         flexDirection: "row",
         justifyContent: "center",
-        paddingTop: 10
     },
     button: {
         borderRadius: "100%",

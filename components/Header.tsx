@@ -31,7 +31,7 @@ export default function Header(props: {
                     )}
                     <View>
                         <View  style={styles.subTextWrapper}>
-                            <Text style={[styles.subText, bolt && {marginRight: -2, color: modal ? colors.primaryText : colors.weekText}]}>{subtext}</Text>
+                            <Text style={[styles.subText, bolt && {marginRight: -2, color: colors.weekText}, modal && {color: colors.primaryText}]}>{subtext}</Text>
                             {bolt && <MaterialIcons name="bolt" size={18} color={modal ? colors.primaryText : colors.weekText} />}
                         </View>
                         <Text style={styles.title}>{fixedTitle}</Text>
