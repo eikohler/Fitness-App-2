@@ -9,14 +9,15 @@ export const colors = {
     pastSetBG: "#000074",
     newSetBG: "#BCC2E1",
     plusButtonBG: "#BCC2E1",
-    weekText: "#6363FF",
-    largeButtonBG: "#0059FF"
+    weekText: "#A486FF",
+    largeButtonBG: "#0059FF",
+    modalBG: "#000074"
 };
 
 
 export const fonts = {
     mainFont: "Inter"
-}
+};
 
 
 export const mainStyles = StyleSheet.create({
@@ -24,6 +25,15 @@ export const mainStyles = StyleSheet.create({
         width: "90%",
         marginHorizontal: "auto",
         paddingTop: 70,
+        paddingBottom: 50,
+        display: "flex",
+        gap: 25,
+        height: "100%"
+    },
+    wrapperModal:{
+        width: "90%",
+        marginHorizontal: "auto",
+        paddingTop: 20,
         paddingBottom: 50,
         display: "flex",
         gap: 25,
@@ -45,6 +55,10 @@ export const mainStyles = StyleSheet.create({
         justifyContent: "space-between"
     }
 });
+
+export const modalStyle = {
+    backgroundColor: colors.modalBG
+}
 
 export const backButton = StyleSheet.create({
     wrapper: {
@@ -117,9 +131,8 @@ export const largeButton = StyleSheet.create({
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        paddingHorizontal: 16,
+        paddingHorizontal: 50,
         paddingVertical: 30,
-        width: "80%",
         marginHorizontal: "auto",
         boxShadow: "-10 10 0 #000000"        
     },
@@ -130,5 +143,32 @@ export const largeButton = StyleSheet.create({
         fontSize: 20,
         letterSpacing: 1,
         fontFamily: fonts.mainFont
+    }
+});
+
+export const editButton1 = StyleSheet.create({
+    wrapper: {
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 20
+    },
+    textWrapper: {
+        borderRadius: 10,
+        borderColor: colors.primaryText,
+        borderWidth: 1,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 14,
+        flex: 1
+    },
+    text: {
+        fontFamily: fonts.mainFont,
+        fontSize: 20,
+        fontWeight: 600,
+        color: colors.primaryText,
+        textTransform: "uppercase"
     }
 });

@@ -12,7 +12,8 @@ export default function SingleWorkout() {
   return (
     <View style={mainStyles.wrapper}>
 
-      <Header title={'CHEST PRESS'} subtext={'4 SETS / 8 REPS'} backBtn={true} 
+      <Header title={'CHEST PRESS'} subtext={'4 SETS / 8 REPS'} backBtn 
+      editURL={{pathname: "/exercise/edit/[id]", params: {id: 1}}}
       notes={`Hold bar with wider than shoulder width grip. Control weight down to just below chest. Push back up through chest.`} />
 
       <View style={mainStyles.buttonsDivider}>

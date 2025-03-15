@@ -1,13 +1,13 @@
 import Header from "@/components/Header";
 import WorkoutButton from "@/components/WorkoutButton";
 import { largeButton, mainStyles } from "@/styles/Styles";
-import { StyleSheet, Text, View } from "react-native";
+import { Text, View } from "react-native";
 
 export default function Workouts() {
   return (
     <View style={mainStyles.wrapper}>
 
-      <Header title={'Workouts'} subtext={'Week 3'} bolt={true} />
+      <Header title={'Workouts'} subtext={'Week 3'} bolt editURL={'/edit-workouts'} />
 
       <View style={mainStyles.buttonsDivider}>
         <View style={mainStyles.buttonsList}>

@@ -11,7 +11,8 @@ export default function SingleWorkout() {
   return (
     <View style={mainStyles.wrapper}>
 
-      <Header title={'PUSH'} subtext={'FEB. 24 / 4 EXERCISES'} backBtn={true} />
+      <Header title={'PUSH'} subtext={'FEB. 24 / 4 EXERCISES'} backBtn 
+      editURL={{pathname: "/workout/edit/[id]", params: {id: 1}}} />
 
       <View style={mainStyles.buttonsDivider}>
         <View style={mainStyles.buttonsList}>

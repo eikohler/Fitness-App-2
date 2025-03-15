@@ -5,9 +5,17 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Href, router } from 'expo-router';
 import { useNavigation } from '@react-navigation/native';
 
-export default function Header(props: {title: string, subtext: string, notes?: string, bolt?: boolean, backBtn?: boolean}) {
+export default function Header(props: {
+    title: string; 
+    subtext: string; 
+    notes?: string; 
+    bolt?: boolean; 
+    modal?: boolean; 
+    backBtn?: boolean;
+    editURL?: Href;
+}) {
 
-    const { title, subtext, notes, bolt, backBtn } = props;
+    const { title, subtext, notes, bolt, modal, backBtn, editURL } = props;
     const navigation = useNavigation();
 
     const fixedTitle = title.replace(" ", "  ");
@@ -23,13 +31,17 @@ export default function Header(props: {title: string, subtext: string, notes?: s
                     )}
                     <View>
                         <View  style={styles.subTextWrapper}>
-                            <Text style={[styles.subText, bolt && styles.weekText]}>{subtext}</Text>
-                            {bolt && <MaterialIcons name="bolt" size={18} color={colors.weekText} />}
+                            <Text style={[styles.subText, bolt && {marginRight: -2, color: modal ? colors.primaryText : colors.weekText}]}>{subtext}</Text>
+                            {bolt && <MaterialIcons name="bolt" size={18} color={modal ? colors.primaryText : colors.weekText} />}
                         </View>
                         <Text style={styles.title}>{fixedTitle}</Text>
                     </View>
                 </View>
-                <MaterialIcons style={{marginBottom: 3}} name="edit" size={30} color={colors.primaryText} />
+                {editURL && (
+                    <Pressable onPress={()=>router.push(editURL)}>
+                        <MaterialIcons style={{marginBottom: 3}} name="edit" size={30} color={colors.primaryText} />
+                    </Pressable>
+                )}
             </View>
             { notes && (
                 <Text style={styles.notesText}>{notes}</Text>
@@ -74,10 +86,6 @@ const styles = StyleSheet.create({
         color: colors.secondText,
         textTransform: "uppercase",
         fontSize: 16,
-    },
-    weekText: {
-        color: colors.weekText,
-        marginRight: -2
     },
     notesText: {
         paddingTop: 10,
