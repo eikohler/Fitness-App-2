@@ -18,7 +18,7 @@ export default function Workouts() {
           <WorkoutButton />
         </View>
 
-        <LargeButton text="Add Workout" />
+        <LargeButton text="Add Workout" url={{pathname: "/edit-workouts"}} />
       </View>
 
     </View>

@@ -25,7 +25,7 @@ export default function SingleWorkout() {
           <ExerciseButton />
         </View>
 
-        <LargeButton text="Edit Workout" />
+        <LargeButton text="Edit Workout" url={{pathname: "/workout/edit/[id]", params: {id: 1}}} />
       </View>
 
     </View>

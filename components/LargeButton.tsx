@@ -1,15 +1,17 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { Text, StyleSheet, Pressable } from 'react-native';
 import React from 'react';
 import { colors, fonts } from '@/styles/Styles';
+import { Href, router } from 'expo-router';
+import { goBack } from 'expo-router/build/global-state/routing';
 
-export default function LargeButton(props: {text: string}){
+export default function LargeButton(props: {text: string; url?: Href}){
 
-    const {text} = props;
+    const {text, url} = props;
 
   return (
-    <View style={styles.wrapper}>
+    <Pressable style={styles.wrapper} onPress={()=>url ? router.push(url) : ""}>
         <Text style={styles.text}>{text}</Text>
-    </View>
+    </Pressable>
   )
 }
 
