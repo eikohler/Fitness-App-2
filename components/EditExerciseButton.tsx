@@ -1,6 +1,6 @@
 import { View, Text } from 'react-native';
 import React from 'react';
-import { colors, editButton2 } from '@/styles/Styles';
+import { colors, editButton } from '@/styles/Styles';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 export default function EditExerciseButton(props: { line?: boolean }) {
@@ -9,31 +9,31 @@ export default function EditExerciseButton(props: { line?: boolean }) {
 
     return (
         <>
-            <View style={editButton2.wrapper}>
+            <View style={editButton.wrapper}>
                 <MaterialIcons name="remove-circle" size={30} color={colors.secondText} />
-                <View style={editButton2.content}>
-                    <Text style={editButton2.title}>Chest Press</Text>
-                    <View style={editButton2.notesWrapper}>
-                        <Text style={editButton2.notes}>Notes</Text>
+                <View style={editButton.content}>
+                    <Text style={editButton.title}>Chest Press</Text>
+                    <View style={editButton.notesWrapper}>
+                        <Text style={editButton.notes}>Notes</Text>
                     </View>
-                    <View style={editButton2.settingsWrapper}>
-                        <View style={editButton2.setting}>
-                            <View style={editButton2.inputWrapper}>
-                                <Text style={editButton2.inputText}>4</Text>
+                    <View style={editButton.settingsWrapper}>
+                        <View style={editButton.setting}>
+                            <View style={editButton.inputWrapper}>
+                                <Text style={editButton.inputText}>4</Text>
                             </View>
-                            <Text style={editButton2.inputTitle}>Sets</Text>
+                            <Text style={editButton.inputTitle}>Sets</Text>
                         </View>
-                        <View style={editButton2.setting}>
-                            <View style={editButton2.inputWrapper}>
-                                <Text style={editButton2.inputText}>8</Text>
+                        <View style={editButton.setting}>
+                            <View style={editButton.inputWrapper}>
+                                <Text style={editButton.inputText}>8</Text>
                             </View>
-                            <Text style={editButton2.inputTitle}>Reps</Text>
+                            <Text style={editButton.inputTitle}>Reps</Text>
                         </View>
                     </View>
                 </View>
                 <MaterialIcons name="menu" size={32} color={colors.secondText} />
             </View>
-            {line && (<View style={editButton2.dividerLine}></View>)}
+            {line && (<View style={editButton.dividerLine}></View>)}
         </>
     )
 }

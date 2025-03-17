@@ -1,10 +1,11 @@
-import { View, Text } from 'react-native'
+import { View } from 'react-native'
 import React from 'react'
 import ModalBar from '@/components/ModalBar'
-import { largeButton, mainStyles } from '@/styles/Styles'
+import { mainStyles } from '@/styles/Styles'
 import Header from '@/components/Header'
 import PlusButton from '@/components/PlusButton'
 import EditExerciseButton from '@/components/EditExerciseButton'
+import LargeButton from '@/components/LargeButton'
 
 export default function EditSingleWorkout() {
   return (
@@ -20,9 +21,7 @@ export default function EditSingleWorkout() {
           <PlusButton modal />
         </View>
 
-        <View style={largeButton.wrapper}>
-          <Text style={largeButton.text}>Save Workout</Text>
-        </View>
+        <LargeButton text="Save Workout" />
       </View>
 
     </View>

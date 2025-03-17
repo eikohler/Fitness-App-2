@@ -1,8 +1,9 @@
 import ExerciseButton from "@/components/ExerciseButton";
 import Header from "@/components/Header";
-import { largeButton, mainStyles } from "@/styles/Styles";
+import LargeButton from "@/components/LargeButton";
+import { mainStyles } from "@/styles/Styles";
 import { useLocalSearchParams } from "expo-router";
-import { Text, View } from "react-native";
+import { View } from "react-native";
 
 export default function SingleWorkout() {
 
@@ -24,9 +25,7 @@ export default function SingleWorkout() {
           <ExerciseButton />
         </View>
 
-        <View style={largeButton.wrapper}>
-          <Text style={largeButton.text}>EDIT Workout</Text>
-        </View>
+        <LargeButton text="Edit Workout" />
       </View>
 
     </View>

@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import React from 'react';
-import { backButton, colors, fonts } from '@/styles/Styles';
+import { colors, fonts } from '@/styles/Styles';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Href, router } from 'expo-router';
 import { useNavigation } from '@react-navigation/native';
@@ -25,7 +25,7 @@ export default function Header(props: {
             <View style={styles.wrapper}>
                 <View style={styles.content}>
                     {backBtn && (
-                        <Pressable style={backButton.wrapper} onPress={() => navigation.goBack()}>
+                        <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
                             <MaterialIcons name="arrow-back" size={28} color={colors.mainBG} />
                         </Pressable>
                     )}
@@ -92,5 +92,15 @@ const styles = StyleSheet.create({
         color: colors.secondText,
         fontSize: 14,
         fontFamily: fonts.mainFont
+    },
+    backButton: {
+        backgroundColor: colors.backButtonBG,
+        boxShadow: "-4 4 0 rgba(188, 194, 225, 0.28)",
+        borderRadius: 8,
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        padding: 2,
+        marginBottom: 6
     }
 });

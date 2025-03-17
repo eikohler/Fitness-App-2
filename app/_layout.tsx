@@ -2,7 +2,7 @@ import { DarkTheme, ThemeProvider } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { colors, modalStyle } from "@/styles/Styles";
+import { colors } from "@/styles/Styles";
 
 export default function RootLayout() {  
 
@@ -18,6 +18,10 @@ export default function RootLayout() {
       text: colors.primaryText,
     },
   };
+
+  const modalStyle = {
+    backgroundColor: colors.modalBG
+  }
 
   return (
     <ThemeProvider value={CustomTheme}>

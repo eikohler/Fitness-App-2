@@ -56,23 +56,6 @@ export const mainStyles = StyleSheet.create({
     }
 });
 
-export const modalStyle = {
-    backgroundColor: colors.modalBG
-}
-
-export const backButton = StyleSheet.create({
-    wrapper: {
-        backgroundColor: colors.backButtonBG,
-        boxShadow: "-4 4 0 rgba(188, 194, 225, 0.28)",
-        borderRadius: 8,
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        padding: 2,
-        marginBottom: 6
-    }
-});
-
 
 export const arrowButton = StyleSheet.create({
     wrapper: {
@@ -123,58 +106,7 @@ export const toggleButton = StyleSheet.create({
     }
 });
 
-
-export const largeButton = StyleSheet.create({    
-    wrapper: {
-        borderRadius: 32,
-        backgroundColor: colors.largeButtonBG,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        paddingHorizontal: 50,
-        paddingVertical: 30,
-        marginHorizontal: "auto",
-        boxShadow: "-10 10 0 #000000"        
-    },
-    text: {
-        color: colors.primaryText,
-        fontWeight: 700,
-        textTransform: "uppercase",
-        fontSize: 20,
-        letterSpacing: 1,
-        fontFamily: fonts.mainFont
-    }
-});
-
-export const editButton1 = StyleSheet.create({
-    wrapper: {
-        display: "flex",
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 10
-    },
-    textWrapper: {
-        borderRadius: 10,
-        borderColor: colors.primaryText,
-        borderWidth: 1,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 14,
-        flex: 1
-    },
-    text: {
-        fontFamily: fonts.mainFont,
-        fontSize: 20,
-        fontWeight: 600,
-        color: colors.primaryText,
-        textTransform: "uppercase"
-    }
-});
-
-
-export const editButton2 = StyleSheet.create({
+export const editButton = StyleSheet.create({
     wrapper: {
         display: "flex",
         flexDirection: "row",
@@ -186,6 +118,12 @@ export const editButton2 = StyleSheet.create({
         display: "flex",
         gap: 8,
         flex: 1,
+    },
+    titleWrapper: {
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "flex-end",
+        justifyContent: "space-between"
     },
     title: {
         fontFamily: fonts.mainFont,

@@ -1,7 +1,8 @@
 import Header from "@/components/Header";
+import LargeButton from "@/components/LargeButton";
 import WorkoutButton from "@/components/WorkoutButton";
-import { largeButton, mainStyles } from "@/styles/Styles";
-import { Text, View } from "react-native";
+import { mainStyles } from "@/styles/Styles";
+import { View } from "react-native";
 
 export default function Workouts() {
   return (
@@ -17,9 +18,7 @@ export default function Workouts() {
           <WorkoutButton />
         </View>
 
-        <View style={largeButton.wrapper}>
-          <Text style={largeButton.text}>Add Workout</Text>
-        </View>
+        <LargeButton text="Add Workout" />
       </View>
 
     </View>
