@@ -14,7 +14,6 @@
 -- );
 
 -- CREATE TABLE deload_workouts (
---     id INTEGER PRIMARY KEY,
 --     original_workout_id INTEGER,
 --     deload_workout_id INTEGER,    
 --     FOREIGN KEY (original_workout_id) REFERENCES workouts (id),
@@ -22,7 +21,6 @@
 -- );
 
 -- CREATE TABLE workout_exercises (
---     id INTEGER PRIMARY KEY,
 --     workout_id INTEGER,
 --     exercise_id INTEGER,
 --     alt_exercise_id INTEGER,
@@ -35,9 +33,8 @@
 -- );
 
 -- CREATE TABLE set_reps (
---     id INTEGER PRIMARY KEY,
 --     exercise_id INTEGER,
---     sets INTEGER NOT NULL,
+--     set INTEGER NOT NULL,
 --     reps INTEGER NOT NULL,
 --     weight FLOAT NOT NULL,
 --     rir INTEGER NOT NULL,
@@ -51,7 +48,15 @@
 -- INSERT INTO workouts (title) VALUES ('Push');
 
 -- INSERT INTO exercises (title, note) VALUES ('Bench Press', 'Hold bar with wider than shoulder width grip. Control weight down to just below chest. Push back up through chest.');
+-- INSERT INTO exercises (title, note) VALUES ('Shoulder Press', 'Hold bar with wider than shoulder width grip. Push weight up.');
 
 -- INSERT INTO workout_exercises (workout_id, exercise_id, set_count, rep_count) VALUES (1, 1, 4, 8);
+-- INSERT INTO workout_exercises (workout_id, exercise_id, set_count, rep_count) VALUES (1, 2, 3, 10);
 
--- INSERT INTO set_reps (exercise_id, sets, reps, weight, rir, note) VALUES (1, 1, 10, 60, 3, 'Alittle heavy');
+-- INSERT INTO set_reps (exercise_id, sets, reps, weight, rir) VALUES (1, 2, 10, 65, 2);
+-- INSERT INTO set_reps (exercise_id, sets, reps, weight, rir) VALUES (1, 3, 10, 70, 1);
+-- INSERT INTO set_reps (exercise_id, sets, reps, weight, rir) VALUES (1, 4, 10, 80, -1);
+-- INSERT INTO set_reps (exercise_id, sets, reps, weight, rir, note) VALUES (2, 1, 8, 30, 4, 'Too light');
+-- INSERT INTO set_reps (exercise_id, sets, reps, weight, rir) VALUES (2, 2, 8, 40, 1);
+-- INSERT INTO set_reps (exercise_id, sets, reps, weight, rir) VALUES (2, 3, 8, 35, 1);
+-- INSERT INTO set_reps (exercise_id, sets, reps, weight, rir) VALUES (2, 4, 8, 30, 1);

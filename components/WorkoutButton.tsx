@@ -4,9 +4,9 @@ import { arrowButton, colors, mainStyles, toggleButton } from '@/styles/Styles';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { router } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
-import { Workout } from '@/Interfaces/dataTypes';
+import { type SingleWorkout } from '@/Interfaces/dataTypes';
 import { getSingleWorkout } from '@/utilities/db-functions';
-import { getDate } from '@/utilities/helpers';
+import { parseDate } from '@/utilities/helpers';
 
 export default function WorkoutButton(props: { id: number; }) {
 
@@ -14,7 +14,7 @@ export default function WorkoutButton(props: { id: number; }) {
 
   const db = useSQLiteContext();
 
-  const [data, setData] = useState<Workout | undefined>();
+  const [data, setData] = useState<SingleWorkout | undefined>();
 
   useEffect(() => {
     getSingleWorkout(db, id)
@@ -33,7 +33,7 @@ export default function WorkoutButton(props: { id: number; }) {
       <Pressable style={arrowButton.wrapper} 
       onPress={() => router.push({ pathname: "/workout/[id]", params: { id: id } })}>
         <View>
-          <Text style={arrowButton.subText}>{`${getDate(data.date)} / 4 EXERCISES`}</Text>
+          <Text style={arrowButton.subText}>{`${parseDate(data.date)} / ${data.exCount} EXERCISES`}</Text>
           <Text style={arrowButton.title}>{data.title}</Text>
         </View>
         <MaterialIcons name="arrow-forward" size={35} color={colors.primaryText} />

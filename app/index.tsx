@@ -1,9 +1,9 @@
 import Header from "@/components/Header";
 import LargeButton from "@/components/LargeButton";
 import WorkoutButton from "@/components/WorkoutButton";
-import { Workout } from "@/Interfaces/dataTypes";
+import { type IDList } from "@/Interfaces/dataTypes";
 import { mainStyles } from "@/styles/Styles";
-import { addWorkout, getWorkouts } from "@/utilities/db-functions";
+import { getWorkouts } from "@/utilities/db-functions";
 import { useSQLiteContext } from "expo-sqlite";
 import { useEffect, useState } from "react";
 import { View } from "react-native";
@@ -12,11 +12,9 @@ export default function Workouts() {
 
   const db = useSQLiteContext();
 
-  const [workouts, setWorkouts] = useState<Workout[] | undefined>();
+  const [workouts, setWorkouts] = useState<IDList[] | undefined>();
 
   useEffect(() => {
-    // addWorkout(db, {title: "Pull", note: ''});
-
     getWorkouts(db)
       .then((res) => { 
         if (res){

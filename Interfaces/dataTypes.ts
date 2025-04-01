@@ -1,8 +1,13 @@
-export interface Workout{
+export interface IDList{
     id: number;
+}
+export interface SingleWorkout{
     title: string;
     date: Date;
-    note: string;
-    is_deload: number;
-    is_deload_active: number;
+    exCount: number;
+}
+export interface SingleWorkoutSingleExercise{
+    title: string;
+    set_count: number;
+    rep_count: number;
 }

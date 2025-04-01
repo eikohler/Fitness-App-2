@@ -1,9 +1,10 @@
-import { Workout } from '@/Interfaces/dataTypes';
+import { type SingleWorkout, type IDList, type SingleWorkoutSingleExercise } from '@/Interfaces/dataTypes';
 import { type SQLiteDatabase } from 'expo-sqlite';
 
 export const initDB = async (db: SQLiteDatabase) => {
     try {
-        await db.execAsync(`
+        await db.execAsync(`            
+
             CREATE TABLE IF NOT EXISTS workouts (
                 id INTEGER PRIMARY KEY,
                 title VARCHAR(100) NOT NULL UNIQUE,
@@ -20,7 +21,6 @@ export const initDB = async (db: SQLiteDatabase) => {
             );
 
             CREATE TABLE IF NOT EXISTS deload_workouts (
-                id INTEGER PRIMARY KEY,
                 original_workout_id INTEGER,
                 deload_workout_id INTEGER,    
                 FOREIGN KEY (original_workout_id) REFERENCES workouts (id),
@@ -28,7 +28,6 @@ export const initDB = async (db: SQLiteDatabase) => {
             );
 
             CREATE TABLE IF NOT EXISTS workout_exercises (
-                id INTEGER PRIMARY KEY,
                 workout_id INTEGER,
                 exercise_id INTEGER,
                 alt_exercise_id INTEGER,
@@ -36,12 +35,12 @@ export const initDB = async (db: SQLiteDatabase) => {
                 rep_count INTEGER NOT NULL,
                 is_alt_active INTEGER DEFAULT 0,
                 FOREIGN KEY (workout_id) REFERENCES workouts (id),
-                FOREIGN KEY (exercise_id) REFERENCES exercises (id)
-                FOREIGN KEY (alt_exercise_id) REFERENCES exercises (id)
+                FOREIGN KEY (exercise_id) REFERENCES exercises (id),
+                FOREIGN KEY (alt_exercise_id) REFERENCES exercises (id),
+                UNIQUE( workout_id, exercise_id)
             );
 
             CREATE TABLE IF NOT EXISTS set_reps (
-                id INTEGER PRIMARY KEY,
                 exercise_id INTEGER,
                 sets INTEGER NOT NULL,
                 reps INTEGER NOT NULL,
@@ -60,17 +59,23 @@ export const initDB = async (db: SQLiteDatabase) => {
 }
 
 
-export const getWorkouts = async (db: SQLiteDatabase) : Promise<Workout[] | undefined> => {
+export const getWorkouts = async (db: SQLiteDatabase) : Promise<IDList[] | undefined> => {
     try {
-        return await db.getAllAsync('SELECT id FROM workouts');
+        return await db.getAllAsync(`
+            SELECT id FROM workouts
+        `);
     } catch (err) {
         console.log("Error while loading workouts: ", err);
     }
 }
 
-export const getSingleWorkout = async (db: SQLiteDatabase, id: number) : Promise<Workout | null | undefined> => {
+export const getSingleWorkout = async (db: SQLiteDatabase, id: number) : Promise<SingleWorkout | null | undefined> => {
     try {
-        return await db.getFirstAsync(`SELECT * FROM workouts where id = ${id}`);
+        return await db.getFirstAsync(`
+            SELECT workouts.title, workouts.date, COUNT(*) as exCount 
+            FROM workouts INNER JOIN workout_exercises on workouts.id = workout_exercises.workout_id 
+            WHERE workouts.id = 1;
+        `);
     } catch (err) {
         console.log(`Error while loading workout with ID = ${id}: `, err);
     }
@@ -85,37 +90,43 @@ export const addWorkout = async (db: SQLiteDatabase, workout: { title: string; n
     }
 }
 
-// export const deleteWorkout = async (db: SQLiteDatabase, id: string) => {
-//     try {
-//         const query = await db.prepareAsync(`DELETE FROM workouts where workout_id = ?`);
-//         await query.executeAsync(id);
-//     } catch (err) {
-//         console.log(`Error while deleting workout_id = ${id}: `, err);
-//     }
-// }
+export const deleteWorkout = async (db: SQLiteDatabase, id: number) => {
+    try {
+        const query = await db.prepareAsync(`DELETE FROM workouts where id = ?`);
+        await query.executeAsync(id);
+    } catch (err) {
+        console.log(`Error while deleting workout with ID = ${id}: `, err);
+    }
+}
 
-// export const getExercises = async (db: SQLiteDatabase) : Promise<Exercise[] | undefined> => {
-//     try {
-//         return await db.getAllAsync('SELECT * FROM exercises');
-//     } catch (err) {
-//         console.log("Error while loading exercises: ", err);
-//     }
-// }
+export const getSingleWorkoutExercises = async (db: SQLiteDatabase, id: number) : Promise<IDList[] | null | undefined> => {
+    try {
+        return await db.getAllAsync(`
+            SELECT exercises.id From workout_exercises 
+            INNER JOIN exercises on exercises.id = workout_exercises.exercise_id 
+            WHERE workout_id = ${id};
+        `);
+    } catch (err) {
+        console.log(`Error while loading exercises from workout with ID = ${id}: `, err);
+    }
+}
 
-// export const addExercise = async (db: SQLiteDatabase, newExercise: { title: string; ex_description: string; }) => {
-//     try {
-//         const query = await db.prepareAsync(`INSERT INTO exercises (title, ex_description) VALUES (?, ?)`);
-//         await query.executeAsync(newExercise.title, newExercise.ex_description);
-//     } catch (err) {
-//         console.log("Error while adding exercise: ", err);
-//     }
-// }
+export const getSingleWorkoutSingleExercise = async (db: SQLiteDatabase, wID: number, exID: number) : Promise<SingleWorkoutSingleExercise | null | undefined> => {
+    try {
+        return await db.getFirstAsync(`
+            SELECT exercises.title, workout_exercises.set_count, workout_exercises.rep_count From workout_exercises 
+            INNER JOIN exercises on exercises.id = workout_exercises.exercise_id 
+            WHERE workout_id = ${wID} and exercise_id = ${exID};
+        `);
+    } catch (err) {
+        console.log(`Error while loading exercise with ID = ${exID} from workout with ID = ${wID}: `, err);
+    }
+}
 
-// export const deleteExercise = async (db: SQLiteDatabase, id: string) => {
-//     try {
-//         const query = await db.prepareAsync(`DELETE FROM exercises where exercise_id = ?`);
-//         await query.executeAsync(id);
-//     } catch (err) {
-//         console.log(`Error while deleting exercise_id = ${id}: `, err);
-//     }
-// }
+export const getExercises = async (db: SQLiteDatabase) : Promise<IDList[] | undefined> => {
+    try {
+        return await db.getAllAsync(`SELECT id FROM exercises`);
+    } catch (err) {
+        console.log("Error while loading exercises: ", err);
+    }
+}
