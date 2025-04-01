@@ -56,9 +56,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: "flex-end",
         justifyContent: "space-between",
-        borderBottomColor: colors.primaryText,
-        borderBottomWidth: 1,
-        paddingBottom: 10        
+        // borderBottomColor: colors.primaryText,
+        // borderBottomWidth: 1,
+        // paddingBottom: 10        
     },
     content: {
         display: "flex",
