@@ -3,7 +3,7 @@ import Header from "@/components/Header";
 import LargeButton from "@/components/LargeButton";
 import { type IDList, type SingleWorkout } from "@/Interfaces/dataTypes";
 import { mainStyles } from "@/styles/Styles";
-import { getSingleWorkout, getSingleWorkoutExercises } from "@/utilities/db-functions";
+import { getSingleWorkout, getWorkoutExercises } from "@/utilities/db-functions";
 import { parseDate } from "@/utilities/helpers";
 import { useLocalSearchParams } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
@@ -17,7 +17,7 @@ export default function SingleWorkout() {
   const db = useSQLiteContext();
 
   const [data, setData] = useState<SingleWorkout | undefined>();
-  const [exercises, setExercises] = useState<IDList[] | undefined>();
+  const [workoutExercises, setWorkoutExercises] = useState<IDList[] | undefined>();
 
   useEffect(() => {
     getSingleWorkout(db, parseInt(urlParams.id))
@@ -28,10 +28,10 @@ export default function SingleWorkout() {
       })
       .catch((err) => console.log(err));
 
-    getSingleWorkoutExercises(db, parseInt(urlParams.id))
+    getWorkoutExercises(db, parseInt(urlParams.id))
       .then((res) => {
         if (res) {
-          setExercises(res);
+          setWorkoutExercises(res);
         }
       })
       .catch((err) => console.log(err));
@@ -47,8 +47,8 @@ export default function SingleWorkout() {
 
       <View style={mainStyles.buttonsDivider}>
         <View style={mainStyles.buttonsList}>
-          {exercises?.map((ex)=>
-            <ExerciseButton key={ex.id} wID={parseInt(urlParams.id)} exID={ex.id} />
+          {workoutExercises?.map((wex) =>
+            <ExerciseButton key={wex.id} id={wex.id} />
           )}
         </View>
 

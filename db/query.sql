@@ -56,7 +56,19 @@
 -- INSERT INTO set_reps (exercise_id, sets, reps, weight, rir) VALUES (1, 2, 10, 65, 2);
 -- INSERT INTO set_reps (exercise_id, sets, reps, weight, rir) VALUES (1, 3, 10, 70, 1);
 -- INSERT INTO set_reps (exercise_id, sets, reps, weight, rir) VALUES (1, 4, 10, 80, -1);
--- INSERT INTO set_reps (exercise_id, sets, reps, weight, rir, note) VALUES (2, 1, 8, 30, 4, 'Too light');
--- INSERT INTO set_reps (exercise_id, sets, reps, weight, rir) VALUES (2, 2, 8, 40, 1);
--- INSERT INTO set_reps (exercise_id, sets, reps, weight, rir) VALUES (2, 3, 8, 35, 1);
--- INSERT INTO set_reps (exercise_id, sets, reps, weight, rir) VALUES (2, 4, 8, 30, 1);
+-- INSERT INTO set_reps (exercise_id, sets, reps, weight, rir, note) VALUES (2, 1, 10, 30, 4, 'Too light');
+-- INSERT INTO set_reps (exercise_id, sets, reps, weight, rir) VALUES (2, 2, 10, 40, 1);
+-- INSERT INTO set_reps (exercise_id, sets, reps, weight, rir) VALUES (2, 3, 10, 35, 1);
+-- INSERT INTO set_reps (exercise_id, sets, reps, weight, rir) VALUES (2, 4, 10, 30, 1);
+
+
+-- INSERT INTO set_reps (exercise_id, sets, reps, weight, rir, note) VALUES (1, 1, 8, 30, 4, 'Too light');
+-- INSERT INTO set_reps (exercise_id, sets, reps, weight, rir) VALUES (1, 2, 8, 40, 1);
+-- INSERT INTO set_reps (exercise_id, sets, reps, weight, rir) VALUES (1, 3, 8, 35, 1);
+-- INSERT INTO set_reps (exercise_id, sets, reps, weight, rir) VALUES (1, 4, 8, 30, 1);
+
+
+-- INSERT INTO set_reps (exercise_id, sets, reps, weight, rir) VALUES (1, 1, 8, 50, 2);
+-- INSERT INTO set_reps (exercise_id, sets, reps, weight, rir, note) VALUES (1, 2, 8, 70, -1, "Too Heavy");
+-- INSERT INTO set_reps (exercise_id, sets, reps, weight, rir) VALUES (1, 3, 8, 40, -1);
+-- INSERT INTO set_reps (exercise_id, sets, reps, weight, rir) VALUES (1, 4, 8, 35, 1);
