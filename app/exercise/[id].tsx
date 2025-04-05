@@ -7,8 +7,8 @@ import { mainStyles } from "@/styles/Styles";
 import { getSets, getSingleWorkoutExercise } from "@/utilities/db-functions";
 import { useLocalSearchParams } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
-import { useEffect, useState } from "react";
-import { View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { ScrollView, View } from "react-native";
 
 export default function SingleWorkout() {
 
@@ -40,26 +40,34 @@ export default function SingleWorkout() {
   //   }
   // }, [data]);
 
+  const [headerHeight, setHeaderHeight] = useState(0);
+
+  const updateHeaderHeight = (height: number) => setHeaderHeight(height);
+
   if (!data) return "";
 
   return (
-    <View style={mainStyles.wrapper}>
-
-      <Header title={data.title} subtext={`${data.set_count} SETS / ${data.rep_count} REPS`} backBtn
+    <>
+      <Header headerHeight={headerHeight} updateHeaderHeight={updateHeaderHeight} title={data.title} 
+        subtext={`${data.set_count} SETS / ${data.rep_count} REPS`} backBtn
         editURL={{ pathname: "/exercise/edit/[id]", params: { id: data.id } }}
         notes={data.note} />
+        
+      <ScrollView contentContainerStyle={[mainStyles.wrapper, {paddingTop: headerHeight}]} 
+      showsVerticalScrollIndicator={false}>
 
-      <View style={mainStyles.buttonsDivider}>
-        <View style={mainStyles.buttonsList}>
-          {Array.from({ length: data.set_count }).map((x, i) =>
-            <SetButton key={i + 1} exID={data.id} sets={i + 1} reps={data.rep_count} />
-          )}
-          <PlusButton />
-        </View>
+          <View style={mainStyles.buttonsDivider}>
+            <View style={mainStyles.buttonsList}>
+              {Array.from({ length: data.set_count }).map((x, i) =>
+                <SetButton key={i + 1} exID={data.id} sets={i + 1} reps={data.rep_count} />
+              )}
+              <PlusButton />
+            </View>
+            <LargeButton text="Next Exercise" url={{ pathname: "/exercise/[id]", params: { id: 1 } }} />
+          </View>
 
-        <LargeButton text="Next Exercise" url={{ pathname: "/exercise/edit/[id]", params: { id: 1 } }} />
-      </View>
-
-    </View>
+      </ScrollView>
+      
+    </>
   );
 }

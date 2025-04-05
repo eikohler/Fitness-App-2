@@ -1,4 +1,4 @@
-import { View } from 'react-native'
+import { ScrollView, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import ModalBar from '@/components/ModalBar'
 import { mainStyles } from '@/styles/Styles'
@@ -29,27 +29,38 @@ export default function EditSingleExercise() {
       .catch((err) => console.log(err));
   }, []);
 
+  const [headerHeight, setHeaderHeight] = useState(0);
+
+  const updateHeaderHeight = (height: number) => setHeaderHeight(height);
+
   if (!data) return "";
 
   return (
-    <View style={mainStyles.wrapperModal}>
+    <>
+      <Header headerHeight={headerHeight} updateHeaderHeight={updateHeaderHeight}
+        title={data.title} subtext={`${data.set_count} SETS / ${data.rep_count} REPS`} modal backBtn />
+
       <ModalBar />
 
-      <Header title={data.title} subtext={`${data.set_count} SETS / ${data.rep_count} REPS`} modal backBtn />
+      <ScrollView contentContainerStyle={[mainStyles.wrapper, { paddingTop: headerHeight }]}
+        showsVerticalScrollIndicator={false}>
 
-      <View style={mainStyles.buttonsDivider}>
-        <View style={mainStyles.buttonsList}>     
+        <View style={mainStyles.buttonsDivider}>
+          <View style={mainStyles.buttonsList}>
 
-          {Array.from({ length: data.set_count }).map((x, i) =>
-            <EditSetButton key={i + 1} exID={data.id} sets={i + 1} reps={data.rep_count} line={i+1 < data.set_count} />
-          )}
-          
-          <PlusButton modal />
+            {Array.from({ length: data.set_count }).map((x, i) =>
+              <EditSetButton key={i + 1} exID={data.id} sets={i + 1}
+                reps={data.rep_count} line={i + 1 < data.set_count} />
+            )}
+
+            <PlusButton modal />
+
+          </View>
+
+          <LargeButton text="Save Exercise" />
         </View>
 
-        <LargeButton text="Save Exercise" />
-      </View>
-
-    </View>
+      </ScrollView>
+    </>
   )
 }

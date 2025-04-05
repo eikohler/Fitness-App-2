@@ -14,6 +14,10 @@ const styles = StyleSheet.create({
         display: "flex",
         flexDirection: "row",
         justifyContent: "center",
+        position: "absolute",
+        top: 20,
+        zIndex: 99,
+        width: "100%"
     },
     bar: {
         borderRadius: 50,

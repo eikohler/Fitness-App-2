@@ -6,7 +6,7 @@ import { mainStyles } from "@/styles/Styles";
 import { getWorkouts } from "@/utilities/db-functions";
 import { useSQLiteContext } from "expo-sqlite";
 import { useEffect, useState } from "react";
-import { View } from "react-native";
+import { ScrollView, View } from "react-native";
 
 export default function Workouts() {
 
@@ -16,29 +16,38 @@ export default function Workouts() {
 
   useEffect(() => {
     getWorkouts(db)
-      .then((res) => { 
-        if (res){
+      .then((res) => {
+        if (res) {
           setWorkouts(res);
-        } 
+        }
       })
       .catch((err) => console.log(err));
   }, []);
 
+  const [headerHeight, setHeaderHeight] = useState(0);
+
+  const updateHeaderHeight = (height: number) => setHeaderHeight(height);
+
   return (
-    <View style={mainStyles.wrapper}>
+    <>
+      <Header headerHeight={headerHeight} updateHeaderHeight={updateHeaderHeight}
+        title={'Workouts'} subtext={'Week 3'} bolt editURL={'/edit-workouts'} />
 
-      <Header title={'Workouts'} subtext={'Week 3'} bolt editURL={'/edit-workouts'} />
+      <ScrollView contentContainerStyle={[mainStyles.wrapper, { paddingTop: headerHeight }]}
+        showsVerticalScrollIndicator={false}>
 
-      <View style={mainStyles.buttonsDivider}>
-        <View style={mainStyles.buttonsList}>
-          {workouts?.map((w)=>
-            <WorkoutButton key={w.id} id={w.id} />
-          )}
+        <View style={mainStyles.buttonsDivider}>
+          <View style={mainStyles.buttonsList}>
+            {workouts?.map((w) =>
+              <WorkoutButton key={w.id} id={w.id} />
+            )}
+          </View>
+          <LargeButton text="Add Workout" url={{ pathname: "/edit-workouts" }} />
         </View>
 
-        <LargeButton text="Add Workout" url={{pathname: "/edit-workouts"}} />
-      </View>
 
-    </View>
+      </ScrollView>
+      
+    </>
   );
 }

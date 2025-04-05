@@ -1,4 +1,4 @@
-import { View } from 'react-native'
+import { ScrollView, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import ModalBar from '@/components/ModalBar'
 import { mainStyles } from '@/styles/Styles'
@@ -39,25 +39,32 @@ export default function EditSingleWorkout() {
       .catch((err) => console.log(err));
   }, []);
 
+  const [headerHeight, setHeaderHeight] = useState(0);
+
+  const updateHeaderHeight = (height: number) => setHeaderHeight(height);
+
   if (!data) return "";
 
   return (
-    <View style={mainStyles.wrapperModal}>
+    <>
+      <Header headerHeight={headerHeight} updateHeaderHeight={updateHeaderHeight} title={data.title} subtext={`${parseDate(data.date)} / ${data.exCount} EXERCISES`} modal backBtn />
       <ModalBar />
 
-      <Header title={data.title} subtext={`${parseDate(data.date)} / ${data.exCount} EXERCISES`} modal backBtn />
+      <ScrollView contentContainerStyle={[mainStyles.wrapper, { paddingTop: headerHeight }]}
+        showsVerticalScrollIndicator={false}>
 
-      <View style={mainStyles.buttonsDivider}>
-        <View style={mainStyles.buttonsList}>
-          {workoutExercises?.map((wex, i) =>
-            <EditExerciseButton key={wex.id} id={wex.id} line={i+1 < workoutExercises.length} />
-          )}
-          <PlusButton modal />
+        <View style={mainStyles.buttonsDivider}>
+          <View style={mainStyles.buttonsList}>
+            {workoutExercises?.map((wex, i) =>
+              <EditExerciseButton key={wex.id} id={wex.id} line={i + 1 < workoutExercises.length} />
+            )}
+            <PlusButton modal />
+          </View>
+
+          <LargeButton text="Save Workout" />
         </View>
 
-        <LargeButton text="Save Workout" />
-      </View>
-
-    </View>
+      </ScrollView>
+    </>
   )
 }

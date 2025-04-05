@@ -24,20 +24,7 @@ export const mainStyles = StyleSheet.create({
     wrapper: {
         width: "90%",
         marginHorizontal: "auto",
-        paddingTop: 70,
-        paddingBottom: 50,
-        display: "flex",
-        gap: 25,
-        height: "100%"
-    },
-    wrapperModal:{
-        width: "90%",
-        marginHorizontal: "auto",
-        paddingTop: 20,
-        paddingBottom: 50,
-        display: "flex",
-        gap: 25,
-        height: "100%"
+        paddingBottom: 50
     },
     buttonsWrapper: {
         display: "flex",
@@ -46,13 +33,15 @@ export const mainStyles = StyleSheet.create({
         gap: 10
     },
     buttonsList: {
+        paddingTop: 10,
         display: "flex",
         gap: 25
     },
     buttonsDivider: {
         flex: 1,
         display: "flex",
-        justifyContent: "space-between"
+        justifyContent: "space-between",
+        gap: 50,
     }
 });
 
