@@ -1,11 +1,10 @@
-import { Float } from "react-native/Libraries/Types/CodegenTypes";
-
 export interface IDList{
     id: number;
 }
 export interface SingleWorkout{
     title: string;
     date: Date;
+    note: string;
     exCount: number;
 }
 export interface SingleWorkoutExercise{

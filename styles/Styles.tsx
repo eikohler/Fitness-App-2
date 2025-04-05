@@ -141,7 +141,6 @@ export const editButton = StyleSheet.create({
     notes: {
         fontFamily: fonts.mainFont,
         color: colors.primaryText,
-        textTransform: "uppercase"
     },
     settingsWrapper: {
         display: "flex",

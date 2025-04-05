@@ -46,7 +46,7 @@ export default function SingleWorkout() {
     <View style={mainStyles.wrapper}>
 
       <Header title={data.title} subtext={`${data.set_count} SETS / ${data.rep_count} REPS`} backBtn
-        editURL={{ pathname: "/exercise/edit/[id]", params: { id: 1 } }}
+        editURL={{ pathname: "/exercise/edit/[id]", params: { id: data.id } }}
         notes={data.note} />
 
       <View style={mainStyles.buttonsDivider}>

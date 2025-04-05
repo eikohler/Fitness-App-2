@@ -74,7 +74,7 @@ export const getWorkouts = async (db: SQLiteDatabase) : Promise<IDList[] | undef
 export const getSingleWorkout = async (db: SQLiteDatabase, id: number) : Promise<SingleWorkout | null | undefined> => {
     try {
         return await db.getFirstAsync(`
-            SELECT workouts.title, workouts.date, COUNT(*) as exCount 
+            SELECT workouts.title, workouts.date, workouts.note, COUNT(*) as exCount 
             FROM workouts INNER JOIN workout_exercises on workouts.id = workout_exercises.workout_id 
             WHERE workouts.id = 1;
         `);
@@ -148,20 +148,15 @@ export const getSetRow = async (db: SQLiteDatabase, id: number, sets: number, re
     }
 }
 
-export const getSingleSet = async (db: SQLiteDatabase, id: number) : Promise<SetRow | null | undefined> => {
+export const getSingleSet = async (db: SQLiteDatabase, id: number, sets: number, reps: number) : Promise<SetRow | null | undefined> => {
     try {
         return await db.getFirstAsync(`
-            SELECT sets, weight, rir, note From set_reps WHERE id = ${id};
+            SELECT weight, rir, note, date
+            From set_reps 
+            WHERE exercise_id = ${id} and sets = ${sets} and reps = ${reps}            
+            ORDER BY date DESC;
         `);
     } catch (err) {
-        console.log(`Error while loading single set with ID = ${id}: `, err);
-    }
-}
-
-export const getExercises = async (db: SQLiteDatabase) : Promise<IDList[] | undefined> => {
-    try {
-        return await db.getAllAsync(`SELECT id FROM exercises`);
-    } catch (err) {
-        console.log("Error while loading exercises: ", err);
+        console.log(`Error while loading single set with Exercise ID = ${id}, set count = ${sets} and rep count = ${reps}: `, err);
     }
 }
