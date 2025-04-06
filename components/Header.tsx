@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import React, { useLayoutEffect, useRef, useState } from 'react';
+import React, { useLayoutEffect, useRef } from 'react';
 import { colors, fonts } from '@/styles/Styles';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Href, router } from 'expo-router';
@@ -34,7 +34,7 @@ export default function Header(props: {
                 boxShadow: modal ? "0px 5px 5px #000074" : "0px 5px 5px #0D0D0D",
                 paddingTop: modal ? 50 : 60
             }]}>
-            <LinearGradient colors={modal ? [colors.modalBG, 'rgba(0, 0, 116, 0.9)'] : ['#0D0D46', 'rgba(13, 13, 13, 0.95)']} 
+            <LinearGradient colors={modal ? [colors.modalBG, 'rgba(0, 0, 116, 0.85)'] : ['#0D0D46', 'rgba(13, 13, 13, 0.85)']} 
             style={[styles.background, {height: headerHeight}]} />
             <View style={styles.layout}>
                 <View style={styles.wrapper}>

@@ -25,7 +25,7 @@ export default function SingleWorkout() {
           setData(res);
         }
       })
-      .catch((err) => console.log(err));      
+      .catch((err) => console.log(err));
   }, []);
 
   // useEffect(() => {
@@ -48,26 +48,25 @@ export default function SingleWorkout() {
 
   return (
     <>
-      <Header headerHeight={headerHeight} updateHeaderHeight={updateHeaderHeight} title={data.title} 
+      <Header headerHeight={headerHeight} updateHeaderHeight={updateHeaderHeight} title={data.title}
         subtext={`${data.set_count} SETS / ${data.rep_count} REPS`} backBtn
         editURL={{ pathname: "/exercise/edit/[id]", params: { id: data.id } }}
         notes={data.note} />
-        
-      <ScrollView contentContainerStyle={[mainStyles.wrapper, {paddingTop: headerHeight}]} 
-      showsVerticalScrollIndicator={false}>
 
-          <View style={mainStyles.buttonsDivider}>
-            <View style={mainStyles.buttonsList}>
-              {Array.from({ length: data.set_count }).map((x, i) =>
-                <SetButton key={i + 1} exID={data.id} sets={i + 1} reps={data.rep_count} />
-              )}
-              <PlusButton />
-            </View>
-            <LargeButton text="Next Exercise" url={{ pathname: "/exercise/[id]", params: { id: 1 } }} />
-          </View>
+      <ScrollView contentContainerStyle={[mainStyles.wrapper, { paddingTop: headerHeight }]}
+        showsVerticalScrollIndicator={false}>
+
+        <View style={mainStyles.buttonsList}>
+          {Array.from({ length: data.set_count }).map((x, i) =>
+            <SetButton key={i + 1} exID={data.id} sets={i + 1} reps={data.rep_count} />
+          )}
+          <PlusButton />
+        </View>
+        
+        <LargeButton text="Next Exercise" url={{ pathname: "/exercise/[id]", params: { id: 1 } }} />
 
       </ScrollView>
-      
+
     </>
   );
 }

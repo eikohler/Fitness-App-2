@@ -47,18 +47,16 @@ export default function SingleWorkout() {
       <Header headerHeight={headerHeight} updateHeaderHeight={updateHeaderHeight}
         title={data.title} subtext={`${parseDate(data.date)} / ${data.exCount} EXERCISES`} backBtn
         editURL={{ pathname: "/workout/edit/[id]", params: { id: urlParams.id } }} />
-        
+
       <ScrollView contentContainerStyle={[mainStyles.wrapper, { paddingTop: headerHeight }]}
         showsVerticalScrollIndicator={false}>
 
-        <View style={mainStyles.buttonsDivider}>
-          <View style={mainStyles.buttonsList}>
-            {workoutExercises?.map((wex) =>
-              <ExerciseButton key={wex.id} id={wex.id} />
-            )}
-          </View>
-          <LargeButton text="Edit Workout" url={{ pathname: "/workout/edit/[id]", params: { id: 1 } }} />
+        <View style={mainStyles.buttonsList}>
+          {workoutExercises?.map((wex) =>
+            <ExerciseButton key={wex.id} id={wex.id} />
+          )}
         </View>
+        <LargeButton text="Edit Workout" url={{ pathname: "/workout/edit/[id]", params: { id: 1 } }} />
 
       </ScrollView>
 

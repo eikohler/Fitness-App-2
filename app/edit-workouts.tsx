@@ -40,16 +40,14 @@ export default function EditWorkouts() {
       <ScrollView contentContainerStyle={[mainStyles.wrapper, { paddingTop: headerHeight }]}
         showsVerticalScrollIndicator={false}>
 
-        <View style={mainStyles.buttonsDivider}>
-          <View style={mainStyles.buttonsList}>
-            {workouts?.map((w) =>
-              <EditWorkoutButton key={w.id} id={w.id} />
-            )}
-            <PlusButton modal />
-          </View>
-
-          <LargeButton text="Save Workouts" />
+        <View style={mainStyles.buttonsList}>
+          {workouts?.map((w) =>
+            <EditWorkoutButton key={w.id} id={w.id} />
+          )}
+          <PlusButton modal />
         </View>
+
+        <LargeButton text="Save Workouts" />
 
       </ScrollView>
     </>

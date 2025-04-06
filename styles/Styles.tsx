@@ -24,7 +24,11 @@ export const mainStyles = StyleSheet.create({
     wrapper: {
         width: "90%",
         marginHorizontal: "auto",
-        paddingBottom: 50
+        display: "flex",
+        justifyContent: "space-between",
+        gap: 50,
+        paddingBottom: 50,
+        flexGrow: 1
     },
     buttonsWrapper: {
         display: "flex",
@@ -36,12 +40,6 @@ export const mainStyles = StyleSheet.create({
         paddingTop: 10,
         display: "flex",
         gap: 25
-    },
-    buttonsDivider: {
-        flex: 1,
-        display: "flex",
-        justifyContent: "space-between",
-        gap: 50,
     }
 });
 

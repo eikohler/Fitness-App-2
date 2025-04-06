@@ -47,22 +47,22 @@ export default function EditSingleWorkout() {
 
   return (
     <>
-      <Header headerHeight={headerHeight} updateHeaderHeight={updateHeaderHeight} title={data.title} subtext={`${parseDate(data.date)} / ${data.exCount} EXERCISES`} modal backBtn />
+      <Header headerHeight={headerHeight} updateHeaderHeight={updateHeaderHeight} 
+      title={data.title} subtext={`${parseDate(data.date)} / ${data.exCount} EXERCISES`} modal backBtn />
+      
       <ModalBar />
 
       <ScrollView contentContainerStyle={[mainStyles.wrapper, { paddingTop: headerHeight }]}
         showsVerticalScrollIndicator={false}>
 
-        <View style={mainStyles.buttonsDivider}>
-          <View style={mainStyles.buttonsList}>
-            {workoutExercises?.map((wex, i) =>
-              <EditExerciseButton key={wex.id} id={wex.id} line={i + 1 < workoutExercises.length} />
-            )}
-            <PlusButton modal />
-          </View>
-
-          <LargeButton text="Save Workout" />
+        <View style={mainStyles.buttonsList}>
+          {workoutExercises?.map((wex, i) =>
+            <EditExerciseButton key={wex.id} id={wex.id} line={i + 1 < workoutExercises.length} />
+          )}
+          <PlusButton modal />
         </View>
+
+        <LargeButton text="Save Workout" />
 
       </ScrollView>
     </>

@@ -1,5 +1,5 @@
-import { ScrollView, View } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import { Dimensions, LayoutChangeEvent, ScrollView, View } from 'react-native'
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import ModalBar from '@/components/ModalBar'
 import { mainStyles } from '@/styles/Styles'
 import Header from '@/components/Header'
@@ -45,20 +45,18 @@ export default function EditSingleExercise() {
       <ScrollView contentContainerStyle={[mainStyles.wrapper, { paddingTop: headerHeight }]}
         showsVerticalScrollIndicator={false}>
 
-        <View style={mainStyles.buttonsDivider}>
-          <View style={mainStyles.buttonsList}>
+        <View style={mainStyles.buttonsList}>
 
-            {Array.from({ length: data.set_count }).map((x, i) =>
-              <EditSetButton key={i + 1} exID={data.id} sets={i + 1}
-                reps={data.rep_count} line={i + 1 < data.set_count} />
-            )}
+          {Array.from({ length: data.set_count }).map((x, i) =>
+            <EditSetButton key={i + 1} exID={data.id} sets={i + 1}
+              reps={data.rep_count} line={i + 1 < data.set_count} />
+          )}
 
-            <PlusButton modal />
+          <PlusButton modal />
 
-          </View>
-
-          <LargeButton text="Save Exercise" />
         </View>
+
+        <LargeButton text="Save Exercise" />
 
       </ScrollView>
     </>

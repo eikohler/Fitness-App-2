@@ -26,28 +26,25 @@ export default function Workouts() {
 
   const [headerHeight, setHeaderHeight] = useState(0);
 
-  const updateHeaderHeight = (height: number) => setHeaderHeight(height);
+  const updateHeaderHeight = (height: number) => setHeaderHeight(height);  
 
   return (
     <>
       <Header headerHeight={headerHeight} updateHeaderHeight={updateHeaderHeight}
         title={'Workouts'} subtext={'Week 3'} bolt editURL={'/edit-workouts'} />
 
-      <ScrollView contentContainerStyle={[mainStyles.wrapper, { paddingTop: headerHeight }]}
-        showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={false} 
+        contentContainerStyle={[mainStyles.wrapper, {paddingTop: headerHeight}]}>
 
-        <View style={mainStyles.buttonsDivider}>
           <View style={mainStyles.buttonsList}>
             {workouts?.map((w) =>
               <WorkoutButton key={w.id} id={w.id} />
             )}
           </View>
           <LargeButton text="Add Workout" url={{ pathname: "/edit-workouts" }} />
-        </View>
-
 
       </ScrollView>
-      
+
     </>
   );
 }
