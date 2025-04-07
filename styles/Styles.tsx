@@ -4,7 +4,6 @@ export const colors = {
     mainBG: "#0D0D0D",
     primaryText: "#ffffff",
     secondText: "#BCC2E1",
-    backButtonBG: "#BCC2E1",
     arrowButtonBG: "#000074",
     firstSetBG: "#000074",
     secondSetBG: "#BCC2E1",

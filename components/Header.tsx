@@ -3,8 +3,8 @@ import React, { useLayoutEffect, useRef } from 'react';
 import { colors, fonts } from '@/styles/Styles';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Href, router } from 'expo-router';
-import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useNavigation } from '@react-navigation/native';
 
 export default function Header(props: {
     title: string; 
@@ -19,11 +19,12 @@ export default function Header(props: {
 }) {
 
     const { title, subtext, notes, bolt, modal, backBtn, editURL, updateHeaderHeight, headerHeight } = props;
-    const navigation = useNavigation();
 
     const fixedTitle = title.replace(" ", "  ");
 
     const headerRef = useRef<any>(null);
+
+    const navigation = useNavigation();
 
     useLayoutEffect(() => {
         headerRef.current?.measure((x:number, y:number, width:number, height:number) => updateHeaderHeight(height));        
@@ -39,13 +40,11 @@ export default function Header(props: {
             <View style={styles.layout}>
                 <View style={styles.wrapper}>
                     <View style={styles.content}>
-                        {backBtn && (
-                            <Pressable style={[styles.backButton, {
-                                boxShadow: modal ? "-4 4 0 #353693": "-4 4 0 #3E3F48"}]} 
-                                onPress={() => navigation.goBack()}>
-                                <MaterialIcons name="arrow-back" size={28} color={colors.mainBG} />
+                        {backBtn && 
+                            <Pressable style={{marginBottom: 3}} onPress={() => navigation.goBack()}>
+                                <MaterialIcons name="arrow-back" size={32} color={colors.secondText} />
                             </Pressable>
-                        )}
+                        }
                         <View>
                             <View  style={styles.subTextWrapper}>
                                 <Text style={[styles.subText, bolt && {marginRight: -2, color: colors.weekText}, modal && {color: colors.primaryText}]}>{subtext}</Text>
@@ -56,7 +55,7 @@ export default function Header(props: {
                     </View>
                     {editURL && (
                         <Pressable onPress={()=>router.push(editURL)}>
-                            <MaterialIcons style={{marginBottom: 3}} name="edit" size={30} color={colors.primaryText} />
+                            <MaterialIcons style={{marginBottom: 3}} name="edit" size={30} color={colors.secondText} />
                         </Pressable>
                     )}
                 </View>
@@ -97,7 +96,7 @@ const styles = StyleSheet.create({
         display: "flex",
         flexDirection: "row",
         alignItems: "flex-end",
-        gap: 20
+        gap: 15
     },
     title: {
         color: colors.primaryText,
@@ -125,14 +124,5 @@ const styles = StyleSheet.create({
         color: colors.secondText,
         fontSize: 14,
         fontFamily: fonts.mainFont
-    },
-    backButton: {
-        backgroundColor: colors.backButtonBG,
-        borderRadius: 8,
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        padding: 2,
-        marginBottom: 6
     }
 });

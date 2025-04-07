@@ -59,7 +59,6 @@ const styles = StyleSheet.create({
     wrapper: {
         marginHorizontal: "auto",
         position: "relative",
-        // boxShadow: "-10 10 0 #000000"
     },
     shadow: {
         borderRadius: 32,

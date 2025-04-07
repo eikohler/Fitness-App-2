@@ -33,7 +33,7 @@ export default function EditSetButton(props: { exID: number, sets: number, reps:
                         <MaterialIcons name="remove-circle" size={26} color={colors.secondText} />
                     </View>
                     <View style={editButton.notesWrapper}>
-                        <Text style={editButton.notes}>{data.note ? data.note : "NOTES"}</Text>
+                        <Text style={editButton.notes}>{data.note ? data.note : "Notes"}</Text>
                     </View>
                     <View style={editButton.settingsWrapper}>
                         <View style={editButton.setting}>

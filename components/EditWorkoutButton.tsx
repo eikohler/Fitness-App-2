@@ -33,7 +33,7 @@ export default function EditWorkoutButton(props: { id: number, line?: boolean })
         <View style={editButton.content}>
           <Text style={editButton.title}>{data.title}</Text>
           <View style={editButton.notesWrapper}>
-            <Text style={editButton.notes}>{data.note ? data.note : "NOTES"}</Text>
+            <Text style={editButton.notes}>{data.note ? data.note : "Notes"}</Text>
           </View>
         </View>
         <MaterialIcons name="menu" size={32} color={colors.secondText} />

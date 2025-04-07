@@ -33,7 +33,7 @@ export default function EditExerciseButton(props: { id: number, line?: boolean }
                 <View style={editButton.content}>
                     <Text style={editButton.title}>{data.title}</Text>
                     <View style={editButton.notesWrapper}>
-                        <Text style={editButton.notes}>{data.note ? data.note : "NOTES"}</Text>
+                        <Text style={editButton.notes}>{data.note ? data.note : "Notes"}</Text>
                     </View>
                     <View style={editButton.settingsWrapper}>
                         <View style={editButton.setting}>
