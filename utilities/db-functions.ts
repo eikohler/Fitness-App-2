@@ -76,7 +76,7 @@ export const getSingleWorkout = async (db: SQLiteDatabase, id: number) : Promise
         return await db.getFirstAsync(`
             SELECT workouts.title, workouts.date, workouts.note, COUNT(*) as exCount 
             FROM workouts INNER JOIN workout_exercises on workouts.id = workout_exercises.workout_id 
-            WHERE workouts.id = 1;
+            WHERE workouts.id = ${id};
         `);
     } catch (err) {
         console.log(`Error while loading workout with ID = ${id}: `, err);

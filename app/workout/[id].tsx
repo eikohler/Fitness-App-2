@@ -40,7 +40,7 @@ export default function SingleWorkout() {
   const [headerHeight, setHeaderHeight] = useState(0);
   const updateHeaderHeight = (height: number) => setHeaderHeight(height);
 
-  if (!data) return "";
+  if (!data) return null;
 
   return (
     <>

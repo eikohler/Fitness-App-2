@@ -39,6 +39,9 @@ export const mainStyles = StyleSheet.create({
         paddingTop: 10,
         display: "flex",
         gap: 25
+    },
+    focusedWrapper: {
+        paddingBottom: "85%"        
     }
 });
 
@@ -116,7 +119,7 @@ export const editButton = StyleSheet.create({
         color: colors.primaryText,
         fontWeight: 600,
         fontSize: 18,
-        textTransform: "uppercase"
+        textTransform: "uppercase",
     },    
     notesWrapper: {
         borderRadius: 10,
@@ -127,6 +130,7 @@ export const editButton = StyleSheet.create({
     notes: {
         fontFamily: fonts.mainFont,
         color: colors.primaryText,
+        padding: 0,
     },
     settingsWrapper: {
         display: "flex",
@@ -165,5 +169,8 @@ export const editButton = StyleSheet.create({
         width: "100%",
         borderColor: colors.primaryText,
         borderBottomWidth: 1 
-    }
+    },
+    icons: {
+        paddingTop: 30
+    },
 });

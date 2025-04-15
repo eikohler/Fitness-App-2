@@ -22,7 +22,7 @@ export default function EditSetButton(props: { exID: number, sets: number, reps:
             .catch((err) => console.log(err));
     }, []);
 
-    if (!data) return "";
+    if (!data) return null;
 
     return (
         <>

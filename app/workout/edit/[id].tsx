@@ -43,7 +43,7 @@ export default function EditSingleWorkout() {
 
   const updateHeaderHeight = (height: number) => setHeaderHeight(height);
 
-  if (!data) return "";
+  if (!data) return null;
 
   return (
     <>

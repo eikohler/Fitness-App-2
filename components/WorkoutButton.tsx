@@ -26,7 +26,7 @@ export default function WorkoutButton(props: { id: number; }) {
       .catch((err) => console.log(err));
   }, []);
 
-  if (!data) return "";
+  if (!data) return null;
 
   return (
     <View style={mainStyles.buttonsWrapper}>

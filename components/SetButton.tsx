@@ -77,10 +77,10 @@ export default function SetButton(props: { exID: number, sets: number, reps: num
             </Pressable>
         );
 
-        return "";
+        return null;
     }
 
-    if(!data) return "";
+    if(!data) return null;
 
     return (
         <View style={styles.wrapper}>

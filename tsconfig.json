@@ -1,6 +1,9 @@
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
+    "lib": [
+      "es5", "es6", "dom", "dom.iterable"
+    ],
     "strict": true,
     "paths": {
       "@/*": [

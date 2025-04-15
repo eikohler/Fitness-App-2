@@ -24,7 +24,7 @@ export default function EditExerciseButton(props: { id: number, line?: boolean }
             .catch((err) => console.log(err));
     }, []);
 
-    if (!data) return "";
+    if (!data) return null;
 
     return (
         <>

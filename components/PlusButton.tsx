@@ -1,17 +1,17 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import React from 'react';
 import { colors, fonts } from '@/styles/Styles';
 
-export default function PlusButton(props: { modal?: boolean }) {
+export default function PlusButton(props: { onPress: () => void, modal?: boolean }) {
 
-    const { modal } = props;
+    const { onPress, modal } = props;
 
     return (
-        <View style={styles.wrapper}>
+        <Pressable style={styles.wrapper} onPress={onPress}>
             <View style={styles.button}>
                 <Text style={[styles.text, {color: modal ? colors.modalBG : colors.mainBG}]}>+</Text>
             </View>
-        </View>
+        </Pressable>
     )
 }
 
