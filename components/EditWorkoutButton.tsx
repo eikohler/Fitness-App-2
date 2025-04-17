@@ -53,7 +53,7 @@ export default function EditWorkoutButton(props: {
             style={editButton.title}
             maxLength={20}
             onChangeText={setTitle}
-            value={title}
+            value={title.toUpperCase()}
             placeholder="WORKOUT"
             placeholderTextColor={colors.secondText}
             selectionColor={colors.weekText}
@@ -62,7 +62,7 @@ export default function EditWorkoutButton(props: {
             <TextInput
               onFocus={()=>updateTextFocused(index)}
               onBlur={()=>updateTextFocused(-1)}
-              style={[editButton.notes]}
+              style={editButton.notes}
               maxLength={100}
               multiline
               onChangeText={setNote}

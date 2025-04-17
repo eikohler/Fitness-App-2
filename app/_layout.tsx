@@ -5,8 +5,9 @@ import { StatusBar } from "expo-status-bar";
 import { colors } from "@/styles/Styles";
 import { SQLiteProvider } from "expo-sqlite";
 import { initDB } from "@/utilities/db-functions";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
-export default function RootLayout() {  
+export default function RootLayout() {
 
   useFonts({
     "Inter": require('../assets/fonts/Inter-Variable.ttf'),
@@ -22,22 +23,29 @@ export default function RootLayout() {
   };
 
   const modalStyle = {
-    backgroundColor: colors.modalBG
+    backgroundColor: "transparent"
   }
 
   return (
-    <ThemeProvider value={CustomTheme}>
-      <SQLiteProvider databaseName="fitness.db" onInit={initDB}>
-        <Stack>
-          <Stack.Screen name="index" options={{ headerShown: false }} />
-          <Stack.Screen name="edit-workouts" options={{ presentation: 'modal', headerShown: false, contentStyle: modalStyle }} />
-          <Stack.Screen name="workout/[id]" options={{ headerShown: false }} />
-          <Stack.Screen name="workout/edit/[id]" options={{ presentation: 'modal', headerShown: false, contentStyle: modalStyle }} />
-          <Stack.Screen name="exercise/[id]" options={{ headerShown: false }} />
-          <Stack.Screen name="exercise/edit/[id]" options={{ presentation: 'modal', headerShown: false, contentStyle: modalStyle }} />
-        </Stack>
-      </SQLiteProvider>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <GestureHandlerRootView>
+      <ThemeProvider value={CustomTheme}>
+        <SQLiteProvider databaseName="fitness.db" onInit={initDB}>
+          <Stack>
+            <Stack.Screen name="index" options={{ headerShown: false }} />
+            <Stack.Screen name="edit-workouts" options={{
+              presentation: 'modal',
+              headerShown: false,
+              contentStyle: modalStyle,
+              gestureEnabled: false
+            }} />
+            <Stack.Screen name="workout/[id]" options={{ headerShown: false }} />
+            <Stack.Screen name="workout/edit/[id]" options={{ presentation: 'modal', headerShown: false, contentStyle: modalStyle }} />
+            <Stack.Screen name="exercise/[id]" options={{ headerShown: false }} />
+            <Stack.Screen name="exercise/edit/[id]" options={{ presentation: 'modal', headerShown: false, contentStyle: modalStyle }} />
+          </Stack>
+        </SQLiteProvider>
+        <StatusBar style="auto" />
+      </ThemeProvider>
+    </GestureHandlerRootView>
   );
 }

@@ -40,8 +40,20 @@ export const mainStyles = StyleSheet.create({
         display: "flex",
         gap: 25
     },
+    editButtonsList: {
+        paddingTop: 10,
+        display: "flex",
+        gap: 40
+    },
     focusedWrapper: {
         paddingBottom: "85%"        
+    },
+    modalWrapper: {
+        backgroundColor: colors.modalBG,
+        flex: 1,
+        borderTopRightRadius: 20,
+        borderTopLeftRadius: 20,
+        overflow: "hidden"
     }
 });
 
@@ -105,7 +117,7 @@ export const editButton = StyleSheet.create({
     },
     content: {
         display: "flex",
-        gap: 8,
+        gap: 10,
         flex: 1,
     },
     titleWrapper: {
@@ -118,8 +130,8 @@ export const editButton = StyleSheet.create({
         fontFamily: fonts.mainFont,
         color: colors.primaryText,
         fontWeight: 600,
-        fontSize: 18,
-        textTransform: "uppercase",
+        fontSize: 24,
+        textTransform: "uppercase",        
     },    
     notesWrapper: {
         borderRadius: 10,
@@ -131,6 +143,7 @@ export const editButton = StyleSheet.create({
         fontFamily: fonts.mainFont,
         color: colors.primaryText,
         padding: 0,
+        fontSize: 18
     },
     settingsWrapper: {
         display: "flex",
@@ -155,7 +168,7 @@ export const editButton = StyleSheet.create({
         fontFamily: fonts.mainFont,
         color: colors.primaryText,
         fontWeight: 500,
-        fontSize: 24,
+        fontSize: 28,
         textTransform: "uppercase",
     },
     inputTitle: {
@@ -168,7 +181,7 @@ export const editButton = StyleSheet.create({
     dividerLine: {
         width: "100%",
         borderColor: colors.primaryText,
-        borderBottomWidth: 1 
+        borderBottomWidth: 1,
     },
     icons: {
         paddingTop: 30

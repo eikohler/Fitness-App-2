@@ -2,7 +2,7 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import React from 'react';
 import { colors, fonts } from '@/styles/Styles';
 
-export default function PlusButton(props: { onPress: () => void, modal?: boolean }) {
+export default function PlusButton(props: { onPress?: () => void, modal?: boolean }) {
 
     const { onPress, modal } = props;
 
