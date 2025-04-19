@@ -74,7 +74,7 @@ export const arrowButton = StyleSheet.create({
     title: {
         color: colors.primaryText,
         fontSize: 20,
-        textTransform: "uppercase",
+        // textTransform: "uppercase",
         fontWeight: 600,
         fontFamily: fonts.mainFont
     },
@@ -130,8 +130,7 @@ export const editButton = StyleSheet.create({
         fontFamily: fonts.mainFont,
         color: colors.primaryText,
         fontWeight: 600,
-        fontSize: 24,
-        textTransform: "uppercase",        
+        fontSize: 24
     },    
     notesWrapper: {
         borderRadius: 10,

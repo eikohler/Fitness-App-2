@@ -3,25 +3,27 @@ import React, { useEffect, useRef, useState } from 'react';
 import ModalBar from '@/components/ModalBar';
 import { mainStyles } from '@/styles/Styles';
 import Header from '@/components/Header';
-import EditWorkoutButton from '@/components/EditWorkoutButton';
+import EditWorkoutButton, { EditWorkoutRef } from '@/components/EditWorkoutButton';
 import PlusButton from '@/components/PlusButton';
 import LargeButton from '@/components/LargeButton';
 import { useSQLiteContext } from 'expo-sqlite';
 import { IDList } from '@/Interfaces/dataTypes';
-import { getWorkouts } from '@/utilities/db-functions';
+import { addMultipleWorkouts, deleteMultipleWorkouts, getWorkouts } from '@/utilities/db-functions';
 import { useNavigation } from '@react-navigation/native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, runOnJS } from 'react-native-reanimated'
 
 export default function EditWorkouts() {
-
   const db = useSQLiteContext();
-
+  const [initWorkouts, setInitWorkouts] = useState<IDList[]>([]);
   const [workouts, setWorkouts] = useState<IDList[]>([]);
-
   const [hasUpdate, setHasUpdate] = useState(false);
-
   const hasUpdateRef = useRef(hasUpdate);
+  const workoutRefs = useRef<React.RefObject<EditWorkoutRef>[]>([]);
+  const scroll = useRef<ScrollView>(null);
+  const [textFocused, setTextFocused] = useState(-1);
+  const [headerHeight, setHeaderHeight] = useState(0);
+  const navigation = useNavigation();
 
   useEffect(() => {
     hasUpdateRef.current = hasUpdate;
@@ -30,28 +32,26 @@ export default function EditWorkouts() {
   useEffect(() => {
     getWorkouts(db)
       .then((res) => {
-        if (res) {
+        if(res){
           setWorkouts(res);
+          setInitWorkouts(res);
         }
-      })
-      .catch((err) => console.log(err));
+      }).catch(console.log);
   }, []);
 
-  const navigation = useNavigation();
+  useEffect(() => {
+    workoutRefs.current = workouts.map((_, i) => workoutRefs.current[i] || React.createRef<EditWorkoutRef>());
+  }, [workouts]);
 
-  // Runs before user is navigated away from the page
   useEffect(() => {
     const unsubscribe = navigation.addListener('beforeRemove', (e) => {
-
       if (!hasUpdateRef.current) return;
-
       e.preventDefault();
-
       Alert.alert(
         'Discard changes?',
         "If you go back now, you'll lose your changes.",
         [
-          { text: 'Keep editing', style: 'cancel', onPress: () => { } },
+          { text: 'Keep editing', style: 'cancel' },
           {
             text: 'Discard',
             style: 'destructive',
@@ -60,42 +60,48 @@ export default function EditWorkouts() {
         ]
       );
     });
-
     return unsubscribe;
   }, [navigation]);
 
   const handleAddWorkout = () => {
-    const idArray = workouts.map((w) => w.id);
-    const newID = Math.max(...idArray) + 1;
+    const newID = Math.max(...workouts.map(w => w.id), 0) + 1;
     setWorkouts([...workouts, { id: newID }]);
     setHasUpdate(true);
-  }
+  };
 
   const handleRemoveWorkout = (id: number) => {
     setWorkouts(workouts.filter(w => w.id !== id));
-  }
+    setHasUpdate(true);
+  };
 
-  const [headerHeight, setHeaderHeight] = useState(0);
+  const handleSaveWorkouts = () => {
+    const workoutData = workoutRefs.current.map((ref, i) => {
+      const values = ref.current?.getValues();
+      return {
+        id: workouts[i].id,
+        title: values?.title ?? '',
+        note: values?.note ?? '',
+      };
+    });
 
-  const updateHeaderHeight = (height: number) => setHeaderHeight(height);
+    const missingWorkouts = initWorkouts.filter(workout => !workouts.includes(workout));
 
-  const [textFocused, setTextFocused] = useState(-1);
+    console.log("Saving workouts:", workoutData);
+    addMultipleWorkouts(db, workoutData);
+    deleteMultipleWorkouts(db, missingWorkouts);
+    setHasUpdate(false);
+  };
 
   const updateTextFocused = (index: number) => {
     setTextFocused(index);
-  }
+  };
 
-  const scroll = useRef<ScrollView>(null);
-  const workoutBtns = useRef<View[]>([]);
-
-  useEffect(() => {
-    workoutBtns.current = workoutBtns.current.slice(0, workouts.length);
-  }, [workouts]);
-
+  const updateHeaderHeight = (height: number) => setHeaderHeight(height);
 
   const scrollToComponent = (index: number) => {
-    if (workoutBtns.current[index]) {
-      workoutBtns.current[index].measure((x, y) => {
+    const component = workoutRefs.current[index]?.current;
+    if (component) {
+      component.measure((x, y) => {
         scroll.current?.scrollTo({ y: y - 10, animated: true });
       });
     }
@@ -103,12 +109,10 @@ export default function EditWorkouts() {
 
   const handleContentSizeChange = () => {
     if (textFocused > -1) scrollToComponent(textFocused);
-  }
+  };
 
-  // Create a shared value to track the translation
-  const translateY = useSharedValue(0); // Track the vertical translation (thumb swipe)
+  const translateY = useSharedValue(0);
 
-  // Gesture handler to update the translation
   const gesture = Gesture.Pan()
     .onUpdate((event) => {
       if (event.translationY > 0) {
@@ -117,23 +121,19 @@ export default function EditWorkouts() {
     })
     .onEnd((event) => {
       if (event.translationY > 100) {
-        runOnJS(navigation.goBack)(); // Ensures navigation is called on the JS thread
+        runOnJS(navigation.goBack)();
       }
       translateY.value = withSpring(0, {
-        damping: 10,     // Lower damping = more bounce
-        stiffness: 120,  // You can increase this for snappier feel
-        mass: 0.4,       // Optional: lower mass for more bounce effect
-        overshootClamping: false, // Allow overshoot
+        damping: 10,
+        stiffness: 120,
+        mass: 0.4,
+        overshootClamping: false,
       });
     });
 
-
-  // Animated style to apply the translation to the modal
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateY: translateY.value }], // Apply the translationY value to move the modal
-    };
-  });
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }],
+  }));
 
   return (
     <GestureDetector gesture={gesture}>
@@ -148,27 +148,29 @@ export default function EditWorkouts() {
           { paddingTop: headerHeight }
         ]} showsVerticalScrollIndicator={false}>
 
-          <View style={[mainStyles.editButtonsList, textFocused > -1 && mainStyles.focusedWrapper]}
-            onLayout={handleContentSizeChange}>
+          <View style={[
+            mainStyles.editButtonsList,
+            textFocused > -1 && mainStyles.focusedWrapper
+          ]} onLayout={handleContentSizeChange}>
+
             {workouts.map((w, i) => (
-              <View key={w.id} ref={(el) => {
-                if (el) workoutBtns.current[i] = el;
-              }}>
-                <EditWorkoutButton
-                  id={w.id}
-                  index={i}
-                  handleRemoveWorkout={handleRemoveWorkout}
-                  updateTextFocused={updateTextFocused}
-                />
-              </View>
+              <EditWorkoutButton
+                key={w.id}
+                ref={workoutRefs.current[i]}
+                id={w.id}
+                index={i}
+                handleRemoveWorkout={handleRemoveWorkout}
+                updateTextFocused={updateTextFocused}
+              />
             ))}
+
             <PlusButton onPress={handleAddWorkout} modal />
           </View>
 
-          <LargeButton text="Save Workouts" />
+          <LargeButton text="Save Workouts" action={handleSaveWorkouts} />
 
         </ScrollView>
       </Animated.View>
     </GestureDetector>
-  )
+  );
 }

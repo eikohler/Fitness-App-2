@@ -21,6 +21,7 @@ export default function WorkoutButton(props: { id: number; }) {
       .then((res) => {
         if (res) {
           setData(res);
+          console.log(id, res);
         }
       })
       .catch((err) => console.log(err));

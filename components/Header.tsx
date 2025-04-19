@@ -33,7 +33,7 @@ export default function Header(props: {
     return (
         <View ref={headerRef} style={[styles.container, {
                 boxShadow: modal ? "0px 5px 5px #000074" : "0px 5px 5px #0D0D0D",
-                paddingTop: modal ? 50 : 60
+                paddingTop: modal ? 50 : 70
             }]}>
             <LinearGradient colors={modal ? [colors.modalBG, 'rgba(0, 0, 116, 0.85)'] : ['#0D0D46', 'rgba(13, 13, 13, 0.85)']} 
             style={[styles.background, {height: headerHeight}]} />

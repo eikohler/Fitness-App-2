@@ -4,6 +4,7 @@ import WorkoutButton from "@/components/WorkoutButton";
 import { type IDList } from "@/Interfaces/dataTypes";
 import { mainStyles } from "@/styles/Styles";
 import { getWorkouts } from "@/utilities/db-functions";
+import { router } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 import { useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
@@ -41,7 +42,7 @@ export default function Workouts() {
               <WorkoutButton key={w.id} id={w.id} />
             )}
           </View>
-          <LargeButton text="Add Workout" url={{ pathname: "/edit-workouts" }} />
+          <LargeButton text="Add Workout" action={()=>router.push({ pathname: "/edit-workouts" })} />
 
       </ScrollView>
 

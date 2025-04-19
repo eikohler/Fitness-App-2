@@ -25,6 +25,9 @@ export default function RootLayout() {
   const modalStyle = {
     backgroundColor: "transparent"
   }
+  const modalStyle2 = {
+    backgroundColor: colors.modalBG
+  }
 
   return (
     <GestureHandlerRootView>
@@ -39,9 +42,9 @@ export default function RootLayout() {
               gestureEnabled: false
             }} />
             <Stack.Screen name="workout/[id]" options={{ headerShown: false }} />
-            <Stack.Screen name="workout/edit/[id]" options={{ presentation: 'modal', headerShown: false, contentStyle: modalStyle }} />
+            <Stack.Screen name="workout/edit/[id]" options={{ presentation: 'modal', headerShown: false, contentStyle: modalStyle2 }} />
             <Stack.Screen name="exercise/[id]" options={{ headerShown: false }} />
-            <Stack.Screen name="exercise/edit/[id]" options={{ presentation: 'modal', headerShown: false, contentStyle: modalStyle }} />
+            <Stack.Screen name="exercise/edit/[id]" options={{ presentation: 'modal', headerShown: false, contentStyle: modalStyle2 }} />
           </Stack>
         </SQLiteProvider>
         <StatusBar style="auto" />

@@ -1,11 +1,10 @@
-import { Text, StyleSheet, Pressable, View, useAnimatedValue, Animated, Easing } from 'react-native';
+import { Text, StyleSheet, Pressable, View, useAnimatedValue, Animated } from 'react-native';
 import React from 'react';
 import { colors, fonts } from '@/styles/Styles';
-import { Href, router } from 'expo-router';
 
-export default function LargeButton(props: { text: string; url?: Href }) {
+export default function LargeButton(props: { text: string; action?: ()=>void }) {
 
-    const { text, url } = props;
+    const { text, action } = props;
 
     const x = useAnimatedValue(0);
     const y = useAnimatedValue(0);
@@ -42,7 +41,7 @@ export default function LargeButton(props: { text: string; url?: Href }) {
 
     return (<>
         <Pressable onPressOut={pressOutAnim} onPressIn={pressInAnim} 
-        style={styles.wrapper} onPress={() => url ? router.push(url) : ""}>    
+        style={styles.wrapper} onPress={action}>    
             <View style={styles.shadow}>
                 <Text style={[styles.text, {color: "#000000"}]}>{text}</Text>
             </View>

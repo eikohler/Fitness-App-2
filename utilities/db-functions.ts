@@ -4,7 +4,6 @@ import { type SQLiteDatabase } from 'expo-sqlite';
 export const initDB = async (db: SQLiteDatabase) => {
     try {
         await db.execAsync(`     
-
             CREATE TABLE IF NOT EXISTS workouts (
                 id INTEGER PRIMARY KEY,
                 title VARCHAR(100) NOT NULL UNIQUE,
@@ -55,6 +54,12 @@ export const initDB = async (db: SQLiteDatabase) => {
                         
       `)
         console.log("DB Initialized");
+
+        const allWorkouts = await db.getAllAsync(`
+            SELECT * FROM workouts
+        `);
+
+        console.log(allWorkouts);
     } catch (err) {
         console.log("Error while initializing DB: ", err);
     }
@@ -74,8 +79,9 @@ export const getWorkouts = async (db: SQLiteDatabase) : Promise<IDList[] | undef
 export const getSingleWorkout = async (db: SQLiteDatabase, id: number) : Promise<SingleWorkout | null | undefined> => {
     try {
         return await db.getFirstAsync(`
-            SELECT workouts.title, workouts.date, workouts.note, COUNT(*) as exCount 
-            FROM workouts INNER JOIN workout_exercises on workouts.id = workout_exercises.workout_id 
+            SELECT workouts.title, workouts.date, workouts.note, COUNT(workout_exercises.id) as exCount 
+            FROM workouts 
+            LEFT JOIN workout_exercises on workouts.id = workout_exercises.workout_id 
             WHERE workouts.id = ${id};
         `);
     } catch (err) {
@@ -92,6 +98,25 @@ export const addWorkout = async (db: SQLiteDatabase, workout: { title: string; n
     }
 }
 
+export const addMultipleWorkouts = async (db: SQLiteDatabase, workouts: { id: number; title: string; note: string; }[]) => {
+    workouts.forEach(async (workout: { id: number; title: string; note: string; })=>{
+        try {
+            const query = await db.prepareAsync(`
+                INSERT OR REPLACE INTO workouts (id, title, note, date) 
+                VALUES (?, ?, ?, 
+                    (SELECT COALESCE(
+                        (SELECT date FROM workouts WHERE id = ?),
+                        CURRENT_TIMESTAMP
+                    ))
+                );
+            `);
+            await query.executeAsync(workout.id, workout.title, workout.note, workout.id);
+        } catch (err) {
+            console.log(`Error while adding workout with ID ${workout.id}:`, err);
+        }
+    });
+}
+
 export const deleteWorkout = async (db: SQLiteDatabase, id: number) => {
     try {
         const query = await db.prepareAsync(`DELETE FROM workouts where id = ?`);
@@ -99,6 +124,17 @@ export const deleteWorkout = async (db: SQLiteDatabase, id: number) => {
     } catch (err) {
         console.log(`Error while deleting workout with ID = ${id}: `, err);
     }
+}
+
+export const deleteMultipleWorkouts = async (db: SQLiteDatabase, workouts: IDList[]) => {
+    workouts.forEach(async (workout: IDList)=>{
+        try {
+            const query = await db.prepareAsync(`DELETE FROM workouts where id = ?`);
+            await query.executeAsync(workout.id);
+        } catch (err) {
+            console.log(`Error while deleting workout with ID = ${workout.id}: `, err);
+        }
+    });
 }
 
 export const getWorkoutExercises = async (db: SQLiteDatabase, id: number) : Promise<IDList[] | undefined> => {
