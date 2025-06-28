@@ -27,7 +27,7 @@ export const mainStyles = StyleSheet.create({
         justifyContent: "space-between",
         gap: 50,
         paddingBottom: 50,
-        flexGrow: 1
+        flexGrow: 1,
     },
     buttonsWrapper: {
         display: "flex",
@@ -43,10 +43,11 @@ export const mainStyles = StyleSheet.create({
     editButtonsList: {
         paddingTop: 10,
         display: "flex",
-        gap: 40
+        gap: 40,
+        backgroundColor: 'red'
     },
     focusedWrapper: {
-        paddingBottom: "85%"        
+        paddingBottom: "80%"        
     },
     modalWrapper: {
         backgroundColor: colors.modalBG,
@@ -137,6 +138,7 @@ export const editButton = StyleSheet.create({
         borderColor: colors.primaryText,
         borderWidth: 1,
         padding: 10,
+        backgroundColor: colors.modalBG
     },
     notes: {
         fontFamily: fonts.mainFont,
@@ -183,6 +185,6 @@ export const editButton = StyleSheet.create({
         borderBottomWidth: 1,
     },
     icons: {
-        paddingTop: 30
+        paddingTop: 40
     },
 });

@@ -1,176 +1,178 @@
-import { Alert, ScrollView, View } from 'react-native';
-import React, { useEffect, useRef, useState } from 'react';
-import ModalBar from '@/components/ModalBar';
-import { mainStyles } from '@/styles/Styles';
-import Header from '@/components/Header';
-import EditWorkoutButton, { EditWorkoutRef } from '@/components/EditWorkoutButton';
-import PlusButton from '@/components/PlusButton';
-import LargeButton from '@/components/LargeButton';
-import { useSQLiteContext } from 'expo-sqlite';
-import { IDList } from '@/Interfaces/dataTypes';
-import { addMultipleWorkouts, deleteMultipleWorkouts, getWorkouts } from '@/utilities/db-functions';
-import { useNavigation } from '@react-navigation/native';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import Animated, { useSharedValue, useAnimatedStyle, withSpring, runOnJS } from 'react-native-reanimated'
+import React, { useState } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import {
+    GestureHandlerRootView,
+    GestureDetector,
+    Gesture,
+} from 'react-native-gesture-handler';
+import Animated, {
+    useSharedValue,
+    useAnimatedStyle,
+    withTiming,
+    runOnJS,
+} from 'react-native-reanimated';
+
+const ITEM_HEIGHT = 80;
+
+type Workout = { id: number; title: string };
+const initialWorkouts: Workout[] = [
+    { id: 1, title: 'Push Day' },
+    { id: 2, title: 'Pull Day' },
+    { id: 3, title: 'Leg Day' },
+    { id: 4, title: 'Core Day' },
+    { id: 5, title: 'Mobility' },
+];
 
 export default function EditWorkouts() {
-  const db = useSQLiteContext();
-  const [initWorkouts, setInitWorkouts] = useState<IDList[]>([]);
-  const [workouts, setWorkouts] = useState<IDList[]>([]);
-  const [hasUpdate, setHasUpdate] = useState(false);
-  const hasUpdateRef = useRef(hasUpdate);
-  const workoutRefs = useRef<React.RefObject<EditWorkoutRef>[]>([]);
-  const scroll = useRef<ScrollView>(null);
-  const [textFocused, setTextFocused] = useState(-1);
-  const [headerHeight, setHeaderHeight] = useState(0);
-  const navigation = useNavigation();
+    const [workouts, setWorkouts] = useState(initialWorkouts);
 
-  useEffect(() => {
-    hasUpdateRef.current = hasUpdate;
-  }, [hasUpdate]);
+    const activeId = useSharedValue<number | null>(null);
+    const translateY = useSharedValue(0);
+    const grabOffsetY = useSharedValue(0);
+    const originalIndex = useSharedValue(0);
 
-  useEffect(() => {
-    getWorkouts(db)
-      .then((res) => {
-        if(res){
-          setWorkouts(res);
-          setInitWorkouts(res);
-        }
-      }).catch(console.log);
-  }, []);
+    // Track which items are displaced, and in which direction
+    const displacedMap = useSharedValue<Record<number, 'up' | 'down' | null>>({});
 
-  useEffect(() => {
-    workoutRefs.current = workouts.map((_, i) => workoutRefs.current[i] || React.createRef<EditWorkoutRef>());
-  }, [workouts]);
+    const move = (from: number, to: number) => {
+        if (from === to) return;
+        const updated = [...workouts];
+        const movedItem = updated.splice(from, 1)[0];
+        updated.splice(to, 0, movedItem);
+        setWorkouts(updated);
+    };
 
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('beforeRemove', (e) => {
-      if (!hasUpdateRef.current) return;
-      e.preventDefault();
-      Alert.alert(
-        'Discard changes?',
-        "If you go back now, you'll lose your changes.",
-        [
-          { text: 'Keep editing', style: 'cancel' },
-          {
-            text: 'Discard',
-            style: 'destructive',
-            onPress: () => navigation.dispatch(e.data.action),
-          },
-        ]
-      );
-    });
-    return unsubscribe;
-  }, [navigation]);
+    const moveAndReset = (from: number, to: number) => {
+        move(from, to);
+        requestAnimationFrame(() => {
+            activeId.value = null;
+            displacedMap.value = {};
+        });
+    };
 
-  const handleAddWorkout = () => {
-    const newID = Math.max(...workouts.map(w => w.id), 0) + 1;
-    setWorkouts([...workouts, { id: newID }]);
-    setHasUpdate(true);
-  };
+    const renderItem = (item: Workout, index: number) => {
+        const gesture = Gesture.Pan()
+            .onStart((e) => {
+                activeId.value = item.id;
+                grabOffsetY.value = e.y;
+                translateY.value = index * ITEM_HEIGHT;
+                originalIndex.value = index;
+                displacedMap.value = {};
+            })
+            .onUpdate((e) => {
+                const currentY = e.absoluteY - grabOffsetY.value;
+                translateY.value = currentY;
 
-  const handleRemoveWorkout = (id: number) => {
-    setWorkouts(workouts.filter(w => w.id !== id));
-    setHasUpdate(true);
-  };
+                const dragIndex = originalIndex.value;
+                const dragTop = currentY;
+                const dragBottom = currentY + ITEM_HEIGHT;
 
-  const handleSaveWorkouts = () => {
-    const workoutData = workoutRefs.current.map((ref, i) => {
-      const values = ref.current?.getValues();
-      return {
-        id: workouts[i].id,
-        title: values?.title ?? '',
-        note: values?.note ?? '',
-      };
-    });
+                workouts.forEach((otherItem, otherIndex) => {
+                    if (otherItem.id === item.id) return;
 
-    const missingWorkouts = initWorkouts.filter(workout => !workouts.includes(workout));
+                    const targetTop = otherIndex * ITEM_HEIGHT;
+                    const targetBottom = targetTop + ITEM_HEIGHT;
 
-    console.log("Saving workouts:", workoutData);
-    addMultipleWorkouts(db, workoutData);
-    deleteMultipleWorkouts(db, missingWorkouts);
-    setHasUpdate(false);
-  };
+                    const overlap = Math.max(0, Math.min(dragBottom, targetBottom) - Math.max(dragTop, targetTop));
+                    const overlapRatio = overlap / ITEM_HEIGHT;
 
-  const updateTextFocused = (index: number) => {
-    setTextFocused(index);
-  };
+                    const startedBelow = dragIndex > otherIndex;
 
-  const updateHeaderHeight = (height: number) => setHeaderHeight(height);
+                    const isOverlappingEnough = overlapRatio >= 0.5;
 
-  const scrollToComponent = (index: number) => {
-    const component = workoutRefs.current[index]?.current;
-    if (component) {
-      component.measure((x, y) => {
-        scroll.current?.scrollTo({ y: y - 10, animated: true });
-      });
-    }
-  };
+                    // Add to displacement if overlapping enough and not already displaced
+                    if (
+                        isOverlappingEnough &&
+                        !displacedMap.value[otherItem.id]
+                    ) {
+                        const direction = startedBelow ? 'down' : 'up';
+                        displacedMap.value = {
+                            ...displacedMap.value,
+                            [otherItem.id]: direction,
+                        };
+                    }
 
-  const handleContentSizeChange = () => {
-    if (textFocused > -1) scrollToComponent(textFocused);
-  };
+                    // Revert displacement if overlap has dropped below threshold
+                    if (displacedMap.value[otherItem.id]) {
+                        const dir = displacedMap.value[otherItem.id];
+                        const draggedPast =
+                            (dir === 'up' && dragBottom < targetTop + ITEM_HEIGHT / 2) ||
+                            (dir === 'down' && dragTop > targetBottom - ITEM_HEIGHT / 2);
 
-  const translateY = useSharedValue(0);
+                        if (draggedPast) {
+                            const newMap = { ...displacedMap.value };
+                            delete newMap[otherItem.id];
+                            displacedMap.value = newMap;
+                        }
+                    }
+                });
+            })
 
-  const gesture = Gesture.Pan()
-    .onUpdate((event) => {
-      if (event.translationY > 0) {
-        translateY.value = event.translationY;
-      }
-    })
-    .onEnd((event) => {
-      if (event.translationY > 100) {
-        runOnJS(navigation.goBack)();
-      }
-      translateY.value = withSpring(0, {
-        damping: 10,
-        stiffness: 120,
-        mass: 0.4,
-        overshootClamping: false,
-      });
-    });
+            .onEnd(() => {
+                const finalIndex = Math.round(translateY.value / ITEM_HEIGHT);
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: translateY.value }],
-  }));
+                runOnJS(moveAndReset)(originalIndex.value, finalIndex);
+            })
 
-  return (
-    <GestureDetector gesture={gesture}>
-      <Animated.View style={[animatedStyle, mainStyles.modalWrapper]}>
-        <Header headerHeight={headerHeight} updateHeaderHeight={updateHeaderHeight}
-          title={'Workouts'} subtext={'Week 3'} bolt modal backBtn />
+        const animatedStyle = useAnimatedStyle(() => {
+            const isActive = activeId.value === item.id;
+            const baseIndex = workouts.findIndex((w) => w.id === item.id);
+            const baseY = baseIndex * ITEM_HEIGHT;
 
-        <ModalBar />
+            let displacement = 0;
+            if (displacedMap.value[item.id] === 'up') displacement = -ITEM_HEIGHT;
+            else if (displacedMap.value[item.id] === 'down') displacement = ITEM_HEIGHT;
 
-        <ScrollView ref={scroll} contentContainerStyle={[
-          mainStyles.wrapper,
-          { paddingTop: headerHeight }
-        ]} showsVerticalScrollIndicator={false}>
+            return {
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: ITEM_HEIGHT,
+                zIndex: isActive ? 100 : 0,
+                transform: [
+                    {
+                        translateY: isActive
+                            ? translateY.value
+                            : activeId.value === null
+                                ? baseY + displacement // No animation after release
+                                : withTiming(baseY + displacement), // Animate during drag
+                    },
+                ],
+            };
+        });
 
-          <View style={[
-            mainStyles.editButtonsList,
-            textFocused > -1 && mainStyles.focusedWrapper
-          ]} onLayout={handleContentSizeChange}>
+        return (
+            <GestureDetector key={item.id} gesture={gesture}>
+                <Animated.View style={[styles.item, animatedStyle]}>
+                    <Text style={styles.text}>{item.title}</Text>
+                </Animated.View>
+            </GestureDetector>
+        );
+    };
 
-            {workouts.map((w, i) => (
-              <EditWorkoutButton
-                key={w.id}
-                ref={workoutRefs.current[i]}
-                id={w.id}
-                index={i}
-                handleRemoveWorkout={handleRemoveWorkout}
-                updateTextFocused={updateTextFocused}
-              />
-            ))}
-
-            <PlusButton onPress={handleAddWorkout} modal />
-          </View>
-
-          <LargeButton text="Save Workouts" action={handleSaveWorkouts} />
-
-        </ScrollView>
-      </Animated.View>
-    </GestureDetector>
-  );
+    return (
+        <GestureHandlerRootView style={{ flex: 1 }}>
+            <View style={{ flex: 1, paddingTop: 40 }}>
+                {workouts.map((item, index) => renderItem(item, index))}
+            </View>
+        </GestureHandlerRootView>
+    );
 }
+
+const styles = StyleSheet.create({
+    item: {
+        height: ITEM_HEIGHT - 10,
+        marginBottom: 10,
+        marginHorizontal: 20,
+        backgroundColor: '#000',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 10,
+    },
+    text: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '600',
+    },
+});

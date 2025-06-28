@@ -17,7 +17,7 @@ export default function RootLayout() {
     ...DarkTheme,
     colors: {
       ...DarkTheme.colors,
-      background: colors.mainBG,
+      background: "#fff",
       text: colors.primaryText,
     },
   };
@@ -35,12 +35,13 @@ export default function RootLayout() {
         <SQLiteProvider databaseName="fitness.db" onInit={initDB}>
           <Stack>
             <Stack.Screen name="index" options={{ headerShown: false }} />
-            <Stack.Screen name="edit-workouts" options={{
+            {/* <Stack.Screen name="edit-workouts" options={{
               presentation: 'modal',
               headerShown: false,
               contentStyle: modalStyle,
               gestureEnabled: false
-            }} />
+            }} /> */}
+            <Stack.Screen name="edit-workouts" options={{ headerShown: false }} />
             <Stack.Screen name="workout/[id]" options={{ headerShown: false }} />
             <Stack.Screen name="workout/edit/[id]" options={{ presentation: 'modal', headerShown: false, contentStyle: modalStyle2 }} />
             <Stack.Screen name="exercise/[id]" options={{ headerShown: false }} />

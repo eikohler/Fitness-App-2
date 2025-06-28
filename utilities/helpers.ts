@@ -1,3 +1,4 @@
+import { EditWorkoutRef } from '@/components/EditWorkoutButton';
 import { getCalendars } from 'expo-localization';
 import moment from 'moment-timezone';
 
@@ -22,3 +23,18 @@ export const getDateDiffInDays = (date1: Date | string, date2: Date | string) =>
 
     return Math.floor((utc2 - utc1) / _MS_PER_DAY);
 }
+
+export const moveItemToIndex = <T,>(array: T[], fromIndex: number, toIndex: number): T[] => {
+    if (
+        fromIndex < 0 || fromIndex >= array.length ||
+        toIndex < 0 || toIndex >= array.length ||
+        fromIndex === toIndex
+    ) {
+        return array;
+    }
+
+    const newArray = [...array];
+    const [item] = newArray.splice(fromIndex, 1); // remove item
+    newArray.splice(toIndex, 0, item);            // insert at new index
+    return newArray;
+};
