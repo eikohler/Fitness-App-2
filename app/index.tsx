@@ -30,6 +30,8 @@ const initialWorkout2: Workout[] = [
 type ListType = 'A' | 'B';
 
 export default function EditWorkouts() {
+    const listPadding = 20;
+
     const [listA, setListA] = useState<Workout[]>(initialWorkout1);
     const [listB, setListB] = useState<Workout[]>(initialWorkout2);
 
@@ -113,13 +115,13 @@ export default function EditWorkouts() {
         const animatedStyle = useAnimatedStyle(() => {
             const isActive = activeId.value === item.id;
             const currentIndex = order.value.indexOf(item.id);
-            const targetY = currentIndex * ITEM_HEIGHT;
+            const targetY = currentIndex * ITEM_HEIGHT + listPadding;
 
             return {
                 position: 'absolute',
                 top: 0,
-                left: 0,
-                right: 0,
+                left: listPadding,
+                right: listPadding,
                 height: ITEM_HEIGHT,
                 zIndex: isActive ? 100 : 0,
                 opacity: isActive ? 0.8 : 1,
@@ -154,7 +156,7 @@ export default function EditWorkouts() {
 
                 const currentIndex = order.value.indexOf(item.id);
                 const newIndex = Math.max(0, Math.min(
-                    Math.floor((currentY - layout.value.y) / ITEM_HEIGHT),
+                    Math.floor((currentY - layout.value.y - listPadding) / ITEM_HEIGHT),
                     order.value.length - 1
                 ));
 
@@ -197,7 +199,8 @@ export default function EditWorkouts() {
                     }
                 }}
                 style={{
-                    height: newOrder.length * ITEM_HEIGHT, minHeight: ITEM_HEIGHT,
+                    height: newOrder.length * ITEM_HEIGHT + (listPadding * 2), 
+                    minHeight: ITEM_HEIGHT + (listPadding * 2),
                     borderColor: "#fff", borderRadius: 20, borderWidth: 2
                 }}>
                 {newOrder.map((item) => (
@@ -214,11 +217,11 @@ export default function EditWorkouts() {
     };
 
     return (
-        <GestureHandlerRootView style={{ flex: 1 }}>
+        <GestureHandlerRootView style={{ flex: 1, paddingHorizontal: 20, paddingTop: 70 }}>
             <Text style={styles.heading}>List A</Text>
             {renderList(listA, orderA, 'A')}
 
-            <Text style={styles.heading}>List B</Text>
+            <Text style={[styles.heading, {marginTop: 40}]}>List B</Text>
             {renderList(listB, orderB, 'B')}
         </GestureHandlerRootView>
     );
@@ -227,7 +230,6 @@ export default function EditWorkouts() {
 const styles = StyleSheet.create({
     item: {
         height: ITEM_HEIGHT,
-        marginHorizontal: 20,
         justifyContent: 'center',
         alignItems: 'center',
         borderRadius: 10,
@@ -235,13 +237,12 @@ const styles = StyleSheet.create({
     text: {
         color: '#fff',
         fontSize: 16,
-        fontWeight: '600',
+        fontWeight: '600'
     },
     heading: {
-        marginLeft: 20,
         fontSize: 18,
         fontWeight: 'bold',
         marginBottom: 10,
-        color: '#444',
+        color: '#fff',
     },
 });
