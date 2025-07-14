@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, LayoutRectangle } from 'react-native';
 import {
     GestureHandlerRootView,
@@ -16,10 +16,13 @@ import Animated, {
 const ITEM_HEIGHT = 70;
 
 type Workout = { id: number; title: string };
-const initialWorkouts: Workout[] = [
+const initialWorkout1: Workout[] = [
     { id: 1, title: 'Push Day' },
     { id: 2, title: 'Pull Day' },
     { id: 3, title: 'Leg Day' },
+];
+
+const initialWorkout2: Workout[] = [
     { id: 4, title: 'Core Day' },
     { id: 5, title: 'Mobility' },
 ];
@@ -27,49 +30,44 @@ const initialWorkouts: Workout[] = [
 type ListType = 'A' | 'B';
 
 export default function EditWorkouts() {
-    const [listA, setListA] = useState<Workout[]>(initialWorkouts);
-    const [listB, setListB] = useState<Workout[]>([]);
+    const [listA, setListA] = useState<Workout[]>(initialWorkout1);
+    const [listB, setListB] = useState<Workout[]>(initialWorkout2);
 
     // Use shared values for layouts
     const layoutA = useSharedValue<LayoutRectangle | null>(null);
     const layoutB = useSharedValue<LayoutRectangle | null>(null);
 
-    const orderA = useSharedValue<number[]>(initialWorkouts.map(w => w.id));
-    const orderB = useSharedValue<number[]>([]);
+    const orderA = useSharedValue<number[]>(initialWorkout1.map(w => w.id));
+    const orderB = useSharedValue<number[]>(initialWorkout2.map(w => w.id));
 
     const activeId = useSharedValue<number | null>(null);
     const translateY = useSharedValue(0);
-    const originalIndex = useSharedValue(0);
-    const activeList = useSharedValue<ListType>('A');
+    const activeList = useSharedValue<ListType>('A');    
+
+    const reorder = (list: Workout[], order: SharedValue<number[]>) =>
+        order.value
+            .map(id => list.find(w => w.id === id))
+            .filter(Boolean) as Workout[];
 
     const moveAndReset = () => {
-        const reorder = (list: Workout[], order: number[]) =>
-            order
-                .map(id => list.find(w => w.id === id))
-                .filter(Boolean) as Workout[];
-
-        setListA(reorder(listA, orderA.value));
-        setListB(reorder(listB, orderB.value));
+        setListA(reorder(listA, orderA));
+        setListB(reorder(listB, orderB));
 
         requestAnimationFrame(() => {
             activeId.value = null;
         });
     };
 
-    const handleDrop = (x: number, y: number, item: Workout) => {
+    const handleDrop = (currentY: number, item: Workout) => {
         const droppedInA =
             layoutA.value &&
-            x >= layoutA.value.x &&
-            x <= layoutA.value.x + layoutA.value.width &&
-            y >= layoutA.value.y &&
-            y <= layoutA.value.y + layoutA.value.height;
+            currentY >= layoutA.value.y &&
+            currentY <= layoutA.value.y + layoutA.value.height;
 
         const droppedInB =
             layoutB.value &&
-            x >= layoutB.value.x &&
-            x <= layoutB.value.x + layoutB.value.width &&
-            y >= layoutB.value.y &&
-            y <= layoutB.value.y + layoutB.value.height;
+            currentY >= layoutB.value.y &&
+            currentY <= layoutB.value.y + layoutB.value.height;
 
         const currentList = activeList.value;
         const sourceList = currentList === 'A' ? listA : listB;
@@ -77,37 +75,40 @@ export default function EditWorkouts() {
 
         if (currentList === destList) return moveAndReset();
 
-        const updateLists = () => {
-            const updatedSource = sourceList.filter(w => w.id !== item.id);
-            const updatedDest = (destList === 'A' ? listA : listB).concat(item);
+        const updatedSource = sourceList.filter(w => w.id !== item.id);
+        const updatedDest = (destList === 'A' ? listA : listB).concat(item);
 
-            if (currentList === 'A') {
-                setListA(updatedSource);
-                setListB(updatedDest);
-                orderA.value = updatedSource.map(w => w.id);
-                orderB.value = updatedDest.map(w => w.id);
-            } else {
-                setListB(updatedSource);
-                setListA(updatedDest);
-                orderB.value = updatedSource.map(w => w.id);
-                orderA.value = updatedDest.map(w => w.id);
-            }
-        };
+        if (currentList === 'A') {
+            orderA.value = updatedSource.map(w => w.id);
+            orderB.value = updatedDest.map(w => w.id);
 
-        runOnJS(updateLists)();
-        runOnJS(moveAndReset)();
+            setListA(updatedSource);
+            setListB(updatedDest);
+        } else {
+            orderA.value = updatedDest.map(w => w.id);
+            orderB.value = updatedSource.map(w => w.id);
+
+            setListA(updatedDest);
+            setListB(updatedSource);
+        }
+
+        translateY.value = updatedDest.length * ITEM_HEIGHT - ITEM_HEIGHT;
+
+        requestAnimationFrame(() => {
+            activeId.value = null;
+        });
     };
 
     const WorkoutItem = ({
         item,
-        index,
         listType,
         order,
+        layout
     }: {
         item: Workout;
-        index: number;
         listType: ListType;
         order: SharedValue<number[]>;
+        layout: SharedValue<LayoutRectangle | null>;
     }) => {
         const animatedStyle = useAnimatedStyle(() => {
             const isActive = activeId.value === item.id;
@@ -133,29 +134,27 @@ export default function EditWorkouts() {
 
         const gesture = Gesture.Pan()
             .onStart(e => {
-                const layout = listType === 'A' ? layoutA.value : layoutB.value;
-
-                if (!layout) {
-                    console.log('Layout not ready for', listType);
-                    return;
-                }
+                if(!layout || !layout.value) return;
 
                 activeId.value = item.id;
-                originalIndex.value = index;
                 activeList.value = listType;
 
                 const touchY = e.absoluteY;
 
-                translateY.value = touchY - (ITEM_HEIGHT * 2) + (ITEM_HEIGHT * 0.15);
+                translateY.value = touchY - (ITEM_HEIGHT / 2) - layout.value.y;
             })
             .onUpdate(e => {
+                if(!layout || !layout.value) return;
+
                 const currentY = e.absoluteY;
 
-                translateY.value = currentY - (ITEM_HEIGHT * 2) + (ITEM_HEIGHT * 0.15);
+                translateY.value = currentY - (ITEM_HEIGHT / 2) - layout.value.y;
+
+                console.log("Current Y: ", currentY, "Translate Y: ", translateY.value);
 
                 const currentIndex = order.value.indexOf(item.id);
                 const newIndex = Math.max(0, Math.min(
-                    Math.floor((currentY - (ITEM_HEIGHT + ITEM_HEIGHT / 2) + (ITEM_HEIGHT * 0.15)) / ITEM_HEIGHT),
+                    Math.floor((currentY - layout.value.y) / ITEM_HEIGHT),
                     order.value.length - 1
                 ));
 
@@ -167,7 +166,7 @@ export default function EditWorkouts() {
                 }
             })
             .onEnd(e => {
-                runOnJS(handleDrop)(e.absoluteX, e.absoluteY, item);
+                runOnJS(handleDrop)(e.absoluteY, item);
             });
 
         return (
@@ -184,30 +183,30 @@ export default function EditWorkouts() {
         order: SharedValue<number[]>,
         listType: ListType
     ) => {
-        const ordered = order.value
-            .map(id => list.find(w => w.id === id))
-            .filter(Boolean) as Workout[];
+
+        const newOrder = reorder(list, order);
 
         return (
             <View
                 onLayout={e => {
                     const layout = e.nativeEvent.layout;
-                    console.log('Measured layout for list', listType, layout);
                     if (listType === 'A') {
                         layoutA.value = layout;
                     } else {
                         layoutB.value = layout;
                     }
                 }}
-                style={{ height: ordered.length * ITEM_HEIGHT }}
-            >
-                {ordered.map((item, index) => (
+                style={{
+                    height: newOrder.length * ITEM_HEIGHT, minHeight: ITEM_HEIGHT,
+                    borderColor: "#fff", borderRadius: 20, borderWidth: 2
+                }}>
+                {newOrder.map((item) => (
                     <WorkoutItem
                         key={item.id}
                         item={item}
-                        index={index}
                         listType={listType}
                         order={order}
+                        layout={listType === 'A' ? layoutA : layoutB}
                     />
                 ))}
             </View>
@@ -215,7 +214,7 @@ export default function EditWorkouts() {
     };
 
     return (
-        <GestureHandlerRootView style={{ flex: 1, paddingTop: 70 }}>
+        <GestureHandlerRootView style={{ flex: 1 }}>
             <Text style={styles.heading}>List A</Text>
             {renderList(listA, orderA, 'A')}
 
