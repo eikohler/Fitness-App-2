@@ -1,6 +1,6 @@
-import { Text, LayoutRectangle, StyleSheet } from 'react-native'
-import React from 'react'
-import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
+import { Text, LayoutRectangle, StyleSheet, View } from 'react-native'
+import React, { useRef, useState } from 'react'
+import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 
 interface Exercise {
@@ -9,7 +9,6 @@ interface Exercise {
 };
 
 interface Workout {
-    layout: LayoutRectangle | null;
     id: number;
     title: string;
     exercises: Exercise[]
@@ -17,9 +16,12 @@ interface Workout {
 
 type Workouts = Workout[];
 
+// type WorkoutLayouts = (LayoutRectangle | null)[];
+
+type ExerciseOrders = number[][];
+
 const initialWorkouts: Workouts = [
     {
-        layout: null,
         id: 1,
         title: "Upper Body",
         exercises: [
@@ -29,7 +31,6 @@ const initialWorkouts: Workouts = [
         ]
     },
     {
-        layout: null,
         id: 2,
         title: "Leg Day",
         exercises: [
@@ -40,68 +41,62 @@ const initialWorkouts: Workouts = [
     }
 ];
 
+const EXERCISE_HEIGHT = 55;
+const EXERCISE_SPACING = 10;
+
 export default function EditWorkouts() {
 
-    const workouts = useSharedValue<Workouts>(initialWorkouts);
+    const [workouts, setWorkouts] = useState<Workouts>(initialWorkouts);
 
-    const draggedExercise = useSharedValue<{ id: number, exercise: Exercise } | null>(null);
+    const [workoutLayouts, setWorkoutLayouts] = useState<LayoutRectangle[]>([]);
 
-    const updateWorkout = (id: number, updatedWorkout: {}) => {
-        const newWorkouts = [...workouts.value];
+    const exerciseOrders = useSharedValue<ExerciseOrders>(workouts.map(w => w.exercises.map(ex => ex.id)));
 
-        const index = newWorkouts.findIndex(w => w.id === id);
+    const draggedExercise = useSharedValue<{ workoutID: number, exerciseID: number } | null>(null);
 
-        if (index === -1) {
-            console.warn(`Workout with ID ${id} not found.`);
-            return;
-        }
+    const translateY = useSharedValue(0);
 
-        // Return a new array with the updated workout
-        newWorkouts[index] = {
-            ...newWorkouts[index],
-            ...updatedWorkout
-        };
-
-        workouts.value = newWorkouts;
-    };
-
-
-    const RenderExercise = ({ exercise }: { exercise: Exercise }) => {
-
-        const animatedStyle = useAnimatedStyle(() => {
-            // const isActive = activeId.value === item.id && activeList.value === listType;
-            // const currentIndex = order.value.indexOf(item.id);
-            // const targetY = currentIndex * ITEM_HEIGHT + LIST_PADDING;
-
-            return {
-                // position: 'absolute',
-                // top: 0,
-                // left: LIST_PADDING,
-                // right: LIST_PADDING,
-                // height: ITEM_HEIGHT,
-                // zIndex: isActive ? 100 : 0,
-                // opacity: isActive ? 0.8 : 1,
-                // backgroundColor: isActive ? '#2929c3ff' : '#000074',
-                // transform: [
-                //     {
-                //         translateY: isActive ? translateY.value : withTiming(targetY),
-                //     },
-                // ],
-            };
-        });
+    const RenderExercise = ({ workout, exercise }: {
+        workout: Workout;
+        exercise: Exercise;
+    }) => {
 
         const gesture = Gesture.Pan()
             .onStart(e => {
-                // if (!layout || !layout.value) return;
+                console.log(e);
 
-                // activeId.value = item.id;
-                // activeList.value = listType;
+                console.log(workoutLayouts);
 
-                // const touchY = e.absoluteY;
+                const workoutIndex = workouts.findIndex(w => w.id === workout.id);
 
-                // translateY.value = touchY - (ITEM_HEIGHT / 2) - layout.value.y;
+                // const layout = workoutLayouts.value[workoutIndex];
+
+                const layout = workoutLayouts[workoutIndex];
+
+                if (!layout) {
+                    console.error(`Can't load layout for workout with ID ${workout?.id}`);
+                    return;
+                }
+
+                // Set active dragged exercise value to this exercise
+                draggedExercise.value = { workoutID: workout.id, exerciseID: exercise.id };
+
+                const touchY = e.absoluteY;
+
+                translateY.value = touchY - (EXERCISE_HEIGHT / 2) - layout.y;
             })
             .onUpdate(e => {
+                const workoutIndex = workouts.findIndex(w => w.id === workout.id);
+
+                // const layout = workoutLayouts.value[workoutIndex];
+
+                const layout = workoutLayouts[workoutIndex];
+
+                if (!layout) return;
+
+                const touchY = e.absoluteY;
+
+                translateY.value = touchY - (EXERCISE_HEIGHT / 2) - layout.y;
                 // if (!layout || !layout.value) return;
 
                 // const currentY = e.absoluteY;
@@ -129,6 +124,27 @@ export default function EditWorkouts() {
                 // runOnJS(handleDrop)(e.absoluteY, item);
             });
 
+        const animatedStyle = useAnimatedStyle(() => {
+            const isActive = draggedExercise.value?.workoutID === workout.id
+                && draggedExercise.value?.exerciseID === exercise.id;
+
+            const workoutIndex = workouts.findIndex(w => w.id === workout.id);
+            const exerciseIndex = exerciseOrders.value[workoutIndex].findIndex(id => id === exercise.id);
+
+            const targetY = exerciseIndex * EXERCISE_HEIGHT + (exerciseIndex * EXERCISE_SPACING);
+
+            return {
+                zIndex: isActive ? 100 : 1,
+                opacity: isActive ? 0.8 : 1,
+                backgroundColor: isActive ? '#2929c3ff' : '#000074',
+                transform: [
+                    {
+                        translateY: isActive ? translateY.value : withTiming(targetY)
+                    },
+                ]
+            };
+        });
+
         return (
             <GestureDetector gesture={gesture}>
                 <Animated.View style={[styles.exercise, animatedStyle]}>
@@ -138,38 +154,45 @@ export default function EditWorkouts() {
         );
     };
 
-    const RenderWorkout = ({ workout }: { workout: Workout }) => {
+    const RenderWorkout = ({ workout, index }: { workout: Workout, index: number }) => {
 
         const animatedStyle = useAnimatedStyle(() => {
-            // const height = order.value.length * ITEM_HEIGHT + (LIST_PADDING * 2);
+            const length = workout.exercises.length;
+            const spacingHeight = (EXERCISE_SPACING * ((length - 1) * length) / 2) - EXERCISE_SPACING;
+            const height = length * EXERCISE_HEIGHT + spacingHeight;
 
-            // return {
-            //     height: withTiming(height),
-            //     minHeight: ITEM_HEIGHT + (LIST_PADDING * 2),
-            //     borderColor: "#fff", borderRadius: 20, borderWidth: 2,
-            //     zIndex: listType === activeList.value ? 100 : 0
-            // };
-
-            return {};
+            return {
+                backgroundColor: "#ffffff2a",
+                marginBottom: 40,
+                height: withTiming(height),
+                zIndex: draggedExercise.value?.workoutID === workout.id ? 100 : 0
+            };
         });
 
-        return (
-            <Animated.View style={animatedStyle}
-                onLayout={e => {
-                    const thisLayout = e.nativeEvent.layout;
-                    updateWorkout(workout.id, { layout: thisLayout });
-                }}>
-                {workout.exercises.map((ex, i) =>
-                    <RenderExercise key={i} exercise={ex} />
+        return (<>
+            <Text style={styles.workoutTitle}>{workout.title}</Text>            
+            <Animated.View style={animatedStyle} onLayout={(e) => {
+                const layout = e.nativeEvent.layout;
+                setWorkoutLayouts(prev => {
+                    // Return if layout y position hasn't changed
+                    if (prev[index] && prev[index].y === layout.y) return prev;
+
+                    const copy = [...prev];
+                    copy[index] = layout;
+                    return copy;
+                });
+            }}>
+                {workout.exercises.map((ex) =>
+                    <RenderExercise key={ex.id} workout={workout} exercise={ex} />
                 )}
             </Animated.View>
-        );
+        </>);
     };
 
     return (
         <GestureHandlerRootView style={styles.wrapper}>
-            {workouts.value.map((w, i) =>
-                <RenderWorkout key={i} workout={w} />
+            {workouts.map((w, i) =>
+                <RenderWorkout key={i} workout={w} index={i} />
             )}
         </GestureHandlerRootView>
     );
@@ -178,13 +201,25 @@ export default function EditWorkouts() {
 
 const styles = StyleSheet.create({
     wrapper: {
-        paddingTop: 50,
+        paddingTop: 70,
         paddingHorizontal: 15
     },
+    workoutTitle: {
+        fontSize: 20,
+        fontWeight: 700,
+        color: "#fff",
+        marginBottom: 10
+    },
     exercise: {
-        backgroundColor: "#000074",
+        height: EXERCISE_HEIGHT,
         padding: 16,
-        borderRadius: 5
+        borderRadius: 5,
+        display: "flex",
+        justifyContent: "center",
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0
     },
     exerciseText: {
         color: "#fff",
