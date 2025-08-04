@@ -23,9 +23,7 @@ const initialWorkouts: Workouts = [
         exercises: [
             { id: 1, title: 'Bench Press' },
             { id: 2, title: 'Shoulder Press' },
-            { id: 3, title: 'DB Curls' },
-            { id: 10, title: 'DB Curls' },
-            { id: 11, title: 'DB Curls' }
+            { id: 3, title: 'DB Curls' }
         ]
     },
     {
@@ -81,12 +79,60 @@ export default function EditWorkouts() {
         });
     }
 
-    const handleDrop = (touchY: number, exerciseID: number) => {
-        // const hoverLayoutIndex = getHoverLayoutIndex(touchY);
-        // if (!hoverLayoutIndex) {
-        reOrderLists();
-        return;
-        // }        
+    const getExerciseOrderByTouchPosition = (
+        exerciseID: number,
+        touchY: number,
+        layout: LayoutRectangle,
+        exOrders: number[]
+    ) => {
+        const exerciseIndex = exOrders.findIndex(id => id === exerciseID);
+        const length = exOrders.length;
+        const newIndex = Math.max(0, Math.min(
+            Math.floor((touchY - layout.y) / (EXERCISE_HEIGHT + ((EXERCISE_SPACING * (length - 1)) / length))),
+            length - 1
+        ));
+
+        if (newIndex !== exerciseIndex) {
+            exOrders.splice(exerciseIndex, 1);
+            exOrders.splice(newIndex, 0, exerciseID);
+        }
+
+        return exOrders;
+    }
+
+    const handleHover = (touchY: number, exerciseID: number) => {
+        const hoverIndex = getHoverLayoutIndex(touchY);
+
+        // IF not hovering any workout, return
+        if (!hoverIndex) return;        
+
+        // ELSE hovering workout
+
+        const newExOrders = exerciseOrders.value;
+
+        // IF exercise ID does not exist in the hovered workout
+        // Find the workout that has it and remove that ID from the order list
+        // Add Exercise ID to the hovered list
+        if (!newExOrders[hoverIndex].includes(exerciseID)) {
+            for (let index = 0; index < newExOrders.length; index++) {
+                if (newExOrders[index].includes(exerciseID)) {
+                    newExOrders[index] = newExOrders[index].filter(id => id !== exerciseID);
+                    break;
+                }
+            }
+
+            newExOrders[hoverIndex].push(exerciseID); // Add ex id
+        }
+
+        // Now update the exercise ID in this hovered list
+        newExOrders[hoverIndex] = getExerciseOrderByTouchPosition(
+            exerciseID,
+            touchY,
+            workoutLayouts[hoverIndex],
+            newExOrders[hoverIndex]
+        );
+
+        exerciseOrders.value = newExOrders;
     };
 
 
@@ -124,24 +170,24 @@ export default function EditWorkouts() {
 
                 translateY.value = touchY - (EXERCISE_HEIGHT / 2) - layout.y;
 
-                const exerciseIndex = exerciseOrders.value[workoutIndex].findIndex(id => id === exercise.id);
-                const length = exerciseOrders.value[workoutIndex].length;
-                const newIndex = Math.max(0, Math.min(
-                    Math.floor((touchY - layout.y) / (EXERCISE_HEIGHT + ((EXERCISE_SPACING * (length - 1)) / length))),
-                    length - 1
-                ));
+                // const exerciseIndex = exerciseOrders.value[workoutIndex].findIndex(id => id === exercise.id);
+                // const length = exerciseOrders.value[workoutIndex].length;
+                // const newIndex = Math.max(0, Math.min(
+                //     Math.floor((touchY - layout.y) / (EXERCISE_HEIGHT + ((EXERCISE_SPACING * (length - 1)) / length))),
+                //     length - 1
+                // ));
 
-                if (newIndex !== exerciseIndex) {
-                    const newOrder = [...exerciseOrders.value[workoutIndex]];
-                    newOrder.splice(exerciseIndex, 1);
-                    newOrder.splice(newIndex, 0, exercise.id);
-                    exerciseOrders.value[workoutIndex] = newOrder;
-                }
+                // if (newIndex !== exerciseIndex) {
+                //     const newOrder = [...exerciseOrders.value[workoutIndex]];
+                //     newOrder.splice(exerciseIndex, 1);
+                //     newOrder.splice(newIndex, 0, exercise.id);
+                //     exerciseOrders.value[workoutIndex] = newOrder;
+                // }
 
-                // runOnJS(handleHover)(e.absoluteY, item);
+                runOnJS(handleHover)(touchY, exercise.id);
             })
             .onEnd(e => {
-                runOnJS(handleDrop)(e.absoluteY, exercise.id);
+                runOnJS(reOrderLists)();
             });
 
         const animatedStyle = useAnimatedStyle(() => {
