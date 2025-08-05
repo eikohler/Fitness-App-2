@@ -1,6 +1,6 @@
-import { Text, LayoutRectangle, StyleSheet, View } from 'react-native'
-import React, { useRef, useState } from 'react'
-import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import { Text, LayoutRectangle, StyleSheet, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import Animated, { runOnJS, runOnUI, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 
 interface Exercise {
@@ -34,6 +34,15 @@ const initialWorkouts: Workouts = [
             { id: 5, title: 'Deadlifts' },
             { id: 6, title: 'Leg Curls' }
         ]
+    },
+    {
+        id: 3,
+        title: "Calisthenics Day",
+        exercises: [
+            { id: 7, title: 'Leg Raises' },
+            { id: 8, title: 'Pullups' },
+            { id: 9, title: 'Pushups' }
+        ]
     }
 ];
 
@@ -44,17 +53,17 @@ export default function EditWorkouts() {
 
     const [workouts, setWorkouts] = useState<Workouts>(initialWorkouts);
 
-    const [workoutLayouts, setWorkoutLayouts] = useState<LayoutRectangle[]>([]);
+    const workoutLayouts = useSharedValue<LayoutRectangle[]>([]);
 
     const exerciseOrders = useSharedValue<number[][]>(workouts.map(w => w.exercises.map(ex => ex.id)));
 
-    const draggedExercise = useSharedValue<{ workoutID: number, exerciseID: number } | null>(null);
+    const draggedExercise = useSharedValue<{ workoutID: number, exerciseID: number, exerciseTitle: string } | null>(null);
 
     const translateY = useSharedValue(0);
 
     const getHoverLayoutIndex = (y: number) => {
-        for (let i = 0; i < workoutLayouts.length; i++) {
-            const layout = workoutLayouts[i];
+        for (let i = 0; i < workoutLayouts.value.length; i++) {
+            const layout = workoutLayouts.value[i];
             if (!layout) continue;
 
             if (y >= layout.y && y <= layout.y + layout.height) {
@@ -64,20 +73,6 @@ export default function EditWorkouts() {
         return null;
     };
 
-    const reOrderLists = () => {
-        setWorkouts(prev =>
-            prev.map((workout, i) => ({
-                ...workout,
-                exercises: workout.exercises.slice().sort(
-                    (a, b) => exerciseOrders.value[i].indexOf(a.id) - exerciseOrders.value[i].indexOf(b.id)
-                )
-            }))
-        );
-
-        requestAnimationFrame(() => {
-            draggedExercise.value = null;
-        });
-    }
 
     const getExerciseOrderByTouchPosition = (
         exerciseID: number,
@@ -103,38 +98,96 @@ export default function EditWorkouts() {
     const handleHover = (touchY: number, exerciseID: number) => {
         const hoverIndex = getHoverLayoutIndex(touchY);
 
-        // IF not hovering any workout, return
-        if (!hoverIndex) return;        
+        const newExOrders = [...exerciseOrders.value];
 
-        // ELSE hovering workout
-
-        const newExOrders = exerciseOrders.value;
-
-        // IF exercise ID does not exist in the hovered workout
-        // Find the workout that has it and remove that ID from the order list
-        // Add Exercise ID to the hovered list
-        if (!newExOrders[hoverIndex].includes(exerciseID)) {
+        // IF not hovering any workout swap Exercise ID from workout with 0
+        // Return
+        if (hoverIndex === null) {
             for (let index = 0; index < newExOrders.length; index++) {
                 if (newExOrders[index].includes(exerciseID)) {
-                    newExOrders[index] = newExOrders[index].filter(id => id !== exerciseID);
+                    newExOrders[index] = newExOrders[index].map(id => id === exerciseID ? 0 : id);
                     break;
                 }
             }
-
-            newExOrders[hoverIndex].push(exerciseID); // Add ex id
+            exerciseOrders.value = newExOrders;
+            return;
         }
+
+        // ELSE hovering workout
+
+        // IF that workout has the original placement, swap with Exercise ID
+        if (newExOrders[hoverIndex].includes(0)) {
+            newExOrders[hoverIndex] = newExOrders[hoverIndex].map(id => id === 0 ? exerciseID : id);
+
+            // ELSE remove 0 from last list
+        } else {
+            for (let index = 0; index < newExOrders.length; index++) {
+                if (newExOrders[index].includes(0)) {
+                    newExOrders[index] = newExOrders[index].filter(id => id !== 0);
+                    break;
+                }
+            }
+        }
+
+        // IF Exercise ID does not exist in the hovered workout, Add the Exercise ID
+        if (!newExOrders[hoverIndex].includes(exerciseID)) newExOrders[hoverIndex].push(exerciseID);
 
         // Now update the exercise ID in this hovered list
         newExOrders[hoverIndex] = getExerciseOrderByTouchPosition(
             exerciseID,
             touchY,
-            workoutLayouts[hoverIndex],
+            workoutLayouts.value[hoverIndex],
             newExOrders[hoverIndex]
         );
 
         exerciseOrders.value = newExOrders;
     };
 
+    const handleDrop = () => {
+        setWorkouts(prev => {
+            const dragValue = draggedExercise.value;
+
+            const updatePrev = dragValue ? prev.map((workout, i) => {
+                const exOrders = [...exerciseOrders.value];
+                const newWorkout = { ...workout };
+                newWorkout.exercises = [...workout.exercises];
+
+                // IF Exercise Order has 0, swap it with the Exercise ID
+                if (exOrders[i].includes(0)) {
+                    exOrders[i] = exOrders[i].map(id => id === 0 ? dragValue.exerciseID : id);
+                }
+
+                // Boolean: Exercise is in the order list
+                const exINOrderList = exOrders[i].includes(dragValue.exerciseID);
+
+                // Boolean: Exercise is in the workout
+                const exINWorkout = newWorkout.exercises.findIndex(ex => ex.id === dragValue.exerciseID) !== -1;
+
+                // IF exercise is in the workout but NOT in the order list then REMOVE from the workout
+                if (exINWorkout && !exINOrderList) {
+                    newWorkout.exercises = newWorkout.exercises.filter(ex => ex.id !== dragValue.exerciseID);
+
+                    // ELSE IF exercise is NOT in the workout but in the order list then ADD to the workout
+                } else if (!exINWorkout && exINOrderList) {
+                    newWorkout.exercises.push({ id: dragValue.exerciseID, title: dragValue.exerciseTitle });
+                }
+
+                // Sort the Exercises in the workout by the Exercise Order list
+                newWorkout.exercises = newWorkout.exercises.slice().sort(
+                    (a, b) => exOrders[i].indexOf(a.id) - exOrders[i].indexOf(b.id)
+                );
+
+                exerciseOrders.value = exOrders;
+                return newWorkout;
+            }) : prev; // IF Drag Value is null then return the prev value
+
+            return updatePrev;
+        });
+
+        requestAnimationFrame(() => {
+            draggedExercise.value = null;
+        });
+    }
 
     const RenderExercise = ({ workout, exercise }: {
         workout: Workout;
@@ -145,7 +198,7 @@ export default function EditWorkouts() {
             .onStart(e => {
                 const workoutIndex = workouts.findIndex(w => w.id === workout.id);
 
-                const layout = workoutLayouts[workoutIndex];
+                const layout = workoutLayouts.value[workoutIndex];
 
                 if (!layout) {
                     console.error(`Can't load layout for workout with ID ${workout?.id}`);
@@ -153,7 +206,7 @@ export default function EditWorkouts() {
                 }
 
                 // Set active dragged exercise value to this exercise
-                draggedExercise.value = { workoutID: workout.id, exerciseID: exercise.id };
+                draggedExercise.value = { workoutID: workout.id, exerciseID: exercise.id, exerciseTitle: exercise.title };
 
                 const touchY = e.absoluteY;
 
@@ -162,7 +215,7 @@ export default function EditWorkouts() {
             .onUpdate(e => {
                 const workoutIndex = workouts.findIndex(w => w.id === workout.id);
 
-                const layout = workoutLayouts[workoutIndex];
+                const layout = workoutLayouts.value[workoutIndex];
 
                 if (!layout) return;
 
@@ -170,24 +223,10 @@ export default function EditWorkouts() {
 
                 translateY.value = touchY - (EXERCISE_HEIGHT / 2) - layout.y;
 
-                // const exerciseIndex = exerciseOrders.value[workoutIndex].findIndex(id => id === exercise.id);
-                // const length = exerciseOrders.value[workoutIndex].length;
-                // const newIndex = Math.max(0, Math.min(
-                //     Math.floor((touchY - layout.y) / (EXERCISE_HEIGHT + ((EXERCISE_SPACING * (length - 1)) / length))),
-                //     length - 1
-                // ));
-
-                // if (newIndex !== exerciseIndex) {
-                //     const newOrder = [...exerciseOrders.value[workoutIndex]];
-                //     newOrder.splice(exerciseIndex, 1);
-                //     newOrder.splice(newIndex, 0, exercise.id);
-                //     exerciseOrders.value[workoutIndex] = newOrder;
-                // }
-
                 runOnJS(handleHover)(touchY, exercise.id);
             })
-            .onEnd(e => {
-                runOnJS(reOrderLists)();
+            .onEnd(() => {
+                runOnJS(handleDrop)();
             });
 
         const animatedStyle = useAnimatedStyle(() => {
@@ -195,9 +234,14 @@ export default function EditWorkouts() {
                 && draggedExercise.value?.exerciseID === exercise.id;
 
             const workoutIndex = workouts.findIndex(w => w.id === workout.id);
-            const exerciseIndex = exerciseOrders.value[workoutIndex].findIndex(id => id === exercise.id);
 
-            const targetY = exerciseIndex * EXERCISE_HEIGHT + (exerciseIndex * EXERCISE_SPACING);
+            const exOrder = exerciseOrders.value[workoutIndex];
+
+            const exerciseIndex = exOrder.findIndex(id => id === exercise.id);
+
+            const newExIndex = exOrder.findIndex(id => id === 0) === 0 ? exerciseIndex - 1 : exerciseIndex;
+
+            const targetY = newExIndex * EXERCISE_HEIGHT + (newExIndex * EXERCISE_SPACING);
 
             return {
                 zIndex: isActive ? 100 : 1,
@@ -223,7 +267,9 @@ export default function EditWorkouts() {
     const RenderWorkout = ({ workout, index }: { workout: Workout, index: number }) => {
 
         const animatedStyle = useAnimatedStyle(() => {
-            const length = workout.exercises.length;
+
+            const exOrder = [...exerciseOrders.value[index]];
+            const length = Math.max(1, exOrder.includes(0) ? exOrder.length - 1 : exOrder.length);
             const spacingHeight = EXERCISE_SPACING * (length - 1);
             const height = length * EXERCISE_HEIGHT + spacingHeight;
 
@@ -239,14 +285,17 @@ export default function EditWorkouts() {
             <Text style={styles.workoutTitle}>{workout.title}</Text>
             <Animated.View style={animatedStyle} onLayout={(e) => {
                 const layout = e.nativeEvent.layout;
-                setWorkoutLayouts(prev => {
-                    // Return if layout y position hasn't changed
-                    if (prev[index] && prev[index].y === layout.y) return prev;
 
-                    const copy = [...prev];
-                    copy[index] = layout;
-                    return copy;
-                });
+                runOnUI(() => {
+                    const prev = workoutLayouts.value;
+
+                    const updated = [...prev];
+
+                    if (!prev[index] || prev[index].y !== layout.y || prev[index].height !== layout.height) {
+                        updated[index] = layout;
+                        workoutLayouts.value = updated;
+                    }
+                })();
             }}>
                 {workout.exercises.map((ex) =>
                     <RenderExercise key={ex.id} workout={workout} exercise={ex} />
@@ -256,11 +305,13 @@ export default function EditWorkouts() {
     };
 
     return (
-        <GestureHandlerRootView style={styles.wrapper}>
-            {workouts.map((w, i) =>
-                <RenderWorkout key={i} workout={w} index={i} />
-            )}
-        </GestureHandlerRootView>
+        <ScrollView>
+            <GestureHandlerRootView style={styles.wrapper}>
+                {workouts.map((w, i) =>
+                    <RenderWorkout key={i} workout={w} index={i} />
+                )}
+            </GestureHandlerRootView>
+        </ScrollView>
     );
 }
 
