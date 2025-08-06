@@ -143,12 +143,15 @@ export default function EditWorkouts() {
         exerciseOrders.value = newExOrders;
     };
 
-    const handleDrop = () => {
-        setWorkouts(prev => {
-            const dragValue = draggedExercise.value;
+    const handleDrop = (touchY: number) => {
+        const dragValue = draggedExercise.value;
 
-            const updatePrev = dragValue ? prev.map((workout, i) => {
-                const exOrders = [...exerciseOrders.value];
+        if (!dragValue) return;
+
+        setWorkouts(prev => {
+            const exOrders = [...exerciseOrders.value];
+
+            const updatePrev = prev.map((workout, i) => {
                 const newWorkout = { ...workout };
                 newWorkout.exercises = [...workout.exercises];
 
@@ -172,14 +175,22 @@ export default function EditWorkouts() {
                     newWorkout.exercises.push({ id: dragValue.exerciseID, title: dragValue.exerciseTitle });
                 }
 
+                if (exINOrderList) {
+                    const layout = workoutLayouts.value[i];
+                    if (layout){
+                        translateY.value = touchY - (EXERCISE_HEIGHT / 2) - layout.y;
+                    }
+                }
+
                 // Sort the Exercises in the workout by the Exercise Order list
                 newWorkout.exercises = newWorkout.exercises.slice().sort(
                     (a, b) => exOrders[i].indexOf(a.id) - exOrders[i].indexOf(b.id)
                 );
 
-                exerciseOrders.value = exOrders;
                 return newWorkout;
-            }) : prev; // IF Drag Value is null then return the prev value
+            }); // IF Drag Value is null then return the prev value
+
+            exerciseOrders.value = exOrders;
 
             return updatePrev;
         });
@@ -225,13 +236,12 @@ export default function EditWorkouts() {
 
                 runOnJS(handleHover)(touchY, exercise.id);
             })
-            .onEnd(() => {
-                runOnJS(handleDrop)();
+            .onEnd(e => {
+                runOnJS(handleDrop)(e.absoluteY);
             });
 
         const animatedStyle = useAnimatedStyle(() => {
-            const isActive = draggedExercise.value?.workoutID === workout.id
-                && draggedExercise.value?.exerciseID === exercise.id;
+            const isActive = draggedExercise.value?.exerciseID === exercise.id;
 
             const workoutIndex = workouts.findIndex(w => w.id === workout.id);
 
@@ -242,6 +252,10 @@ export default function EditWorkouts() {
             const newExIndex = exOrder.findIndex(id => id === 0) === 0 ? exerciseIndex - 1 : exerciseIndex;
 
             const targetY = newExIndex * EXERCISE_HEIGHT + (newExIndex * EXERCISE_SPACING);
+
+            if (isActive) {
+                console.log(draggedExercise.value?.exerciseTitle, ": ", translateY.value);
+            }
 
             return {
                 zIndex: isActive ? 100 : 1,
