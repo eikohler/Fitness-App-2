@@ -61,6 +61,8 @@ export default function EditWorkouts() {
 
     const translateY = useSharedValue(0);
 
+    const movedY = useSharedValue<number | null>(null);
+
     const getHoverLayoutIndex = (y: number) => {
         for (let i = 0; i < workoutLayouts.value.length; i++) {
             const layout = workoutLayouts.value[i];
@@ -143,61 +145,73 @@ export default function EditWorkouts() {
         exerciseOrders.value = newExOrders;
     };
 
+    const updateWorkouts = (newWorkouts: Workouts) => {
+        setWorkouts([...newWorkouts]);
+
+        requestAnimationFrame(() => {
+            draggedExercise.value = null;
+        });
+    }
+
     const handleDrop = (touchY: number) => {
         const dragValue = draggedExercise.value;
 
         if (!dragValue) return;
 
-        setWorkouts(prev => {
-            const exOrders = [...exerciseOrders.value];
+        const exOrders = [...exerciseOrders.value];
 
-            const updatePrev = prev.map((workout, i) => {
-                const newWorkout = { ...workout };
-                newWorkout.exercises = [...workout.exercises];
+        let destTargetY = null;
 
-                // IF Exercise Order has 0, swap it with the Exercise ID
-                if (exOrders[i].includes(0)) {
-                    exOrders[i] = exOrders[i].map(id => id === 0 ? dragValue.exerciseID : id);
-                }
+        const newWorkouts = workouts.map((workout, i) => {
+            const newWorkout = { ...workout };
+            newWorkout.exercises = [...workout.exercises];
 
-                // Boolean: Exercise is in the order list
-                const exINOrderList = exOrders[i].includes(dragValue.exerciseID);
+            if (exOrders[i].includes(0)) {
+                exOrders[i] = exOrders[i].map(id => id === 0 ? dragValue.exerciseID : id);
+            }
 
-                // Boolean: Exercise is in the workout
-                const exINWorkout = newWorkout.exercises.findIndex(ex => ex.id === dragValue.exerciseID) !== -1;
+            // Boolean: Exercise is in the order list
+            const exINOrderList = exOrders[i].includes(dragValue.exerciseID);
 
-                // IF exercise is in the workout but NOT in the order list then REMOVE from the workout
-                if (exINWorkout && !exINOrderList) {
-                    newWorkout.exercises = newWorkout.exercises.filter(ex => ex.id !== dragValue.exerciseID);
+            // Boolean: Exercise is in the workout
+            const exINWorkout = newWorkout.exercises.findIndex(ex => ex.id === dragValue.exerciseID) !== -1;
 
-                    // ELSE IF exercise is NOT in the workout but in the order list then ADD to the workout
-                } else if (!exINWorkout && exINOrderList) {
-                    newWorkout.exercises.push({ id: dragValue.exerciseID, title: dragValue.exerciseTitle });
-                }
+            // IF exercise is in the workout but NOT in the order list then REMOVE from the workout
+            if (exINWorkout && !exINOrderList) {
+                newWorkout.exercises = newWorkout.exercises.filter(ex => ex.id !== dragValue.exerciseID);
 
-                if (exINOrderList) {
-                    const layout = workoutLayouts.value[i];
-                    if (layout){
-                        translateY.value = touchY - (EXERCISE_HEIGHT / 2) - layout.y;
-                    }
-                }
+                // ELSE IF exercise is NOT in the workout but in the order list then ADD to the workout
+            } else if (!exINWorkout && exINOrderList) {
+                newWorkout.exercises.push({ id: dragValue.exerciseID, title: dragValue.exerciseTitle });
 
-                // Sort the Exercises in the workout by the Exercise Order list
-                newWorkout.exercises = newWorkout.exercises.slice().sort(
-                    (a, b) => exOrders[i].indexOf(a.id) - exOrders[i].indexOf(b.id)
-                );
+                const layout = workoutLayouts.value[i];
+                const exerciseIndex = exOrders[i].findIndex(id => id === dragValue.exerciseID);
+                const targetY = exerciseIndex * EXERCISE_HEIGHT + (exerciseIndex * EXERCISE_SPACING);
+                const destY = touchY - (EXERCISE_HEIGHT / 2) - layout.y;
+                destTargetY = translateY.value - Math.abs(destY - targetY);
+            }
 
-                return newWorkout;
-            }); // IF Drag Value is null then return the prev value
+            // Sort the Exercises in the workout by the Exercise Order list
+            newWorkout.exercises = newWorkout.exercises.slice().sort(
+                (a, b) => exOrders[i].indexOf(a.id) - exOrders[i].indexOf(b.id)
+            );
 
-            exerciseOrders.value = exOrders;
-
-            return updatePrev;
+            return newWorkout;
         });
 
-        requestAnimationFrame(() => {
-            draggedExercise.value = null;
-        });
+        exerciseOrders.value = exOrders;
+
+        if (destTargetY !== null) {
+            translateY.value = withTiming(destTargetY, {}, (isFinished) => {
+                if (isFinished) {
+                    runOnJS(updateWorkouts)(newWorkouts);
+                }
+            });
+
+            return;
+        }
+
+        updateWorkouts(newWorkouts);
     }
 
     const RenderExercise = ({ workout, exercise }: {
@@ -241,7 +255,8 @@ export default function EditWorkouts() {
             });
 
         const animatedStyle = useAnimatedStyle(() => {
-            const isActive = draggedExercise.value?.exerciseID === exercise.id;
+            const isActive = draggedExercise.value?.exerciseID === exercise.id
+                && draggedExercise.value.workoutID === workout.id;
 
             const workoutIndex = workouts.findIndex(w => w.id === workout.id);
 
@@ -252,10 +267,6 @@ export default function EditWorkouts() {
             const newExIndex = exOrder.findIndex(id => id === 0) === 0 ? exerciseIndex - 1 : exerciseIndex;
 
             const targetY = newExIndex * EXERCISE_HEIGHT + (newExIndex * EXERCISE_SPACING);
-
-            if (isActive) {
-                console.log(draggedExercise.value?.exerciseTitle, ": ", translateY.value);
-            }
 
             return {
                 zIndex: isActive ? 100 : 1,
