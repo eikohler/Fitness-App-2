@@ -188,7 +188,7 @@ export default function EditWorkouts() {
                 const exerciseIndex = exOrders[i].findIndex(id => id === dragValue.exerciseID);
                 const targetY = exerciseIndex * EXERCISE_HEIGHT + (exerciseIndex * EXERCISE_SPACING);
                 const destY = touchY - (EXERCISE_HEIGHT / 2) - layout.y;
-                destTargetY = translateY.value - Math.abs(destY - targetY);
+                destTargetY = translateY.value - (destY - targetY);
             }
 
             // Sort the Exercises in the workout by the Exercise Order list
