@@ -61,8 +61,6 @@ export default function EditWorkouts() {
 
     const translateY = useSharedValue(0);
 
-    const movedY = useSharedValue<number | null>(null);
-
     const getHoverLayoutIndex = (y: number) => {
         for (let i = 0; i < workoutLayouts.value.length; i++) {
             const layout = workoutLayouts.value[i];
@@ -268,10 +266,13 @@ export default function EditWorkouts() {
 
             const targetY = newExIndex * EXERCISE_HEIGHT + (newExIndex * EXERCISE_SPACING);
 
+            const isDisabled = draggedExercise.value !== null && draggedExercise.value.exerciseID !== exercise.id;
+
             return {
                 zIndex: isActive ? 100 : 1,
                 opacity: isActive ? 0.8 : 1,
                 backgroundColor: isActive ? '#2929c3ff' : '#000074',
+                pointerEvents: isDisabled ? "none" : "auto",
                 transform: [
                     {
                         translateY: isActive ? translateY.value : withTiming(targetY)
