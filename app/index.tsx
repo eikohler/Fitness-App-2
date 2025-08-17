@@ -1,4 +1,4 @@
-import { Text, LayoutRectangle, StyleSheet, ScrollView } from 'react-native';
+import { Text, LayoutRectangle, StyleSheet, ScrollView, View } from 'react-native';
 import React, { useState } from 'react';
 import Animated, { runOnJS, runOnUI, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -21,27 +21,36 @@ const initialWorkouts: Workouts = [
         id: 1,
         title: "Upper Body",
         exercises: [
-            { id: 1, title: 'Bench Press' },
-            { id: 2, title: 'Shoulder Press' },
-            { id: 3, title: 'DB Curls' }
+            { id: 1, title: 'Bench Press 3x10' },
+            { id: 2, title: 'Shoulder Press 3x10' },
+            { id: 3, title: 'DB Curls 3x10' }
         ]
     },
     {
         id: 2,
         title: "Leg Day",
         exercises: [
-            { id: 4, title: 'Leg Press' },
-            { id: 5, title: 'Deadlifts' },
-            { id: 6, title: 'Leg Curls' }
+            { id: 4, title: 'Leg Press 3x10' },
+            { id: 5, title: 'Deadlifts 3x10' },
+            { id: 6, title: 'Leg Curls 3x10' }
         ]
     },
     {
         id: 3,
         title: "Calisthenics Day",
         exercises: [
-            { id: 7, title: 'Leg Raises' },
-            { id: 8, title: 'Pullups' },
-            { id: 9, title: 'Pushups' }
+            { id: 7, title: 'Leg Raises 3x10' },
+            { id: 8, title: 'Pullups 3x10' },
+            { id: 9, title: 'Pushups 3x10' }
+        ]
+    },
+    {
+        id: 4,
+        title: "Back Day",
+        exercises: [
+            { id: 10, title: 'Lat Pulldowns 3x10' },
+            { id: 11, title: 'Cable Rows 3x10' },
+            { id: 12, title: 'Bent over rows 3x10' }
         ]
     }
 ];
@@ -65,6 +74,8 @@ export default function EditWorkouts() {
 
     const translateY = useSharedValue(0);
 
+    const scrollY = useSharedValue(0);
+
     const getUniqueExerciseTitles = (workouts: Workouts): string[] => {
         return Array.from(
             new Set(workouts.flatMap(workout => workout.exercises.map(ex => ex.title)))
@@ -76,8 +87,6 @@ export default function EditWorkouts() {
             const layout = workoutLayouts.value[i];
             if (!layout) continue;
 
-            // if ((y + EXERCISE_HEIGHT / 2) >= layout.y && (y - EXERCISE_HEIGHT / 2) <= layout.y + layout.height) {
-            // if (y >= layout.y && (y - EXERCISE_HEIGHT * 0.75) <= layout.y + layout.height) {
             if (y >= layout.y && y - EXERCISE_HEIGHT * 0.4 <= layout.y + layout.height) {
                 return i;
             }
@@ -165,7 +174,7 @@ export default function EditWorkouts() {
         });
     }
 
-    const handleDrop = (touchY: number) => {
+    const handleDrop = () => {
         const dragValue = draggedExercise.value;
 
         if (!dragValue) return;
@@ -197,7 +206,7 @@ export default function EditWorkouts() {
                 newWorkout.exercises.push({ id: dragValue.exerciseID, title: dragValue.exerciseTitle });
                 destIndex = i;
 
-            } else if(exINWorkout) destIndex = i;
+            } else if (exINWorkout) destIndex = i;
 
             // Sort the Exercises in the workout by the Exercise Order list
             newWorkout.exercises = newWorkout.exercises.slice().sort(
@@ -213,7 +222,7 @@ export default function EditWorkouts() {
 
         const destLayout = workoutLayouts.value[destIndex];
         const exerciseIndex = exOrders[destIndex].findIndex(id => id === dragValue.exerciseID);
-        const targetY = exerciseIndex * EXERCISE_HEIGHT + (exerciseIndex * EXERCISE_SPACING) + destLayout.y;        
+        const targetY = exerciseIndex * EXERCISE_HEIGHT + (exerciseIndex * EXERCISE_SPACING) + destLayout.y - scrollY.value;
 
         translateY.value = withTiming(targetY, {}, (isFinished) => {
             if (isFinished) {
@@ -227,7 +236,8 @@ export default function EditWorkouts() {
         exercise: Exercise;
     }) => {
 
-        const gesture = Gesture.Pan()
+        const dragGesture = Gesture.Pan()
+            .activateAfterLongPress(200)
             .onStart(e => {
                 // Set active dragged exercise value to this exercise
                 draggedExercise.value = { workoutID: workout.id, exerciseID: exercise.id, exerciseTitle: exercise.title };
@@ -235,14 +245,14 @@ export default function EditWorkouts() {
                 translateY.value = e.absoluteY - EXERCISE_HEIGHT / 2;
             })
             .onUpdate(e => {
-                const touchY = e.absoluteY;
-
-                translateY.value = touchY - EXERCISE_HEIGHT / 2;
+                translateY.value = e.absoluteY - EXERCISE_HEIGHT / 2;
+                
+                const touchY = e.absoluteY + scrollY.value;
 
                 runOnJS(handleHover)(touchY, exercise.id);
             })
             .onEnd(e => {
-                runOnJS(handleDrop)(e.absoluteY);
+                runOnJS(handleDrop)();
             });
 
         const animatedStyle = useAnimatedStyle(() => {
@@ -270,11 +280,12 @@ export default function EditWorkouts() {
         });
 
         return (
-            <GestureDetector gesture={gesture}>
-                <Animated.View style={[styles.exercise, animatedStyle]}>
-                    <Text style={styles.exerciseText}>{exercise.title}</Text>
-                </Animated.View>
-            </GestureDetector>
+            <Animated.View style={[styles.exercise, animatedStyle]}>
+                <Text style={styles.exerciseText}>{exercise.title}</Text>
+                <GestureDetector gesture={dragGesture}>
+                    <View style={styles.dragIcon}></View>
+                </GestureDetector>
+            </Animated.View>
         );
     };
 
@@ -360,7 +371,9 @@ export default function EditWorkouts() {
 
     return (<>
         <DragExercise />
-        <ScrollView>
+        <ScrollView onScroll={e => {
+            scrollY.value = e.nativeEvent.contentOffset.y;
+        }} scrollEventThrottle={16}>
             <GestureHandlerRootView style={styles.wrapper}>
                 {workouts.map((w, i) =>
                     <RenderWorkout key={i} workout={w} index={i} />
@@ -387,15 +400,26 @@ const styles = StyleSheet.create({
         padding: 16,
         borderRadius: 5,
         display: "flex",
-        justifyContent: "center",
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
         position: "absolute",
         top: 0,
         left: 0,
-        right: 0
+        right: 0,
+        overflow: "hidden"
     },
     exerciseText: {
         color: "#fff",
         fontSize: 16,
         fontWeight: 600
+    },
+    dragIcon: {
+        position: 'absolute',
+        right: 0,
+        top: 0,
+        height: EXERCISE_HEIGHT,
+        width: 50,
+        backgroundColor: "#fff",
     }
 });
