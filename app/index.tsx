@@ -1,4 +1,4 @@
-import { Text, LayoutRectangle, StyleSheet, ScrollView, View } from 'react-native';
+import { Text, LayoutRectangle, StyleSheet, ScrollView, View, Dimensions } from 'react-native';
 import React, { useState } from 'react';
 import Animated, { runOnJS, runOnUI, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -58,6 +58,11 @@ const initialWorkouts: Workouts = [
 const EXERCISE_HEIGHT = 55;
 const EXERCISE_SPACING = 10;
 
+const { height: SCREEN_HEIGHT } = Dimensions.get("window");
+
+const SCROLL_EDGE_THRESHOLD = 100; // px from top/bottom where auto-scroll should trigger
+const MAX_SCROLL_SPEED = 20;           // px per frame (tweak for smoothness)
+
 export default function EditWorkouts() {
 
     const [workouts, setWorkouts] = useState<Workouts>(initialWorkouts);
@@ -75,6 +80,15 @@ export default function EditWorkouts() {
     const translateY = useSharedValue(0);
 
     const scrollY = useSharedValue(0);
+
+    const scrollRef = React.useRef<ScrollView>(null);
+
+    function getScrollSpeed(distance: number) {
+        // distance = how far inside the "edge zone" the finger is
+        // closer to edge → faster speed
+        const ratio = 1 - distance / SCROLL_EDGE_THRESHOLD; // 0 → 1
+        return Math.max(0, ratio * MAX_SCROLL_SPEED);
+    }
 
     const getUniqueExerciseTitles = (workouts: Workouts): string[] => {
         return Array.from(
@@ -115,7 +129,33 @@ export default function EditWorkouts() {
         return exOrders;
     }
 
-    const handleHover = (touchY: number, exerciseID: number) => {
+    const autoScroll = (absY: number) => {
+        if (absY < SCROLL_EDGE_THRESHOLD) { // Near Top
+            const speed = getScrollSpeed(absY);
+
+            if (scrollRef.current) {
+
+                scrollRef.current.scrollTo({
+                    y: Math.max(0, scrollY.value - speed),
+                    animated: false,
+                });
+            }
+        } else if (absY > SCREEN_HEIGHT - SCROLL_EDGE_THRESHOLD) { // Near Bottom
+            const speed = getScrollSpeed(SCREEN_HEIGHT - absY);
+
+            if (scrollRef.current) {
+                scrollRef.current.scrollTo({
+                    y: scrollY.value + speed,
+                    animated: false,
+                });
+            }
+        }
+    }
+
+    const handleHover = (touchY: number, absY: number, exerciseID: number) => {
+
+        autoScroll(absY);
+
         const hoverIndex = getHoverLayoutIndex(touchY);
 
         const newExOrders = [...exerciseOrders.value];
@@ -246,12 +286,12 @@ export default function EditWorkouts() {
             })
             .onUpdate(e => {
                 translateY.value = e.absoluteY - EXERCISE_HEIGHT / 2;
-                
+
                 const touchY = e.absoluteY + scrollY.value;
 
-                runOnJS(handleHover)(touchY, exercise.id);
+                runOnJS(handleHover)(touchY, e.absoluteY, exercise.id);
             })
-            .onEnd(e => {
+            .onEnd(() => {
                 runOnJS(handleDrop)();
             });
 
@@ -371,9 +411,13 @@ export default function EditWorkouts() {
 
     return (<>
         <DragExercise />
-        <ScrollView onScroll={e => {
-            scrollY.value = e.nativeEvent.contentOffset.y;
-        }} scrollEventThrottle={16}>
+        <ScrollView
+            showsVerticalScrollIndicator={false}
+            ref={scrollRef}
+            scrollEventThrottle={16}
+            onScroll={e => {
+                scrollY.value = e.nativeEvent.contentOffset.y;
+            }}>
             <GestureHandlerRootView style={styles.wrapper}>
                 {workouts.map((w, i) =>
                     <RenderWorkout key={i} workout={w} index={i} />
