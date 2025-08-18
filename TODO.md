@@ -9,8 +9,8 @@
 - [x] Remove scroll bar
 
 ## Drag Workouts between workouts
-- [] Add left side press and hold drag icons for workouts
-- [] On gesture start condense all workouts
+- [x] Add left side press and hold drag icons for workouts
+- [x] On gesture start condense the workout
 - [] Drag and reorder workouts
 
 ## Edit workouts

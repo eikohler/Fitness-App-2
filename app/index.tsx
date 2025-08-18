@@ -73,6 +73,8 @@ export default function EditWorkouts() {
 
     const workoutLayouts = useSharedValue<LayoutRectangle[]>([]);
 
+    const workoutsOrder = useSharedValue<number[]>(workouts.map(w => w.id));
+
     const exerciseOrders = useSharedValue<number[][]>(workouts.map(w => w.exercises.map(ex => ex.id)));
 
     const [exerciseTitles, setExerciseTitles] = useState(Array.from(
@@ -211,6 +213,59 @@ export default function EditWorkouts() {
         });
     };
 
+    // const handleHoverWorkout = (touchY: number, absY: number, workoutID: number) => {
+
+    //     autoScroll(absY);
+
+    //     const hoverIndex = getHoverLayoutIndex(touchY);
+
+    //     const newOrder = [...workoutsOrder.value];
+
+    //     // IF not hovering any workout swap Exercise ID from workout with 0
+    //     // Return
+    //     if (hoverIndex === null) {
+    //         for (let index = 0; index < newOrder.length; index++) {
+    //             if (newOrder.includes(workoutID)) {
+    //                 newOrder[index] = newExOrders[index].map(id => id === exerciseID ? 0 : id);
+    //                 break;
+    //             }
+    //         }
+    //         exerciseOrders.value = newExOrders;
+    //         return;
+    //     }
+
+    //     // ELSE hovering workout
+
+    //     // IF that workout has the original placement, swap with Exercise ID
+    //     if (newExOrders[hoverIndex].includes(0)) {
+    //         newExOrders[hoverIndex] = newExOrders[hoverIndex].map(id => id === 0 ? exerciseID : id);
+
+    //         // ELSE remove 0 from last list
+    //     } else {
+    //         for (let index = 0; index < newExOrders.length; index++) {
+    //             if (newExOrders[index].includes(0)) {
+    //                 newExOrders[index] = newExOrders[index].filter(id => id !== 0);
+    //                 break;
+    //             }
+    //         }
+    //     }
+
+    //     // IF Exercise ID does not exist in the hovered workout, Add the Exercise ID
+    //     if (!newExOrders[hoverIndex].includes(exerciseID)) newExOrders[hoverIndex].push(exerciseID);
+
+    //     // Now update the exercise ID in this hovered list
+    //     newExOrders[hoverIndex] = getExerciseOrderByTouchPosition(
+    //         exerciseID,
+    //         touchY,
+    //         workoutLayouts.value[hoverIndex],
+    //         newExOrders[hoverIndex]
+    //     );
+
+    //     requestAnimationFrame(() => {
+    //         exerciseOrders.value = newExOrders;
+    //     });
+    // };
+
     const updateWorkouts = (newWorkouts: Workouts) => {
         setWorkouts([...newWorkouts]);
         setExerciseTitles([...getUniqueExerciseTitles(newWorkouts)]);
@@ -307,7 +362,7 @@ export default function EditWorkouts() {
 
             const workoutIndex = workouts.findIndex(w => w.id === workout.id);
 
-            const exOrder = exerciseOrders.value[workoutIndex];
+            const exOrder = [...exerciseOrders.value[workoutIndex]];
 
             const exerciseIndex = exOrder.findIndex(id => id === exercise.id);
 
@@ -377,22 +432,42 @@ export default function EditWorkouts() {
 
     const RenderWorkout = ({ workout, index }: { workout: Workout, index: number }) => {
 
+        const startDone = useSharedValue(false);
+        const startY = useSharedValue(0);
+        const startScrollY = useSharedValue(0);
+
         const dragGesture = Gesture.Pan()
             .activateAfterLongPress(200)
             .onStart(e => {
-                console.log("Press Active");
+                startScrollY.value = scrollY.value;
+                startDone.value = false;
 
                 // Set active dragged workout value to this workout
                 draggedWorkout.value = { workoutID: workout.id };
 
-                // translateY.value = e.absoluteY + scrollY.value - ((WORKOUT_TITLE_HEIGHT + WORKOUT_DRAG_BOTTOM_OFFSET) / 2);
+                const newY = e.y - ((WORKOUT_TITLE_HEIGHT + WORKOUT_DRAG_BOTTOM_OFFSET) / 2);
+                startY.value = newY;
+                translateY.value = 0;
+                translateY.value = withTiming(newY, {}, (isFinished) => {
+                    if (isFinished) {
+                        startDone.value = true;
+
+                        const scrollDiff = startScrollY.value - scrollY.value;
+
+                        translateY.value = startY.value + e.translationY - scrollDiff;
+                    }
+                });
             })
             .onUpdate(e => {
-                // translateY.value = e.absoluteY - EXERCISE_HEIGHT / 2;
+                if (!startDone.value) return;
+
+                const scrollDiff = startScrollY.value - scrollY.value;
+
+                translateY.value = startY.value + e.translationY - scrollDiff;
 
                 // const touchY = e.absoluteY + scrollY.value;
 
-                // runOnJS(handleHover)(touchY, e.absoluteY, exercise.id);
+                // runOnJS(handleHoverWorkout)(touchY, e.absoluteY, workout.id);
             })
             .onEnd(() => {
                 requestAnimationFrame(() => {
@@ -405,6 +480,8 @@ export default function EditWorkouts() {
 
             const isActive = draggedWorkout.value?.workoutID === workout.id;
 
+            const isDragging = draggedWorkout.value !== null;
+
             let height = 0;
             if (!isActive) {
                 const exOrder = [...exerciseOrders.value[index]];
@@ -413,12 +490,24 @@ export default function EditWorkouts() {
                 height = length * EXERCISE_HEIGHT + spacingHeight;
             }
 
+            const order = [...workoutsOrder.value];
+
+            const newIndex = order.findIndex(id => id === workout.id);
+
+            const indexDiff = newIndex - index;
+
+            const targetY = indexDiff * (WORKOUT_TITLE_HEIGHT + WORKOUT_DRAG_BOTTOM_OFFSET);
+
             return {
                 // backgroundColor: "#ffffff2a",
+                opacity: isActive ? withTiming(0.8) : withTiming(1),
                 marginTop: WORKOUT_TITLE_HEIGHT,
                 marginBottom: isActive ? withTiming(WORKOUT_DRAG_BOTTOM_OFFSET + 40) : withTiming(40),
                 height: withTiming(height),
-                zIndex: draggedExercise.value?.workoutID === workout.id ? 100 : 0
+                zIndex: draggedExercise.value?.workoutID === workout.id ? 100 : isActive ? 100 : 0,
+                transform: [{
+                    translateY: isDragging ? isActive ? translateY.value : withTiming(targetY) : withTiming(0)
+                }]
             };
         });
 
@@ -463,7 +552,7 @@ export default function EditWorkouts() {
                 top: WORKOUT_TITLE_HEIGHT * -1,
                 left: 0,
                 backgroundColor: '#2929c3ff',
-                opacity: isActive ? withTiming(0.8) : withTiming(0),
+                opacity: isActive ? withTiming(1) : withTiming(0),
                 borderRadius: 10,
                 width: "100%",
                 height: withTiming(height)
