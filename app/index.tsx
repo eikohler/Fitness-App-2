@@ -1,6 +1,6 @@
 import { Text, LayoutRectangle, StyleSheet, ScrollView, View, Dimensions } from 'react-native';
 import React, { useState } from 'react';
-import Animated, { runOnJS, runOnUI, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import Animated, { runOnJS, runOnUI, useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 
 interface Exercise {
@@ -57,12 +57,12 @@ const initialWorkouts: Workouts = [
 
 const WORKOUT_BAR_LEFT_OFFSET = 50;
 const WORKOUT_TITLE_HEIGHT = 32;
-const WORKOUT_DRAG_BOTTOM_OFFSET = 20;
+const WORKOUT_DRAG_BOTTOM_OFFSET = 23;
 const EXERCISE_HEIGHT = 55;
 const EXERCISE_SPACING = 10;
 const SCREEN_PADDING = 15;
 
-const { height: SCREEN_HEIGHT } = Dimensions.get("window");
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 const SCROLL_EDGE_THRESHOLD = 100; // px from top/bottom where auto-scroll should trigger
 const MAX_SCROLL_SPEED = 20;           // px per frame (tweak for smoothness)
@@ -385,7 +385,7 @@ export default function EditWorkouts() {
                 // Set active dragged workout value to this workout
                 draggedWorkout.value = { workoutID: workout.id };
 
-                // translateY.value = e.absoluteY - EXERCISE_HEIGHT / 2;
+                // translateY.value = e.absoluteY + scrollY.value - ((WORKOUT_TITLE_HEIGHT + WORKOUT_DRAG_BOTTOM_OFFSET) / 2);
             })
             .onUpdate(e => {
                 // translateY.value = e.absoluteY - EXERCISE_HEIGHT / 2;
@@ -436,13 +436,58 @@ export default function EditWorkouts() {
 
             return {
                 zIndex: 100,
-                position: "absolute",
-                left: 0,
-                top: WORKOUT_TITLE_HEIGHT * -1,
                 backgroundColor: "#fff",
                 borderRadius: 10,
                 width: WORKOUT_BAR_LEFT_OFFSET - 10,
+                position: "absolute",
+                left: 0,
+                top: WORKOUT_TITLE_HEIGHT * -1,
                 height: withTiming(height)
+            };
+        });
+
+        const dragBackDrop = useAnimatedStyle(() => {
+
+            const isActive = draggedWorkout.value?.workoutID === workout.id;
+
+            let height = WORKOUT_TITLE_HEIGHT + WORKOUT_DRAG_BOTTOM_OFFSET;
+            if (!isActive) {
+                const exOrder = [...exerciseOrders.value[index]];
+                const length = Math.max(1, exOrder.includes(0) ? exOrder.length - 1 : exOrder.length);
+                const spacingHeight = EXERCISE_SPACING * (length - 1);
+                height = length * EXERCISE_HEIGHT + spacingHeight + WORKOUT_TITLE_HEIGHT;
+            }
+
+            return {
+                position: "absolute",
+                top: WORKOUT_TITLE_HEIGHT * -1,
+                left: 0,
+                backgroundColor: '#2929c3ff',
+                opacity: isActive ? withTiming(0.8) : withTiming(0),
+                borderRadius: 10,
+                width: "100%",
+                height: withTiming(height)
+            };
+        });
+
+        const exercisesWrapperAnimStyle = useAnimatedStyle(() => {
+
+            const isActive = draggedWorkout.value?.workoutID === workout.id;
+
+            return {
+                opacity: isActive ? withTiming(0) : withTiming(1),
+                overflow: "hidden",
+                height: "100%"
+            };
+        });
+
+        const titleAnimStyle = useAnimatedStyle(() => {
+
+            const isActive = draggedWorkout.value?.workoutID === workout.id;
+            const top = WORKOUT_TITLE_HEIGHT * -1;
+
+            return {
+                top: isActive ? withTiming(top + 13) : withTiming(top)
             };
         });
 
@@ -461,15 +506,16 @@ export default function EditWorkouts() {
                     }
                 })();
             }}>
+                <Animated.View style={dragBackDrop} />
                 <GestureDetector gesture={dragGesture}>
-                    <Animated.View style={dragBarAnimStyle}></Animated.View>
+                    <Animated.View style={dragBarAnimStyle} />
                 </GestureDetector>
-                <Text style={styles.workoutTitle}>{workout.title}</Text>
-                <View style={{ overflow: "hidden", height: "100%" }}>
+                <Animated.Text style={[styles.workoutTitle, titleAnimStyle]}>{workout.title}</Animated.Text>
+                <Animated.View style={exercisesWrapperAnimStyle}>
                     {workout.exercises.map((ex) =>
                         <RenderExercise key={ex.id} workout={workout} exercise={ex} />
                     )}
-                </View>
+                </Animated.View>
             </Animated.View>
         </>);
     };
@@ -499,12 +545,12 @@ const styles = StyleSheet.create({
         paddingHorizontal: SCREEN_PADDING
     },
     workoutTitle: {
+        zIndex: 100,
         fontSize: 20,
         fontWeight: 700,
         color: "#fff",
         height: WORKOUT_TITLE_HEIGHT,
         position: "absolute",
-        top: WORKOUT_TITLE_HEIGHT * -1,
         left: WORKOUT_BAR_LEFT_OFFSET
     },
     exercise: {
