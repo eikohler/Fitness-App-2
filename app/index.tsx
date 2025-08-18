@@ -55,8 +55,11 @@ const initialWorkouts: Workouts = [
     }
 ];
 
+const WORKOUT_BAR_LEFT_OFFSET = 50;
+const WORKOUT_TITLE_HEIGHT = 32;
 const EXERCISE_HEIGHT = 55;
 const EXERCISE_SPACING = 10;
+const SCREEN_PADDING = 15;
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -336,7 +339,7 @@ export default function EditWorkouts() {
             return {
                 position: "absolute",
                 top: 0,
-                left: 15,
+                left: WORKOUT_BAR_LEFT_OFFSET + SCREEN_PADDING,
                 right: 15,
                 zIndex: 100,
                 opacity: isActive ? 0.8 : 0,
@@ -371,7 +374,7 @@ export default function EditWorkouts() {
 
     const RenderWorkout = ({ workout, index }: { workout: Workout, index: number }) => {
 
-        const animatedStyle = useAnimatedStyle(() => {
+        const wrapperAnimStyle = useAnimatedStyle(() => {
 
             const exOrder = [...exerciseOrders.value[index]];
             const length = Math.max(1, exOrder.includes(0) ? exOrder.length - 1 : exOrder.length);
@@ -380,15 +383,33 @@ export default function EditWorkouts() {
 
             return {
                 // backgroundColor: "#ffffff2a",
+                marginTop: WORKOUT_TITLE_HEIGHT,
                 marginBottom: 40,
                 height: withTiming(height),
                 zIndex: draggedExercise.value?.workoutID === workout.id ? 100 : 0
             };
         });
 
+        const dragBarAnimStyle = useAnimatedStyle(() => {
+
+            const exOrder = [...exerciseOrders.value[index]];
+            const length = Math.max(1, exOrder.includes(0) ? exOrder.length - 1 : exOrder.length);
+            const spacingHeight = EXERCISE_SPACING * (length - 1);
+            const height = length * EXERCISE_HEIGHT + spacingHeight + WORKOUT_TITLE_HEIGHT;
+
+            return {
+                position: "absolute",
+                left: 0,
+                top: WORKOUT_TITLE_HEIGHT * -1,
+                backgroundColor: "#fff",
+                borderRadius: 10,
+                width: WORKOUT_BAR_LEFT_OFFSET - 10,
+                height: withTiming(height)
+            };
+        });
+
         return (<>
-            <Text style={styles.workoutTitle}>{workout.title}</Text>
-            <Animated.View style={animatedStyle} onLayout={(e) => {
+            <Animated.View style={wrapperAnimStyle} onLayout={(e) => {
                 const layout = e.nativeEvent.layout;
 
                 runOnUI(() => {
@@ -402,6 +423,8 @@ export default function EditWorkouts() {
                     }
                 })();
             }}>
+                <Animated.View style={dragBarAnimStyle}></Animated.View>
+                <Text style={styles.workoutTitle}>{workout.title}</Text>
                 {workout.exercises.map((ex) =>
                     <RenderExercise key={ex.id} workout={workout} exercise={ex} />
                 )}
@@ -431,13 +454,16 @@ export default function EditWorkouts() {
 const styles = StyleSheet.create({
     wrapper: {
         paddingTop: 70,
-        paddingHorizontal: 15
+        paddingHorizontal: SCREEN_PADDING
     },
     workoutTitle: {
         fontSize: 20,
         fontWeight: 700,
         color: "#fff",
-        marginBottom: 10
+        height: WORKOUT_TITLE_HEIGHT,
+        position: "absolute",
+        top: WORKOUT_TITLE_HEIGHT * -1,
+        left: WORKOUT_BAR_LEFT_OFFSET
     },
     exercise: {
         height: EXERCISE_HEIGHT,
@@ -449,7 +475,7 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         position: "absolute",
         top: 0,
-        left: 0,
+        left: WORKOUT_BAR_LEFT_OFFSET,
         right: 0,
         overflow: "hidden"
     },
