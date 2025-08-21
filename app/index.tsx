@@ -1,5 +1,5 @@
 import { Text, LayoutRectangle, StyleSheet, ScrollView, View, Dimensions } from 'react-native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Animated, { runOnJS, runOnUI, useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 
@@ -58,6 +58,7 @@ const initialWorkouts: Workouts = [
 const WORKOUT_BAR_LEFT_OFFSET = 50;
 const WORKOUT_TITLE_HEIGHT = 32;
 const WORKOUT_DRAG_BOTTOM_OFFSET = 23;
+const WORKOUT_MARGIN_BOTTOM = 40;
 const EXERCISE_HEIGHT = 55;
 const EXERCISE_SPACING = 10;
 const SCREEN_PADDING = 15;
@@ -90,6 +91,8 @@ export default function EditWorkouts() {
     const scrollY = useSharedValue(0);
 
     const scrollRef = React.useRef<ScrollView>(null);
+
+    const touchPosition = useSharedValue(0);
 
     function getScrollSpeed(distance: number) {
         // distance = how far inside the "edge zone" the finger is
@@ -213,58 +216,76 @@ export default function EditWorkouts() {
         });
     };
 
-    // const handleHoverWorkout = (touchY: number, absY: number, workoutID: number) => {
 
-    //     autoScroll(absY);
+    const getHoverLayoutWorkoutIndex = (y: number) => {
+        // const order = [...workoutsOrder.value];
 
-    //     const hoverIndex = getHoverLayoutIndex(touchY);
+        const layoutYArray = workoutLayouts.value.map((layout, i) => {
 
-    //     const newOrder = [...workoutsOrder.value];
+            // const workoutID = workouts[i].id;
 
-    //     // IF not hovering any workout swap Exercise ID from workout with 0
-    //     // Return
-    //     if (hoverIndex === null) {
-    //         for (let index = 0; index < newOrder.length; index++) {
-    //             if (newOrder.includes(workoutID)) {
-    //                 newOrder[index] = newExOrders[index].map(id => id === exerciseID ? 0 : id);
-    //                 break;
-    //             }
-    //         }
-    //         exerciseOrders.value = newExOrders;
-    //         return;
-    //     }
+            // const newIndex = order.findIndex(id => id === workoutID);
 
-    //     // ELSE hovering workout
+            // const indexDiff = newIndex - i;
 
-    //     // IF that workout has the original placement, swap with Exercise ID
-    //     if (newExOrders[hoverIndex].includes(0)) {
-    //         newExOrders[hoverIndex] = newExOrders[hoverIndex].map(id => id === 0 ? exerciseID : id);
+            // const offsetY = indexDiff * (WORKOUT_TITLE_HEIGHT + WORKOUT_DRAG_BOTTOM_OFFSET + WORKOUT_MARGIN_BOTTOM);
+            // const offsetY = 0;
 
-    //         // ELSE remove 0 from last list
-    //     } else {
-    //         for (let index = 0; index < newExOrders.length; index++) {
-    //             if (newExOrders[index].includes(0)) {
-    //                 newExOrders[index] = newExOrders[index].filter(id => id !== 0);
-    //                 break;
-    //             }
-    //         }
-    //     }
+            const height = WORKOUT_TITLE_HEIGHT + layout.height;
 
-    //     // IF Exercise ID does not exist in the hovered workout, Add the Exercise ID
-    //     if (!newExOrders[hoverIndex].includes(exerciseID)) newExOrders[hoverIndex].push(exerciseID);
+            const top = layout.height > 0 ? layout.y - WORKOUT_TITLE_HEIGHT : layout.y;
+            
+            // return layout.y - offsetY - WORKOUT_TITLE_HEIGHT + height / 2;
+            // const layoutY = layout.y + offsetY - WORKOUT_TITLE_HEIGHT + height / 2;
+            const layoutY = top + height / 2;
 
-    //     // Now update the exercise ID in this hovered list
-    //     newExOrders[hoverIndex] = getExerciseOrderByTouchPosition(
-    //         exerciseID,
-    //         touchY,
-    //         workoutLayouts.value[hoverIndex],
-    //         newExOrders[hoverIndex]
-    //     );
+            // console.log(layout.y);
 
-    //     requestAnimationFrame(() => {
-    //         exerciseOrders.value = newExOrders;
-    //     });
-    // };
+            // console.log({
+            //     "OG Y": layout.y, layoutY, offsetY, indexDiff
+            // });
+            
+            return layoutY;
+        });
+        
+        console.log(y);
+        console.log(layoutYArray);
+
+        // If smaller than the first element → return 0
+        if (y < layoutYArray[0]) return 0;
+
+        // If greater than or equal to the last element → last index
+        if (y >= layoutYArray[layoutYArray.length - 1]) return layoutYArray.length - 1;
+
+        // Otherwise find the floor
+        for (let i = 0; i < layoutYArray.length - 1; i++) {
+            if (y >= layoutYArray[i] && y < layoutYArray[i + 1]) {
+                return i;
+            }
+        }
+
+        return null;
+    };
+
+
+    const handleHoverWorkout = (touchY: number, absY: number, workoutID: number) => {
+
+        autoScroll(absY);
+
+        const order = [...workoutsOrder.value];
+
+        const newIndex = getHoverLayoutWorkoutIndex(touchY);
+
+        if (newIndex === null) return;
+
+        const currentIndex = order.findIndex(id => id === workoutID);
+        const [id] = order.splice(currentIndex, 1);
+        order.splice(newIndex, 0, id);
+
+        requestAnimationFrame(() => {
+            workoutsOrder.value = order;
+        });
+    };
 
     const updateWorkouts = (newWorkouts: Workouts) => {
         setWorkouts([...newWorkouts]);
@@ -331,6 +352,35 @@ export default function EditWorkouts() {
             }
         });
     }
+
+    const handleDropWorkout = () => {
+        console.log(exerciseOrders.value);
+
+        setWorkouts(prev => {
+            const order = workoutsOrder.value; // e.g. [3, 1, 4, 2]
+
+            // Map workout id -> workout
+            const workoutMap = new Map(prev.map(w => [w.id, w]));
+
+            // Map workout id -> exercise order (aligned by index of prev)
+            const exerciseMap = new Map(prev.map((w, i) => [w.id, exerciseOrders.value[i]]));
+
+            // Rebuild workouts and exerciseOrders together
+            const newWorkouts = order.map(id => workoutMap.get(id)!);
+            const newExerciseOrders = order.map(id => exerciseMap.get(id)!);
+
+            // update exerciseOrders shared value
+            requestAnimationFrame(() => {
+                exerciseOrders.value = newExerciseOrders;
+            });
+
+            return newWorkouts;
+        });
+
+        requestAnimationFrame(() => {
+            draggedWorkout.value = null;
+        });
+    };
 
     const RenderExercise = ({ workout, exercise }: {
         workout: Workout;
@@ -465,15 +515,12 @@ export default function EditWorkouts() {
 
                 translateY.value = startY.value + e.translationY - scrollDiff;
 
-                // const touchY = e.absoluteY + scrollY.value;
+                const touchY = e.absoluteY + scrollY.value;
 
-                // runOnJS(handleHoverWorkout)(touchY, e.absoluteY, workout.id);
+                runOnJS(handleHoverWorkout)(touchY, e.absoluteY, workout.id);
             })
             .onEnd(() => {
-                requestAnimationFrame(() => {
-                    draggedWorkout.value = null;
-                });
-                // runOnJS(handleDrop)();
+                runOnJS(handleDropWorkout)();
             });
 
         const wrapperAnimStyle = useAnimatedStyle(() => {
@@ -496,13 +543,13 @@ export default function EditWorkouts() {
 
             const indexDiff = newIndex - index;
 
-            const targetY = indexDiff * (WORKOUT_TITLE_HEIGHT + WORKOUT_DRAG_BOTTOM_OFFSET);
+            const targetY = indexDiff * (WORKOUT_TITLE_HEIGHT + WORKOUT_DRAG_BOTTOM_OFFSET + WORKOUT_MARGIN_BOTTOM);
 
             return {
                 // backgroundColor: "#ffffff2a",
                 opacity: isActive ? withTiming(0.8) : withTiming(1),
                 marginTop: WORKOUT_TITLE_HEIGHT,
-                marginBottom: isActive ? withTiming(WORKOUT_DRAG_BOTTOM_OFFSET + 40) : withTiming(40),
+                marginBottom: isActive ? withTiming(WORKOUT_DRAG_BOTTOM_OFFSET + WORKOUT_MARGIN_BOTTOM) : withTiming(WORKOUT_MARGIN_BOTTOM),
                 height: withTiming(height),
                 zIndex: draggedExercise.value?.workoutID === workout.id ? 100 : isActive ? 100 : 0,
                 transform: [{
@@ -584,6 +631,8 @@ export default function EditWorkouts() {
             <Animated.View style={wrapperAnimStyle} onLayout={(e) => {
                 const layout = e.nativeEvent.layout;
 
+                // console.log(layout);
+
                 runOnUI(() => {
                     const prev = workoutLayouts.value;
 
@@ -609,8 +658,34 @@ export default function EditWorkouts() {
         </>);
     };
 
+    const TouchPoint = () => {
+
+        const animStyle = useAnimatedStyle(() => {
+
+            return {
+                position: "absolute",
+                zIndex: 99999999,
+                top: 0,
+                left: 0,
+                right: 0,
+                width: "100%",
+                height: 1,
+                backgroundColor: "red",
+                pointerEvents: "none",
+                transform: [{
+                    translateY: touchPosition.value
+                }]
+            };
+        });
+
+        return (
+            <Animated.View style={animStyle} />
+        );
+    }
+
     return (<>
         <DragExercise />
+        {/* <TouchPoint /> */}
         <ScrollView
             showsVerticalScrollIndicator={false}
             ref={scrollRef}
