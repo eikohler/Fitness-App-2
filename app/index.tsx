@@ -78,11 +78,15 @@ export default function EditWorkouts() {
 
     const exerciseOrders = useSharedValue<number[][]>(workouts.map(w => w.exercises.map(ex => ex.id)));
 
+    const [workoutTitles, setWorkoutTitles] = useState(Array.from(
+        new Set(initialWorkouts.flatMap(workout => workout.title))
+    ));
+
     const [exerciseTitles, setExerciseTitles] = useState(Array.from(
         new Set(initialWorkouts.flatMap(workout => workout.exercises.map(ex => ex.title)))
     ));
 
-    const draggedWorkout = useSharedValue<{ workoutID: number } | null>(null);
+    const draggedWorkout = useSharedValue<{ workoutID: number, workoutTitle: string } | null>(null);
 
     const draggedExercise = useSharedValue<{ workoutID: number, exerciseID: number, exerciseTitle: string } | null>(null);
 
@@ -93,6 +97,8 @@ export default function EditWorkouts() {
     const scrollRef = React.useRef<ScrollView>(null);
 
     const touchPosition = useSharedValue(0);
+
+    const startDone = useSharedValue(false);
 
     function getScrollSpeed(distance: number) {
         // distance = how far inside the "edge zone" the finger is
@@ -218,52 +224,17 @@ export default function EditWorkouts() {
 
 
     const getHoverLayoutWorkoutIndex = (y: number) => {
-        // const order = [...workoutsOrder.value];
+        for (let i = 0; i < workoutLayouts.value.length; i++) {
+            const layout = workoutLayouts.value[i];
+            if (!layout) continue;
 
-        const layoutYArray = workoutLayouts.value.map((layout, i) => {
+            const top = layout.y - WORKOUT_TITLE_HEIGHT;
+            const bottom = layout.height > 0 ? top + layout.height + WORKOUT_TITLE_HEIGHT : layout.y + WORKOUT_TITLE_HEIGHT;
 
-            // const workoutID = workouts[i].id;
-
-            // const newIndex = order.findIndex(id => id === workoutID);
-
-            // const indexDiff = newIndex - i;
-
-            // const offsetY = indexDiff * (WORKOUT_TITLE_HEIGHT + WORKOUT_DRAG_BOTTOM_OFFSET + WORKOUT_MARGIN_BOTTOM);
-            // const offsetY = 0;
-
-            const height = WORKOUT_TITLE_HEIGHT + layout.height;
-
-            const top = layout.height > 0 ? layout.y - WORKOUT_TITLE_HEIGHT : layout.y;
-            
-            // return layout.y - offsetY - WORKOUT_TITLE_HEIGHT + height / 2;
-            // const layoutY = layout.y + offsetY - WORKOUT_TITLE_HEIGHT + height / 2;
-            const layoutY = top + height / 2;
-
-            // console.log(layout.y);
-
-            // console.log({
-            //     "OG Y": layout.y, layoutY, offsetY, indexDiff
-            // });
-            
-            return layoutY;
-        });
-        
-        console.log(y);
-        console.log(layoutYArray);
-
-        // If smaller than the first element → return 0
-        if (y < layoutYArray[0]) return 0;
-
-        // If greater than or equal to the last element → last index
-        if (y >= layoutYArray[layoutYArray.length - 1]) return layoutYArray.length - 1;
-
-        // Otherwise find the floor
-        for (let i = 0; i < layoutYArray.length - 1; i++) {
-            if (y >= layoutYArray[i] && y < layoutYArray[i + 1]) {
+            if (y >= top && y <= bottom) {
                 return i;
             }
         }
-
         return null;
     };
 
@@ -354,7 +325,6 @@ export default function EditWorkouts() {
     }
 
     const handleDropWorkout = () => {
-        console.log(exerciseOrders.value);
 
         setWorkouts(prev => {
             const order = workoutsOrder.value; // e.g. [3, 1, 4, 2]
@@ -377,9 +347,9 @@ export default function EditWorkouts() {
             return newWorkouts;
         });
 
-        requestAnimationFrame(() => {
-            draggedWorkout.value = null;
-        });
+        // requestAnimationFrame(() => {
+        //     draggedWorkout.value = {workoutID: 0};
+        // });
     };
 
     const RenderExercise = ({ workout, exercise }: {
@@ -448,11 +418,11 @@ export default function EditWorkouts() {
                 position: "absolute",
                 top: 0,
                 left: WORKOUT_BAR_LEFT_OFFSET + SCREEN_PADDING,
-                right: 15,
+                right: SCREEN_PADDING,
                 zIndex: 100,
                 opacity: isActive ? 0.8 : 0,
                 backgroundColor: '#2929c3ff',
-                pointerEvents: isActive ? "auto" : "none",
+                pointerEvents: "none",
                 transform: [{
                     translateY: isActive ? translateY.value : 0
                 }]
@@ -480,9 +450,57 @@ export default function EditWorkouts() {
         );
     };
 
-    const RenderWorkout = ({ workout, index }: { workout: Workout, index: number }) => {
+    const DragWorkout = () => {
+        const viewAnimatedStyle = useAnimatedStyle(() => {
+            const isActive = draggedWorkout.value !== null && startDone.value === true;
 
-        const startDone = useSharedValue(false);
+            return {
+                height: WORKOUT_TITLE_HEIGHT + WORKOUT_DRAG_BOTTOM_OFFSET,
+                position: "absolute",
+                top: 0,
+                left: SCREEN_PADDING,
+                right: SCREEN_PADDING,
+                zIndex: 100,
+                borderRadius: 10,
+                opacity: isActive ? 0.8 : 0,
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+                backgroundColor: '#2929c3ff',
+                pointerEvents: "none",
+                transform: [{
+                    translateY: isActive ? translateY.value : 0
+                }]
+            };
+        });
+
+        return (
+            <Animated.View style={viewAnimatedStyle}>
+                {workoutTitles.map((title, i) => {
+                    const textAnimatedStyle = useAnimatedStyle(() => {
+                        const isActive = draggedWorkout.value?.workoutTitle === title;
+                        return {
+                            fontSize: 20,
+                            fontWeight: 700,
+                            color: "#fff",
+                            height: WORKOUT_TITLE_HEIGHT,
+                            opacity: isActive ? 1 : 0,
+                            position: isActive ? "relative" : "absolute"
+                        };
+                    });
+
+                    return (
+                        <Animated.Text key={i} style={textAnimatedStyle}>
+                            {title}
+                        </Animated.Text>
+                    );
+                })}
+            </Animated.View>
+        );
+    };
+
+    const RenderWorkout = ({ workout, index }: { workout: Workout, index: number }) => {
+        
         const startY = useSharedValue(0);
         const startScrollY = useSharedValue(0);
 
@@ -493,7 +511,7 @@ export default function EditWorkouts() {
                 startDone.value = false;
 
                 // Set active dragged workout value to this workout
-                draggedWorkout.value = { workoutID: workout.id };
+                draggedWorkout.value = { workoutID: workout.id, workoutTitle: workout.title };
 
                 const newY = e.y - ((WORKOUT_TITLE_HEIGHT + WORKOUT_DRAG_BOTTOM_OFFSET) / 2);
                 startY.value = newY;
@@ -502,20 +520,28 @@ export default function EditWorkouts() {
                     if (isFinished) {
                         startDone.value = true;
 
-                        const scrollDiff = startScrollY.value - scrollY.value;
+                        translateY.value = e.absoluteY - WORKOUT_TITLE_HEIGHT / 2;
 
-                        translateY.value = startY.value + e.translationY - scrollDiff;
+                        // const scrollDiff = startScrollY.value - scrollY.value;
+
+                        // translateY.value = startY.value + e.translationY - scrollDiff;
                     }
                 });
             })
             .onUpdate(e => {
                 if (!startDone.value) return;
 
-                const scrollDiff = startScrollY.value - scrollY.value;
+                // const scrollDiff = startScrollY.value - scrollY.value;
 
-                translateY.value = startY.value + e.translationY - scrollDiff;
+                // translateY.value = startY.value + e.translationY - scrollDiff;
+
+                translateY.value = e.absoluteY - WORKOUT_TITLE_HEIGHT / 2;
+
+                console.log(e.absoluteY - WORKOUT_TITLE_HEIGHT / 2);
 
                 const touchY = e.absoluteY + scrollY.value;
+
+                // touchPosition.value = touchY;
 
                 runOnJS(handleHoverWorkout)(touchY, e.absoluteY, workout.id);
             })
@@ -547,14 +573,14 @@ export default function EditWorkouts() {
 
             return {
                 // backgroundColor: "#ffffff2a",
-                opacity: isActive ? withTiming(0.8) : withTiming(1),
+                opacity: isActive ? startDone.value ? 0 : withTiming(0.8) : withTiming(1),
                 marginTop: WORKOUT_TITLE_HEIGHT,
                 marginBottom: isActive ? withTiming(WORKOUT_DRAG_BOTTOM_OFFSET + WORKOUT_MARGIN_BOTTOM) : withTiming(WORKOUT_MARGIN_BOTTOM),
                 height: withTiming(height),
                 zIndex: draggedExercise.value?.workoutID === workout.id ? 100 : isActive ? 100 : 0,
                 transform: [{
                     translateY: isDragging ? isActive ? translateY.value : withTiming(targetY) : withTiming(0)
-                }]
+                }],
             };
         });
 
@@ -685,6 +711,7 @@ export default function EditWorkouts() {
 
     return (<>
         <DragExercise />
+        <DragWorkout />
         {/* <TouchPoint /> */}
         <ScrollView
             showsVerticalScrollIndicator={false}

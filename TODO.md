@@ -11,7 +11,8 @@
 ## Drag Workouts between workouts
 - [x] Add left side press and hold drag icons for workouts
 - [x] On gesture start condense the workout
-- [] Drag and reorder workouts
+- [x] Drag and reorder workouts
+- [] Optimize drag and reorder
 
 ## Edit workouts
 - [] Add new exercise to workout
