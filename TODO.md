@@ -7,12 +7,13 @@
 - [x] Fix exercise drag with scrolling
 - [x] Auto scroll on drag
 - [x] Remove scroll bar
+- [ ] Fix Drag exercise POST workouts reorder updates
 
 ## Drag Workouts between workouts
 - [x] Add left side press and hold drag icons for workouts
 - [x] On gesture start condense the workout
 - [x] Drag and reorder workouts
-- [] Optimize drag and reorder
+- [x] Optimize drag and reorder
 
 ## Edit workouts
 - [] Add new exercise to workout

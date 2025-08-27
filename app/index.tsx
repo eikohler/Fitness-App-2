@@ -370,8 +370,7 @@ export default function EditWorkouts() {
                 backgroundColor: '#000074',
                 pointerEvents: draggedExercise.value !== null ? "none" : "auto",
                 transform: [{
-                    // translateY: withTiming(targetY.value)
-                    translateY: targetY
+                    translateY: withTiming(targetY)
                 }]
             };
         });
