@@ -72,6 +72,8 @@ const SCROLL_EDGE_THRESHOLD = 100;
 const SCROLL_SPEED = 2;
 const MAX_SCROLL_SPEED = 20;
 
+const DRAG_DROP_DURATION = 300;
+
 export default function EditWorkouts() {
 
     const [workouts, setWorkouts] = useState<Workouts>(initialWorkouts);
@@ -316,7 +318,7 @@ export default function EditWorkouts() {
 
                 setWorkouts([...newWorkouts]);
 
-            }, 500);
+            }, DRAG_DROP_DURATION);
         });
     };
 
@@ -450,7 +452,9 @@ export default function EditWorkouts() {
                 // backgroundColor: "#ffffff2a",
                 marginTop: WORKOUT_TITLE_HEIGHT,
                 marginBottom: WORKOUT_MARGIN_BOTTOM,
-                height: isDragging ? height : withTiming(height)
+                height: isDragging
+                    ? height
+                    : withTiming(height, { duration: DRAG_DROP_DURATION })
             };
         });
 
@@ -492,7 +496,7 @@ export default function EditWorkouts() {
                 pointerEvents: (isDraggingWorkout || isDraggingExercise) ? "none" : "auto",
                 opacity: isActive ? 0 : 1,
                 marginTop: WORKOUT_TITLE_HEIGHT,
-                height: withTiming(height),
+                height: withTiming(height, { duration: DRAG_DROP_DURATION }),
                 zIndex: draggedExercise.value?.workoutID === workout.id ? 100 : isActive ? 100 : 0,
                 transform: [{
                     translateY: isActive
@@ -526,8 +530,8 @@ export default function EditWorkouts() {
                 width: WORKOUT_BAR_LEFT_OFFSET - 10,
                 position: "absolute",
                 left: 0,
-                top: WORKOUT_TITLE_HEIGHT * -1,
-                height: withTiming(height)
+                height: withTiming(height, { duration: DRAG_DROP_DURATION }),
+                top: WORKOUT_TITLE_HEIGHT * -1
             };
         });
 
