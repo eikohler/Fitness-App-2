@@ -325,8 +325,6 @@ export default function EditWorkouts() {
         exercise: Exercise;
     }) => {
 
-        const targetY = useSharedValue(0);
-
         const dragGesture = Gesture.Pan()
             .activateAfterLongPress(200)
             .onStart(e => {
@@ -352,15 +350,18 @@ export default function EditWorkouts() {
 
             const workoutIndex = workouts.findIndex(w => w.id === workout.id);
 
-            const exOrder = [...exerciseOrders.value[workoutIndex]];
+            let targetY;
 
-            const exerciseIndex = exOrder.findIndex(id => id === exercise.id);
-
-            const newExIndex = exOrder.findIndex(id => id === 0) === 0 ? exerciseIndex - 1 : exerciseIndex;
-
-            targetY.value = newExIndex * EXERCISE_HEIGHT + (newExIndex * EXERCISE_SPACING);
-
-            // console.log(targetY.value);
+            if (dragDropStart.value) {
+                const tempExOrder = workouts[workoutIndex].exercises.map(ex => ex.id);
+                const exerciseIndex = tempExOrder.findIndex(id => id === exercise.id);
+                targetY = exerciseIndex * EXERCISE_HEIGHT + (exerciseIndex * EXERCISE_SPACING);
+            } else {
+                const exOrder = [...exerciseOrders.value[workoutIndex]];
+                const exerciseIndex = exOrder.findIndex(id => id === exercise.id);
+                const newExIndex = exOrder.findIndex(id => id === 0) === 0 ? exerciseIndex - 1 : exerciseIndex;
+                targetY = newExIndex * EXERCISE_HEIGHT + (newExIndex * EXERCISE_SPACING);
+            }
 
             return {
                 opacity: isActive ? 0 : 1,
@@ -368,7 +369,7 @@ export default function EditWorkouts() {
                 pointerEvents: draggedExercise.value !== null ? "none" : "auto",
                 transform: [{
                     // translateY: withTiming(targetY.value)
-                    translateY: targetY.value
+                    translateY: targetY
                 }]
             };
         });
