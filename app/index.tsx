@@ -299,25 +299,24 @@ export default function EditWorkouts() {
             draggedWorkout.value = null;
             dragDropStart.value = true;
 
+            const order = workoutsOrder.value;
+
+            // Map workout id -> workout
+            const workoutMap = new Map(workouts.map(w => [w.id, w]));
+
+            // Map workout id -> exercise order (aligned by index of prev)
+            const exerciseMap = new Map(workouts.map((w, i) => [w.id, exerciseOrders.value[i]]));
+
+            // Rebuild workouts and exerciseOrders together
+            const newWorkouts = order.map(id => workoutMap.get(id)!);
+            const newExerciseOrders = order.map(id => exerciseMap.get(id)!);
+
+            requestAnimationFrame(() => {
+                exerciseOrders.value = [...newExerciseOrders];
+            });
+
             setTimeout(() => {
-                const order = workoutsOrder.value;
-
-                // Map workout id -> workout
-                const workoutMap = new Map(workouts.map(w => [w.id, w]));
-
-                // Map workout id -> exercise order (aligned by index of prev)
-                const exerciseMap = new Map(workouts.map((w, i) => [w.id, exerciseOrders.value[i]]));
-
-                // Rebuild workouts and exerciseOrders together
-                const newWorkouts = order.map(id => workoutMap.get(id)!);
-                const newExerciseOrders = order.map(id => exerciseMap.get(id)!);
-
-                requestAnimationFrame(() => {
-                    exerciseOrders.value = [...newExerciseOrders];
-                });
-
                 setWorkouts([...newWorkouts]);
-
             }, DRAG_DROP_DURATION);
         });
     };
@@ -467,7 +466,11 @@ export default function EditWorkouts() {
             let height = WORKOUT_DRAG_HEIGHT;
 
             if (!isDraggingWorkout) {
-                const exOrder = [...exerciseOrders.value[index]];
+                const workoutIndex = dragDropStart.value
+                    ? workoutsOrder.value.findIndex((id) => id === workout.id)
+                    : index;
+
+                const exOrder = [...exerciseOrders.value[workoutIndex]];
                 const length = Math.max(1, exOrder.includes(0) ? exOrder.length - 1 : exOrder.length);
                 const spacingHeight = EXERCISE_SPACING * (length - 1);
                 height = length * EXERCISE_HEIGHT + spacingHeight;
@@ -516,7 +519,11 @@ export default function EditWorkouts() {
             let height = WORKOUT_DRAG_HEIGHT + WORKOUT_TITLE_HEIGHT;
 
             if (!isDragging) {
-                const exOrder = [...exerciseOrders.value[index]];
+                const workoutIndex = dragDropStart.value
+                    ? workoutsOrder.value.findIndex((id) => id === workout.id)
+                    : index;
+
+                const exOrder = [...exerciseOrders.value[workoutIndex]];
                 const length = Math.max(1, exOrder.includes(0) ? exOrder.length - 1 : exOrder.length);
                 const spacingHeight = EXERCISE_SPACING * (length - 1);
                 height = length * EXERCISE_HEIGHT + spacingHeight + WORKOUT_TITLE_HEIGHT;
@@ -563,10 +570,46 @@ export default function EditWorkouts() {
         </>);
     };
 
+    const DragExercise = ({ workout, exercise }: {
+        workout: Workout;
+        exercise: Exercise;
+    }) => {
+
+        const animatedStyle = useAnimatedStyle(() => {
+
+            const isDragging = draggedWorkout.value !== null;
+            const isActive = draggedExercise.value?.exerciseID === exercise.id
+                && draggedExercise.value.workoutID === workout.id;
+
+            const workoutIndex = workouts.findIndex(w => w.id === workout.id);
+
+            const exOrder = [...exerciseOrders.value[workoutIndex]];
+            const exerciseIndex = exOrder.findIndex(id => id === exercise.id);
+            const newExIndex = exOrder.findIndex(id => id === 0) === 0 ? exerciseIndex - 1 : exerciseIndex;
+            const targetY = newExIndex * EXERCISE_HEIGHT + (newExIndex * EXERCISE_SPACING);
+
+            return {
+                opacity: isActive ? 0.8 : isDragging ? 1 : 0,
+                backgroundColor: '#000074',
+                transform: [{
+                    translateY: isActive ? translateY.value - WORKOUT_TITLE_HEIGHT : withTiming(targetY)
+                }]
+            };
+        });
+
+        return (
+            <Animated.View style={[styles.exercise, animatedStyle]}>
+                <Text style={styles.exerciseText}>{exercise.title}</Text>
+                <View style={styles.dragIcon}></View>
+            </Animated.View>
+        );
+    };
+
     const DragWorkout = ({ workout, index }: { workout: Workout, index: number }) => {
 
         const wrapperAnimStyle = useAnimatedStyle(() => {
 
+            const isExerciseActive = draggedExercise.value?.workoutID === workout.id;
             const isActive = draggedWorkout.value?.workoutID === workout.id;
 
             let height = WORKOUT_DRAG_HEIGHT;
@@ -585,19 +628,20 @@ export default function EditWorkouts() {
                 top: 0,
                 left: SCREEN_SIDE_PADDING,
                 right: SCREEN_SIDE_PADDING,
-                opacity: isActive ? dragWorkoutOpacity.value : 0,
+                opacity: isActive ? dragWorkoutOpacity.value : isExerciseActive ? 1 : 0,
                 // opacity: 1,
                 marginTop: WORKOUT_TITLE_HEIGHT,
                 height: withTiming(height),
                 zIndex: 100,
                 transform: [{
-                    translateY: translateY.value
+                    translateY: isExerciseActive ? 0 : translateY.value
                 }],
             };
         });
 
         const dragBarAnimStyle = useAnimatedStyle(() => {
 
+            const isExerciseActive = draggedExercise.value?.workoutID === workout.id;
             const isActive = draggedWorkout.value?.workoutID === workout.id;
 
             let height = WORKOUT_DRAG_HEIGHT + WORKOUT_TITLE_HEIGHT;
@@ -617,17 +661,35 @@ export default function EditWorkouts() {
                 position: "absolute",
                 left: 0,
                 top: WORKOUT_TITLE_HEIGHT * -1,
-                height: withTiming(height)
+                height: withTiming(height),
+                opacity: isExerciseActive ? 0 : 1
+            };
+        });
+
+        const workoutWrapperAnimStyle = useAnimatedStyle(() => {
+            const isExerciseActive = draggedExercise.value?.workoutID === workout.id;
+
+            return {
+                overflow: isExerciseActive ? "visible" : "hidden",
+                height: "100%"
+            };
+        });
+
+        const titleAnimStyle = useAnimatedStyle(() => {
+            const isExerciseActive = draggedExercise.value?.workoutID === workout.id;
+
+            return {
+                opacity: isExerciseActive ? 0 : 1
             };
         });
 
         return (<>
             <Animated.View style={wrapperAnimStyle}>
                 <Animated.View style={dragBarAnimStyle} />
-                <Animated.Text style={styles.workoutTitle}>{workout.title}</Animated.Text>
-                <Animated.View style={styles.workoutsWrapper}>
+                <Animated.Text style={[styles.workoutTitle, titleAnimStyle]}>{workout.title}</Animated.Text>
+                <Animated.View style={workoutWrapperAnimStyle}>
                     {workout.exercises.map((ex) =>
-                        <RenderExercise key={ex.id} workout={workout} exercise={ex} />
+                        <DragExercise key={ex.id} workout={workout} exercise={ex} />
                     )}
                 </Animated.View>
             </Animated.View>
