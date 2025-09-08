@@ -88,7 +88,11 @@ export default function EditWorkouts() {
 
     const draggedExercise = useSharedValue<{ workoutID: number, exerciseID: number, exerciseTitle: string } | null>(null);
 
+    const dragExerciseOpacity = useSharedValue(0);
+
     const dragWorkoutOpacity = useSharedValue(0);
+
+    const dragExerciseStartDone = useSharedValue(false);
 
     const dragWorkoutStartDone = useSharedValue(false);
 
@@ -293,6 +297,8 @@ export default function EditWorkouts() {
         const exerciseIndex = exOrders[destIndex].findIndex(id => id === dragValue.exerciseID);
         const targetY = exerciseIndex * EXERCISE_HEIGHT + (exerciseIndex * EXERCISE_SPACING) + destLayout.y - scrollY.value;
 
+        dragExerciseOpacity.value = withTiming(1, { duration: TIMING_DURATION });
+
         translateY.value = withTiming(targetY, { duration: TIMING_DURATION }, (isFinished) => {
             if (isFinished) {
                 runOnJS(updateWorkouts)(newWorkouts);
@@ -313,19 +319,34 @@ export default function EditWorkouts() {
 
         const wasActive = useSharedValue(false);
         const thisOpacity = useSharedValue(1);
+        const posY = useSharedValue(0);
 
         const dragGesture = Gesture.Pan()
             .activateAfterLongPress(200)
             .onStart(e => {
+                dragExerciseStartDone.value = false;
+
                 // Set active dragged exercise value to this exercise
                 draggedExercise.value = { workoutID: workout.id, exerciseID: exercise.id, exerciseTitle: exercise.title };
 
                 absY.value = e.absoluteY;
 
-                translateY.value = e.absoluteY - EXERCISE_HEIGHT / 2;
+                dragExerciseOpacity.value = 1;
+                dragExerciseOpacity.value = withTiming(0.5, { duration: TIMING_DURATION });
+
+                const newY = e.absoluteY - EXERCISE_HEIGHT / 2;
+                translateY.value = posY.value;
+                translateY.value = withTiming(newY, { duration: TIMING_DURATION }, function (isFinished) {
+                    if (isFinished) {
+                        dragExerciseStartDone.value = true;
+                        translateY.value = e.absoluteY - EXERCISE_HEIGHT / 2;
+                    }
+                });
             })
             .onUpdate(e => {
-                translateY.value = e.absoluteY - EXERCISE_HEIGHT / 2;
+                if (dragExerciseStartDone.value) {
+                    translateY.value = e.absoluteY - EXERCISE_HEIGHT / 2;
+                }
 
                 absY.value = e.absoluteY;
 
@@ -372,15 +393,20 @@ export default function EditWorkouts() {
                 targetY = exerciseIndex * EXERCISE_HEIGHT + (exerciseIndex * EXERCISE_SPACING);
             }
 
+            if (workoutLayouts.value[workoutIndex]) {
+                posY.value = targetY + workoutLayouts.value[workoutIndex].y;
+            }
+
             if (isDragging && thisIndex > 0) thisOpacity.value = withTiming(0, { duration: 200 });
-            else if (thisOpacity.value === 0){
-                if(wasActive.value){
-                    thisOpacity.value = 0.5;            
-                    thisOpacity.value = withTiming(1, {duration: TIMING_DURATION});
-                }else{
-                    thisOpacity.value = withTiming(1, {duration: 300});
+            else if (thisOpacity.value === 0) {
+                if (wasActive.value) {
+                    wasActive.value = false;
+                    thisOpacity.value = 0.5;
+                    thisOpacity.value = withTiming(1, { duration: TIMING_DURATION });
+                } else {
+                    thisOpacity.value = withTiming(1, { duration: 300 });
                 }
-            } 
+            }
 
             return {
                 opacity: isActive ? 0 : thisOpacity.value,
@@ -651,7 +677,11 @@ export default function EditWorkouts() {
             const targetY = exerciseIndex * EXERCISE_HEIGHT + (exerciseIndex * EXERCISE_SPACING);
 
             return {
-                opacity: isActive ? 0.5 : isDragging ? 1 : 0,
+                opacity: isActive
+                    ? dragExerciseOpacity.value
+                    : isDragging
+                        ? 1
+                        : 0,
                 backgroundColor: '#000074',
                 transform: [{
                     translateY: isActive ? translateY.value - WORKOUT_TITLE_HEIGHT : withTiming(targetY, { duration: TIMING_DURATION })
