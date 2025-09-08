@@ -311,6 +311,9 @@ export default function EditWorkouts() {
         exercise: Exercise;
     }) => {
 
+        const wasActive = useSharedValue(false);
+        const thisOpacity = useSharedValue(1);
+
         const dragGesture = Gesture.Pan()
             .activateAfterLongPress(200)
             .onStart(e => {
@@ -346,6 +349,8 @@ export default function EditWorkouts() {
             const isActive = draggedExercise.value?.exerciseID === exercise.id
                 && draggedExercise.value.workoutID === workout.id;
 
+            if (isActive) wasActive.value = true;
+
             const workoutIndex = workouts.findIndex(w => w.id === workout.id);
 
             const isDragging = draggedWorkout.value !== null;
@@ -367,13 +372,18 @@ export default function EditWorkouts() {
                 targetY = exerciseIndex * EXERCISE_HEIGHT + (exerciseIndex * EXERCISE_SPACING);
             }
 
+            if (isDragging && thisIndex > 0) thisOpacity.value = withTiming(0, { duration: 200 });
+            else if (thisOpacity.value === 0){
+                if(wasActive.value){
+                    thisOpacity.value = 0.5;            
+                    thisOpacity.value = withTiming(1, {duration: TIMING_DURATION});
+                }else{
+                    thisOpacity.value = withTiming(1, {duration: 300});
+                }
+            } 
+
             return {
-                opacity: isActive
-                    ? 0
-                    : isDragging && thisIndex > 0
-                        ? withTiming(0, { duration: 200 })
-                        // : withTiming(1, { duration: 300 }),
-                        : 1,
+                opacity: isActive ? 0 : thisOpacity.value,
                 backgroundColor: '#000074',
                 pointerEvents: draggedExercise.value !== null ? "none" : "auto",
                 transform: [{
