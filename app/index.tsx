@@ -301,31 +301,9 @@ export default function EditWorkouts() {
     }
 
     const handleDropWorkout = (newWorkouts: Workouts) => {
-
-        // requestAnimationFrame(() => {
-        //     draggedWorkout.value = null;
-        //     dragDropStart.value = true;
-
-        //     const order = workoutsOrder.value;
-
-        //     // Map workout id -> workout
-        //     const workoutMap = new Map(workouts.map(w => [w.id, w]));
-
-        //     // Map workout id -> exercise order (aligned by index of prev)
-        //     const exerciseMap = new Map(workouts.map((w, i) => [w.id, exerciseOrders.value[i]]));
-
-        //     // Rebuild workouts and exerciseOrders together
-        //     const newWorkouts = order.map(id => workoutMap.get(id)!);
-        //     const newExerciseOrders = order.map(id => exerciseMap.get(id)!);
-
-        //     requestAnimationFrame(() => {
-        //         exerciseOrders.value = [...newExerciseOrders];
-        //     });
-
         setTimeout(() => {
             setWorkouts([...newWorkouts]);
         }, TIMING_DURATION);
-        // });
     };
 
     const RenderExercise = ({ workout, exercise }: {
@@ -394,7 +372,8 @@ export default function EditWorkouts() {
                     ? 0
                     : isDragging && thisIndex > 0
                         ? withTiming(0, { duration: 200 })
-                        : withTiming(1, { duration: 300 }),
+                        // : withTiming(1, { duration: 300 }),
+                        : 1,
                 backgroundColor: '#000074',
                 pointerEvents: draggedExercise.value !== null ? "none" : "auto",
                 transform: [{
@@ -461,30 +440,46 @@ export default function EditWorkouts() {
             .onEnd(() => {
                 if (dragDropStart.value) return;
 
-                requestAnimationFrame(() => {
-                    thisOpacity.value = 0.5;
-                    thisOpacity.value = withTiming(1, { duration: TIMING_DURATION });
-                    draggedWorkout.value = null;
-                    dragDropStart.value = true;
+                dragDropStart.value = true;
 
-                    const order = workoutsOrder.value;
+                const order = [...workoutsOrder.value];
 
-                    // Map workout id -> workout
-                    const workoutMap = new Map(workouts.map(w => [w.id, w]));
+                const newIndex = order.findIndex(id => id === workout.id);
 
-                    // Map workout id -> exercise order (aligned by index of prev)
-                    const exerciseMap = new Map(workouts.map((w, i) => [w.id, exerciseOrders.value[i]]));
+                const posY = workoutLayouts.value
+                    .slice(0, newIndex)
+                    .reduce((sum) => {
+                        return sum + WORKOUT_DRAG_HEIGHT + WORKOUT_TITLE_HEIGHT + WORKOUT_MARGIN_BOTTOM;
+                    }, SCREEN_TOP_PADDING);
 
-                    // Rebuild workouts and exerciseOrders together
-                    const newWorkouts = order.map(id => workoutMap.get(id)!);
-                    const newExerciseOrders = order.map(id => exerciseMap.get(id)!);
+                translateY.value = withTiming(posY + scrollY.value, { duration: TIMING_DURATION },
+                    function (isFinished) {
+                        if (isFinished) {
+                            requestAnimationFrame(() => {
+                                thisOpacity.value = 0.5;
+                                thisOpacity.value = withTiming(1, { duration: TIMING_DURATION });
+                                draggedWorkout.value = null;
 
-                    requestAnimationFrame(() => {
-                        exerciseOrders.value = [...newExerciseOrders];
+                                const order = workoutsOrder.value;
+
+                                // Map workout id -> workout
+                                const workoutMap = new Map(workouts.map(w => [w.id, w]));
+
+                                // Map workout id -> exercise order (aligned by index of prev)
+                                const exerciseMap = new Map(workouts.map((w, i) => [w.id, exerciseOrders.value[i]]));
+
+                                // Rebuild workouts and exerciseOrders together
+                                const newWorkouts = order.map(id => workoutMap.get(id)!);
+                                const newExerciseOrders = order.map(id => exerciseMap.get(id)!);
+
+                                requestAnimationFrame(() => {
+                                    exerciseOrders.value = [...newExerciseOrders];
+                                });
+
+                                runOnJS(handleDropWorkout)(newWorkouts);
+                            });
+                        }
                     });
-
-                    runOnJS(handleDropWorkout)(newWorkouts);
-                });
             });
 
         const placementAnimStyle = useAnimatedStyle(() => {
