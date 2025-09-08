@@ -1,7 +1,16 @@
 import { Text, LayoutRectangle, StyleSheet, View, Dimensions } from 'react-native';
-import React, { useEffect, useState } from 'react';
-import Animated, { runOnJS, runOnUI, scrollTo, useAnimatedRef, useAnimatedStyle, useDerivedValue, useSharedValue, withTiming } from 'react-native-reanimated';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
+import Animated, {
+    runOnJS,
+    runOnUI,
+    scrollTo,
+    useAnimatedRef,
+    useAnimatedStyle,
+    useDerivedValue,
+    useSharedValue,
+    withTiming
+} from 'react-native-reanimated';
 
 interface Exercise {
     id: number;
@@ -74,6 +83,10 @@ const MAX_SCROLL_SPEED = 20;
 
 const TIMING_DURATION = 250;
 
+const DRAG_OPACITY = 0.6;
+
+const PRESS_HOLD_LENGTH = 200;
+
 export default function EditWorkouts() {
 
     const [workouts, setWorkouts] = useState<Workouts>(initialWorkouts);
@@ -107,6 +120,8 @@ export default function EditWorkouts() {
     const isAutoScrolling = useSharedValue(0);
 
     const absY = useSharedValue(0);
+
+    const scrollNative = useMemo(() => Gesture.Native(), []);
 
     useEffect(() => {
         dragDropStart.value = false;
@@ -312,9 +327,10 @@ export default function EditWorkouts() {
         }, TIMING_DURATION);
     };
 
-    const RenderExercise = ({ workout, exercise }: {
+    const RenderExercise = ({ workout, exercise, scrollNative }: {
         workout: Workout;
         exercise: Exercise;
+        scrollNative: ReturnType<typeof Gesture.Native>
     }) => {
 
         const wasActive = useSharedValue(false);
@@ -322,7 +338,8 @@ export default function EditWorkouts() {
         const posY = useSharedValue(0);
 
         const dragGesture = Gesture.Pan()
-            .activateAfterLongPress(200)
+            .activateAfterLongPress(PRESS_HOLD_LENGTH)
+            .minDistance(0)
             .onStart(e => {
                 dragExerciseStartDone.value = false;
 
@@ -332,10 +349,10 @@ export default function EditWorkouts() {
                 absY.value = e.absoluteY;
 
                 dragExerciseOpacity.value = 1;
-                dragExerciseOpacity.value = withTiming(0.5, { duration: TIMING_DURATION });
+                dragExerciseOpacity.value = withTiming(DRAG_OPACITY, { duration: TIMING_DURATION });
 
                 const newY = e.absoluteY - EXERCISE_HEIGHT / 2;
-                translateY.value = posY.value;
+                translateY.value = posY.value - scrollY.value;
                 translateY.value = withTiming(newY, { duration: TIMING_DURATION }, function (isFinished) {
                     if (isFinished) {
                         dragExerciseStartDone.value = true;
@@ -365,6 +382,8 @@ export default function EditWorkouts() {
             .onEnd(() => {
                 runOnJS(handleDrop)();
             });
+
+        scrollNative.requireExternalGestureToFail(dragGesture);
 
         const animatedStyle = useAnimatedStyle(() => {
             const isActive = draggedExercise.value?.exerciseID === exercise.id
@@ -401,7 +420,7 @@ export default function EditWorkouts() {
             else if (thisOpacity.value === 0) {
                 if (wasActive.value) {
                     wasActive.value = false;
-                    thisOpacity.value = 0.5;
+                    thisOpacity.value = DRAG_OPACITY;
                     thisOpacity.value = withTiming(1, { duration: TIMING_DURATION });
                 } else {
                     thisOpacity.value = withTiming(1, { duration: 300 });
@@ -428,28 +447,33 @@ export default function EditWorkouts() {
         );
     };
 
-    const RenderWorkout = ({ workout, index }: { workout: Workout, index: number }) => {
+    const RenderWorkout = ({ workout, index, scrollNative }: {
+        workout: Workout, index: number, scrollNative: ReturnType<typeof Gesture.Native>
+    }) => {
 
         const thisOpacity = useSharedValue(1);
         const targetY = useSharedValue(0);
 
         const dragGesture = Gesture.Pan()
-            .activateAfterLongPress(200)
+            .activateAfterLongPress(PRESS_HOLD_LENGTH)
+            .minDistance(0)
             .onStart(e => {
                 if (dragDropStart.value) return;
 
                 dragWorkoutOpacity.value = 1;
-                dragWorkoutOpacity.value = withTiming(0.5, { duration: TIMING_DURATION });
+                dragWorkoutOpacity.value = withTiming(DRAG_OPACITY, { duration: TIMING_DURATION });
                 thisOpacity.value = 0;
                 dragWorkoutStartDone.value = false;
                 draggedWorkout.value = { workoutID: workout.id, workoutTitle: workout.title };
                 absY.value = e.absoluteY;
+                runOnJS(handleHoverWorkout)(workout.id);
 
                 const newY = e.absoluteY - ((WORKOUT_TITLE_HEIGHT + WORKOUT_DRAG_HEIGHT) / 2);
-                translateY.value = targetY.value;
+                translateY.value = targetY.value - scrollY.value;
                 translateY.value = withTiming(newY, { duration: TIMING_DURATION }, (isFinished) => {
                     if (isFinished) {
                         dragWorkoutStartDone.value = true;
+                        absY.value = e.absoluteY;
                         translateY.value = e.absoluteY - ((WORKOUT_TITLE_HEIGHT + WORKOUT_DRAG_HEIGHT) / 2);
                     }
                 });
@@ -469,9 +493,8 @@ export default function EditWorkouts() {
 
                 if (dragWorkoutStartDone.value) {
                     translateY.value = e.absoluteY - ((WORKOUT_TITLE_HEIGHT + WORKOUT_DRAG_HEIGHT) / 2);
+                    runOnJS(handleHoverWorkout)(workout.id);
                 }
-
-                runOnJS(handleHoverWorkout)(workout.id);
             })
             .onEnd(() => {
                 if (dragDropStart.value) return;
@@ -492,7 +515,7 @@ export default function EditWorkouts() {
                     function (isFinished) {
                         if (isFinished) {
                             requestAnimationFrame(() => {
-                                thisOpacity.value = 0.5;
+                                thisOpacity.value = DRAG_OPACITY;
                                 thisOpacity.value = withTiming(1, { duration: TIMING_DURATION });
                                 draggedWorkout.value = null;
 
@@ -517,6 +540,8 @@ export default function EditWorkouts() {
                         }
                     });
             });
+
+        scrollNative.requireExternalGestureToFail(dragGesture);
 
         const placementAnimStyle = useAnimatedStyle(() => {
 
@@ -651,7 +676,7 @@ export default function EditWorkouts() {
                 <Animated.Text style={styles.workoutTitle}>{workout.title}</Animated.Text>
                 <Animated.View style={styles.workoutsWrapper}>
                     {workout.exercises.map((ex) =>
-                        <RenderExercise key={ex.id} workout={workout} exercise={ex} />
+                        <RenderExercise key={ex.id} workout={workout} exercise={ex} scrollNative={scrollNative} />
                     )}
                 </Animated.View>
             </Animated.View>
@@ -794,19 +819,21 @@ export default function EditWorkouts() {
         {workouts.map((w, i) =>
             <DragWorkout key={i} workout={w} index={i} />
         )}
-        <Animated.ScrollView
-            showsVerticalScrollIndicator={false}
-            ref={scrollRef}
-            scrollEventThrottle={16}
-            onScroll={e => {
-                scrollY.value = e.nativeEvent.contentOffset.y;
-            }}>
-            <GestureHandlerRootView style={styles.wrapper}>
-                {workouts.map((w, i) =>
-                    <RenderWorkout key={i} workout={w} index={i} />
-                )}
-            </GestureHandlerRootView>
-        </Animated.ScrollView>
+        <GestureDetector gesture={scrollNative}>
+            <Animated.ScrollView
+                showsVerticalScrollIndicator={false}
+                ref={scrollRef}
+                scrollEventThrottle={16}
+                onScroll={e => {
+                    scrollY.value = e.nativeEvent.contentOffset.y;
+                }}>
+                <GestureHandlerRootView style={styles.wrapper}>
+                    {workouts.map((w, i) =>
+                        <RenderWorkout key={i} workout={w} index={i} scrollNative={scrollNative} />
+                    )}
+                </GestureHandlerRootView>
+            </Animated.ScrollView>
+        </GestureDetector>
     </>);
 }
 
