@@ -81,7 +81,7 @@ const SCROLL_EDGE_THRESHOLD = 100;
 const SCROLL_SPEED = 2;
 const MAX_SCROLL_SPEED = 20;
 
-const TIMING_DURATION = 250;
+const TIMING_DURATION = 350;
 
 const DRAG_OPACITY = 0.6;
 
@@ -125,6 +125,7 @@ export default function EditWorkouts() {
 
     useEffect(() => {
         dragDropStart.value = false;
+        console.log(workoutLayouts.value);
     }, [workouts]);
 
     useDerivedValue(() => {
@@ -308,9 +309,19 @@ export default function EditWorkouts() {
             exerciseOrders.value = exOrders;
         });
 
-        const destLayout = workoutLayouts.value[destIndex];
+        const destY = exOrders
+            .slice(0, destIndex)
+            .reduce((sum, order) => {
+                const length = Math.max(1, order.length);
+                const spacingHeight = EXERCISE_SPACING * (length - 1);
+                const height = length * EXERCISE_HEIGHT + spacingHeight + WORKOUT_TITLE_HEIGHT;
+                return sum + height + WORKOUT_MARGIN_BOTTOM;
+            }, SCREEN_TOP_PADDING);
+
+        const finalDestY = destY + WORKOUT_TITLE_HEIGHT;
+
         const exerciseIndex = exOrders[destIndex].findIndex(id => id === dragValue.exerciseID);
-        const targetY = exerciseIndex * EXERCISE_HEIGHT + (exerciseIndex * EXERCISE_SPACING) + destLayout.y - scrollY.value;
+        const targetY = exerciseIndex * EXERCISE_HEIGHT + (exerciseIndex * EXERCISE_SPACING) + finalDestY - scrollY.value;
 
         dragExerciseOpacity.value = withTiming(1, { duration: TIMING_DURATION });
 
