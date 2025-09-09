@@ -125,7 +125,6 @@ export default function EditWorkouts() {
 
     useEffect(() => {
         dragDropStart.value = false;
-        console.log(workoutLayouts.value);
     }, [workouts]);
 
     useDerivedValue(() => {
@@ -494,15 +493,14 @@ export default function EditWorkouts() {
 
                 absY.value = e.absoluteY;
 
-                if (e.absoluteY < SCROLL_EDGE_THRESHOLD) {
-                    isAutoScrolling.value = -1; // up
-                } else if (e.absoluteY > SCREEN_HEIGHT - SCROLL_EDGE_THRESHOLD) {
-                    isAutoScrolling.value = 1; // down
-                } else {
-                    isAutoScrolling.value = 0;
-                }
-
                 if (dragWorkoutStartDone.value) {
+                    if (e.absoluteY < SCROLL_EDGE_THRESHOLD) {
+                        isAutoScrolling.value = -1; // up
+                    } else if (e.absoluteY > SCREEN_HEIGHT - SCROLL_EDGE_THRESHOLD) {
+                        isAutoScrolling.value = 1; // down
+                    } else {
+                        isAutoScrolling.value = 0;
+                    }
                     translateY.value = e.absoluteY - ((WORKOUT_TITLE_HEIGHT + WORKOUT_DRAG_HEIGHT) / 2);
                     runOnJS(handleHoverWorkout)(workout.id);
                 }
@@ -572,9 +570,7 @@ export default function EditWorkouts() {
                 // backgroundColor: "#ffffff2a",
                 marginTop: WORKOUT_TITLE_HEIGHT,
                 marginBottom: WORKOUT_MARGIN_BOTTOM,
-                height: isDragging
-                    ? height
-                    : withTiming(height, { duration: TIMING_DURATION })
+                height: withTiming(height, { duration: TIMING_DURATION })
             };
         });
 
@@ -830,21 +826,23 @@ export default function EditWorkouts() {
         {workouts.map((w, i) =>
             <DragWorkout key={i} workout={w} index={i} />
         )}
-        <GestureDetector gesture={scrollNative}>
-            <Animated.ScrollView
-                showsVerticalScrollIndicator={false}
-                ref={scrollRef}
-                scrollEventThrottle={16}
-                onScroll={e => {
-                    scrollY.value = e.nativeEvent.contentOffset.y;
-                }}>
-                <GestureHandlerRootView style={styles.wrapper}>
-                    {workouts.map((w, i) =>
-                        <RenderWorkout key={i} workout={w} index={i} scrollNative={scrollNative} />
-                    )}
-                </GestureHandlerRootView>
-            </Animated.ScrollView>
-        </GestureDetector>
+        <GestureHandlerRootView>
+            <GestureDetector gesture={scrollNative}>
+                <Animated.ScrollView
+                    showsVerticalScrollIndicator={false}
+                    ref={scrollRef}
+                    scrollEventThrottle={16}
+                    onScroll={e => {
+                        scrollY.value = e.nativeEvent.contentOffset.y;
+                    }}>
+                    <View style={styles.wrapper}>
+                        {workouts.map((w, i) =>
+                            <RenderWorkout key={i} workout={w} index={i} scrollNative={scrollNative} />
+                        )}
+                    </View>
+                </Animated.ScrollView>
+            </GestureDetector>
+        </GestureHandlerRootView>
     </>);
 }
 
