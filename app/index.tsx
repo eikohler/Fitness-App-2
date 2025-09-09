@@ -11,6 +11,7 @@ import Animated, {
     useSharedValue,
     withTiming
 } from 'react-native-reanimated';
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 
 interface Exercise {
     id: number;
@@ -64,13 +65,13 @@ const initialWorkouts: Workouts = [
     }
 ];
 
-const EXERCISE_HEIGHT = 55;
+const EXERCISE_HEIGHT = 45;
 const EXERCISE_SPACING = 10;
 
 const SCREEN_TOP_PADDING = 70;
 const SCREEN_SIDE_PADDING = 15;
 
-const WORKOUT_BAR_LEFT_OFFSET = 50;
+const WORKOUT_BAR_LEFT_OFFSET = 42;
 const WORKOUT_TITLE_HEIGHT = 32;
 const WORKOUT_MARGIN_BOTTOM = 40;
 const WORKOUT_DRAG_HEIGHT = EXERCISE_HEIGHT;
@@ -130,15 +131,19 @@ export default function EditWorkouts() {
     useDerivedValue(() => {
         if (isAutoScrolling.value === 0 || (draggedWorkout.value === null && draggedExercise.value === null)) return;
 
-        requestAnimationFrame(() => {
-            const distance = isAutoScrolling.value === -1 ? absY.value : SCREEN_HEIGHT - absY.value;
+        const distance = isAutoScrolling.value === -1
+            ? absY.value
+            : SCREEN_HEIGHT - absY.value;
 
-            const ratio = 1 - distance / SCROLL_EDGE_THRESHOLD;
-            const speed = Math.max(SCROLL_SPEED, ratio * MAX_SCROLL_SPEED);
+        const ratio = Math.min(
+            1,
+            Math.max(0, 1 - distance / SCROLL_EDGE_THRESHOLD)
+        );
 
-            const nextY = scrollY.value + isAutoScrolling.value * speed;
-            scrollTo(scrollRef, 0, nextY, false);
-        });
+        const speed = Math.max(SCROLL_SPEED, ratio * MAX_SCROLL_SPEED);
+
+        const nextY = scrollY.value + isAutoScrolling.value * speed;
+        scrollTo(scrollRef, 0, nextY, false);
     });
 
     const getHoverLayoutIndex = (y: number) => {
@@ -178,7 +183,6 @@ export default function EditWorkouts() {
     }
 
     const handleHover = (touchY: number, exerciseID: number) => {
-
         const hoverIndex = getHoverLayoutIndex(touchY);
 
         const newExOrders = [...exerciseOrders.value];
@@ -311,7 +315,7 @@ export default function EditWorkouts() {
         const destY = exOrders
             .slice(0, destIndex)
             .reduce((sum, order) => {
-                const length = Math.max(1, order.length);
+                const length = Math.max(1, order.length + 1);
                 const spacingHeight = EXERCISE_SPACING * (length - 1);
                 const height = length * EXERCISE_HEIGHT + spacingHeight + WORKOUT_TITLE_HEIGHT;
                 return sum + height + WORKOUT_MARGIN_BOTTOM;
@@ -395,7 +399,7 @@ export default function EditWorkouts() {
 
         scrollNative.requireExternalGestureToFail(dragGesture);
 
-        const animatedStyle = useAnimatedStyle(() => {
+        const wrapperAnimStyle = useAnimatedStyle(() => {
             const isActive = draggedExercise.value?.exerciseID === exercise.id
                 && draggedExercise.value.workoutID === workout.id;
 
@@ -418,7 +422,6 @@ export default function EditWorkouts() {
                 const exOrder = [...exerciseOrders.value[workoutIndex]];
                 const exerciseIndex = exOrder.findIndex(id => id === exercise.id);
                 thisIndex = exerciseIndex;
-                // const newExIndex = exOrder.findIndex(id => id === 0) === 0 ? exerciseIndex - 1 : exerciseIndex;
                 targetY = exerciseIndex * EXERCISE_HEIGHT + (exerciseIndex * EXERCISE_SPACING);
             }
 
@@ -448,14 +451,58 @@ export default function EditWorkouts() {
         });
 
         return (
-            <Animated.View style={[styles.exercise, animatedStyle]}>
+            <Animated.View style={[styles.exercise, wrapperAnimStyle]}>
                 <Text style={styles.exerciseText}>{exercise.title}</Text>
                 <GestureDetector gesture={dragGesture}>
-                    <View style={styles.dragIcon}></View>
+                    <View style={styles.dragIcon}>
+                        <FontAwesome6 name="grip-vertical" size={14} color="#fff" />
+                    </View>
                 </GestureDetector>
             </Animated.View>
         );
     };
+
+    const RenderPlusButton = ({ workout, dragElem }: { workout: Workout, dragElem?: boolean }) => {
+
+        const thisOpacity = useSharedValue(dragElem ? 0 : 1);
+
+        const animStyle = useAnimatedStyle(() => {
+            const workoutIndex = workouts.findIndex(w => w.id === workout.id);
+
+            const isDragging = draggedWorkout.value !== null;
+
+            const exOrder = dragDropStart.value
+                ? workouts[workoutIndex].exercises.map(ex => ex.id)
+                : [...exerciseOrders.value[workoutIndex]];
+            const index = exOrder.length;
+            // console.log(index);
+            const targetY = index * EXERCISE_HEIGHT + (index * EXERCISE_SPACING);
+
+            if (isDragging && index > 0) {
+                thisOpacity.value = withTiming(0, { duration: 200 });
+            }
+            else if (thisOpacity.value === 0) {
+                thisOpacity.value = withTiming(1, { duration: 300 });
+            }
+            else if (draggedExercise.value !== null && dragElem) {
+                thisOpacity.value = 0;
+            }
+
+            return {
+                opacity: thisOpacity.value,
+                pointerEvents: (draggedExercise.value !== null || draggedWorkout.value !== null) ? "none" : "auto",
+                transform: [{
+                    translateY: withTiming(targetY, { duration: TIMING_DURATION })
+                }]
+            };
+        });
+
+        return (
+            <Animated.View style={[styles.plusButton, animStyle]}>
+                <FontAwesome6 name="plus" size={20} color="#fff" />
+            </Animated.View>
+        );
+    }
 
     const RenderWorkout = ({ workout, index, scrollNative }: {
         workout: Workout, index: number, scrollNative: ReturnType<typeof Gesture.Native>
@@ -485,6 +532,7 @@ export default function EditWorkouts() {
                         dragWorkoutStartDone.value = true;
                         absY.value = e.absoluteY;
                         translateY.value = e.absoluteY - ((WORKOUT_TITLE_HEIGHT + WORKOUT_DRAG_HEIGHT) / 2);
+                        runOnJS(handleHoverWorkout)(workout.id);
                     }
                 });
             })
@@ -561,7 +609,7 @@ export default function EditWorkouts() {
             if (!isDragging) {
                 const exOrder = [...exerciseOrders.value[index]];
                 // const length = Math.max(1, exOrder.includes(0) ? exOrder.length - 1 : exOrder.length);
-                const length = Math.max(1, exOrder.length);
+                const length = Math.max(1, exOrder.length + 1);
                 const spacingHeight = EXERCISE_SPACING * (length - 1);
                 height = length * EXERCISE_HEIGHT + spacingHeight;
             }
@@ -590,7 +638,7 @@ export default function EditWorkouts() {
 
                 const exOrder = [...exerciseOrders.value[workoutIndex]];
                 // const length = Math.max(1, exOrder.includes(0) ? exOrder.length - 1 : exOrder.length);
-                const length = Math.max(1, exOrder.length);
+                const length = Math.max(1, exOrder.length + 1);
                 const spacingHeight = EXERCISE_SPACING * (length - 1);
                 height = length * EXERCISE_HEIGHT + spacingHeight;
             }
@@ -644,7 +692,7 @@ export default function EditWorkouts() {
 
                 const exOrder = [...exerciseOrders.value[workoutIndex]];
                 // const length = Math.max(1, exOrder.includes(0) ? exOrder.length - 1 : exOrder.length);
-                const length = Math.max(1, exOrder.length);
+                const length = Math.max(1, exOrder.length + 1);
                 const spacingHeight = EXERCISE_SPACING * (length - 1);
                 height = length * EXERCISE_HEIGHT + spacingHeight + WORKOUT_TITLE_HEIGHT;
             }
@@ -657,7 +705,10 @@ export default function EditWorkouts() {
                 position: "absolute",
                 left: 0,
                 height: withTiming(height, { duration: TIMING_DURATION }),
-                top: WORKOUT_TITLE_HEIGHT * -1
+                top: WORKOUT_TITLE_HEIGHT * -1,
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center"
             };
         });
 
@@ -678,13 +729,16 @@ export default function EditWorkouts() {
             }} />
             <Animated.View style={wrapperAnimStyle}>
                 <GestureDetector gesture={dragGesture}>
-                    <Animated.View style={dragBarAnimStyle} />
+                    <Animated.View style={dragBarAnimStyle}>
+                        <FontAwesome6 name="grip-vertical" size={16} color="#000" />
+                    </Animated.View>
                 </GestureDetector>
                 <Animated.Text style={styles.workoutTitle}>{workout.title}</Animated.Text>
                 <Animated.View style={styles.workoutsWrapper}>
                     {workout.exercises.map((ex) =>
                         <RenderExercise key={ex.id} workout={workout} exercise={ex} scrollNative={scrollNative} />
                     )}
+                    <RenderPlusButton workout={workout} />
                 </Animated.View>
             </Animated.View>
         </>);
@@ -724,7 +778,9 @@ export default function EditWorkouts() {
         return (
             <Animated.View style={[styles.exercise, animatedStyle]}>
                 <Text style={styles.exerciseText}>{exercise.title}</Text>
-                <View style={styles.dragIcon}></View>
+                <View style={styles.dragIcon}>
+                    <FontAwesome6 name="grip-vertical" size={14} color="#fff" />
+                </View>
             </Animated.View>
         );
     };
@@ -741,7 +797,7 @@ export default function EditWorkouts() {
             if (!isActive) {
                 const exOrder = [...exerciseOrders.value[index]];
                 // const length = Math.max(1, exOrder.includes(0) ? exOrder.length - 1 : exOrder.length);
-                const length = Math.max(1, exOrder.length);
+                const length = Math.max(1, exOrder.length + 1);
                 const spacingHeight = EXERCISE_SPACING * (length - 1);
                 height = length * EXERCISE_HEIGHT + spacingHeight;
             }
@@ -774,7 +830,7 @@ export default function EditWorkouts() {
             if (!isActive) {
                 const exOrder = [...exerciseOrders.value[index]];
                 // const length = Math.max(1, exOrder.includes(0) ? exOrder.length - 1 : exOrder.length);
-                const length = Math.max(1, exOrder.length);
+                const length = Math.max(1, exOrder.length + 1);
                 const spacingHeight = EXERCISE_SPACING * (length - 1);
                 height = length * EXERCISE_HEIGHT + spacingHeight + WORKOUT_TITLE_HEIGHT;
             }
@@ -788,7 +844,10 @@ export default function EditWorkouts() {
                 left: 0,
                 top: WORKOUT_TITLE_HEIGHT * -1,
                 height: withTiming(height, { duration: TIMING_DURATION }),
-                opacity: isExerciseActive ? 0 : 1
+                opacity: isExerciseActive ? 0 : 1,
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center"
             };
         });
 
@@ -811,12 +870,15 @@ export default function EditWorkouts() {
 
         return (<>
             <Animated.View style={wrapperAnimStyle}>
-                <Animated.View style={dragBarAnimStyle} />
+                <Animated.View style={dragBarAnimStyle}>
+                    <FontAwesome6 name="grip-vertical" size={16} color="#000" />
+                </Animated.View>
                 <Animated.Text style={[styles.workoutTitle, titleAnimStyle]}>{workout.title}</Animated.Text>
                 <Animated.View style={workoutWrapperAnimStyle}>
                     {workout.exercises.map((ex) =>
                         <DragExercise key={ex.id} workout={workout} exercise={ex} />
                     )}
+                    <RenderPlusButton workout={workout} dragElem />
                 </Animated.View>
             </Animated.View>
         </>);
@@ -868,7 +930,7 @@ const styles = StyleSheet.create({
     },
     exercise: {
         height: EXERCISE_HEIGHT,
-        padding: 16,
+        paddingHorizontal: 16,
         borderRadius: 5,
         display: "flex",
         flexDirection: "row",
@@ -882,15 +944,31 @@ const styles = StyleSheet.create({
     },
     exerciseText: {
         color: "#fff",
-        fontSize: 16,
-        fontWeight: 600
+        fontSize: 14,
+        fontWeight: 500
     },
     dragIcon: {
         position: 'absolute',
         right: 0,
         top: 0,
         height: EXERCISE_HEIGHT,
-        width: 50,
-        backgroundColor: "#fff",
+        width: 40,
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center"
+    },
+    plusButton: {
+        borderWidth: 2,
+        borderColor: "#fff",
+        borderRadius: 8,
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        padding: 5,
+        height: EXERCISE_HEIGHT,
+        position: "absolute",
+        left: WORKOUT_BAR_LEFT_OFFSET,
+        right: 0,
+        top: 0
     }
 });
