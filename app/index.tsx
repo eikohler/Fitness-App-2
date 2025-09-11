@@ -11,7 +11,8 @@ import Animated, {
     useSharedValue,
     withTiming
 } from 'react-native-reanimated';
-import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import { FontAwesome6 } from "@expo/vector-icons";
+import { colors } from '@/styles/Styles';
 
 interface Exercise {
     id: number;
@@ -90,6 +91,8 @@ const PRESS_HOLD_LENGTH = 200;
 
 export default function EditWorkouts() {
 
+    const [postUpdate, setPostUpdate] = useState(false);
+
     const [workouts, setWorkouts] = useState<Workouts>(initialWorkouts);
 
     const workoutLayouts = useSharedValue<LayoutRectangle[]>([]);
@@ -123,6 +126,8 @@ export default function EditWorkouts() {
     const absY = useSharedValue(0);
 
     const scrollNative = useMemo(() => Gesture.Native(), []);
+
+    const AnimatedFontAwesome6 = Animated.createAnimatedComponent(FontAwesome6 as React.ComponentType<any>);
 
     useEffect(() => {
         dragDropStart.value = false;
@@ -260,6 +265,7 @@ export default function EditWorkouts() {
 
     const updateWorkouts = (newWorkouts: Workouts) => {
         setWorkouts([...newWorkouts]);
+        setPostUpdate(true);
 
         requestAnimationFrame(() => {
             draggedExercise.value = null;
@@ -338,6 +344,7 @@ export default function EditWorkouts() {
     const handleDropWorkout = (newWorkouts: Workouts) => {
         setTimeout(() => {
             setWorkouts([...newWorkouts]);
+            setPostUpdate(true);
         }, TIMING_DURATION);
     };
 
@@ -463,46 +470,100 @@ export default function EditWorkouts() {
     };
 
     const RenderPlusButton = ({ workout, dragElem }: { workout: Workout, dragElem?: boolean }) => {
-
         const thisOpacity = useSharedValue(dragElem ? 0 : 1);
+        const isPressed = useSharedValue(false);
+        const fast = 50;
+        const slow = 150;
+
+        const [mounted, setMounted] = useState(postUpdate);
+
+        useEffect(() => {
+            if (!postUpdate) setMounted(true);
+        }, []);
+
+        const tapGesture = Gesture.Tap()
+            .onBegin(() => {
+                isPressed.value = true;
+            })
+            .onFinalize(() => {
+                isPressed.value = false;
+            })
+            .onEnd((_e, success) => {
+                if (success) {
+                    console.log("Tapped");
+                }
+            });
+
+        const longPressGesture = Gesture.LongPress()
+            .onBegin(() => {
+                isPressed.value = true;
+            })
+            .onFinalize(() => {
+                isPressed.value = false;
+            })
+            .onEnd((_e, success) => {
+                if (success) {
+                    console.log("Long press confirmed");
+                }
+            });
+
+        // Long press overrides tap
+        const pressGesture = Gesture.Exclusive(longPressGesture, tapGesture);
 
         const animStyle = useAnimatedStyle(() => {
-            const workoutIndex = workouts.findIndex(w => w.id === workout.id);
-
+            const workoutIndex = workouts.findIndex((w) => w.id === workout.id);
             const isDragging = draggedWorkout.value !== null;
 
             const exOrder = dragDropStart.value
-                ? workouts[workoutIndex].exercises.map(ex => ex.id)
+                ? workouts[workoutIndex].exercises.map((ex) => ex.id)
                 : [...exerciseOrders.value[workoutIndex]];
             const index = exOrder.length;
-            // console.log(index);
-            const targetY = index * EXERCISE_HEIGHT + (index * EXERCISE_SPACING);
+
+            const targetY =
+                index * EXERCISE_HEIGHT + index * EXERCISE_SPACING;
 
             if (isDragging && index > 0) {
                 thisOpacity.value = withTiming(0, { duration: 200 });
-            }
-            else if (thisOpacity.value === 0) {
+            } else if (thisOpacity.value === 0) {
                 thisOpacity.value = withTiming(1, { duration: 300 });
-            }
-            else if (draggedExercise.value !== null && dragElem) {
+            } else if (draggedExercise.value !== null && dragElem) {
                 thisOpacity.value = 0;
             }
 
             return {
+                backgroundColor: isPressed.value
+                    ? withTiming("#fff", { duration: fast })
+                    : withTiming("transparent", { duration: slow }),
                 opacity: thisOpacity.value,
-                pointerEvents: (draggedExercise.value !== null || draggedWorkout.value !== null) ? "none" : "auto",
-                transform: [{
-                    translateY: withTiming(targetY, { duration: TIMING_DURATION })
-                }]
+                pointerEvents:
+                    draggedExercise.value !== null || draggedWorkout.value !== null
+                        ? "none"
+                        : "auto",
+                transform: [
+                    {
+                        translateY: withTiming(targetY, { duration: TIMING_DURATION }),
+                    },
+                ],
+            };
+        });
+
+        const iconStyle = useAnimatedStyle(() => {
+            return {
+                color: isPressed.value
+                    ? withTiming(colors.mainBG, { duration: fast })
+                    : withTiming("#fff", { duration: slow }),
             };
         });
 
         return (
-            <Animated.View style={[styles.plusButton, animStyle]}>
-                <FontAwesome6 name="plus" size={20} color="#fff" />
-            </Animated.View>
+            <GestureDetector gesture={pressGesture}>
+                <Animated.View style={[styles.plusButton, animStyle]}>
+                    {mounted && <AnimatedFontAwesome6 name="plus" size={20} style={iconStyle} />}
+                </Animated.View>
+            </GestureDetector>
         );
-    }
+    };
+
 
     const RenderWorkout = ({ workout, index, scrollNative }: {
         workout: Workout, index: number, scrollNative: ReturnType<typeof Gesture.Native>
@@ -532,7 +593,6 @@ export default function EditWorkouts() {
                         dragWorkoutStartDone.value = true;
                         absY.value = e.absoluteY;
                         translateY.value = e.absoluteY - ((WORKOUT_TITLE_HEIGHT + WORKOUT_DRAG_HEIGHT) / 2);
-                        runOnJS(handleHoverWorkout)(workout.id);
                     }
                 });
             })
@@ -958,14 +1018,14 @@ const styles = StyleSheet.create({
         alignItems: "center"
     },
     plusButton: {
-        borderWidth: 2,
+        borderWidth: 1,
         borderColor: "#fff",
         borderRadius: 8,
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
         padding: 5,
-        height: EXERCISE_HEIGHT,
+        height: EXERCISE_HEIGHT - 2,
         position: "absolute",
         left: WORKOUT_BAR_LEFT_OFFSET,
         right: 0,
