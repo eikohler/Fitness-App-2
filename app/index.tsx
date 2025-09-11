@@ -13,6 +13,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { FontAwesome6 } from "@expo/vector-icons";
 import { colors } from '@/styles/Styles';
+import DraggableModal from '@/components/DraggableModal';
 
 interface Exercise {
     id: number;
@@ -93,6 +94,8 @@ export default function EditWorkouts() {
 
     const [postUpdate, setPostUpdate] = useState(false);
 
+    const [modalVisible, setModalVisible] = useState(false);
+
     const [workouts, setWorkouts] = useState<Workouts>(initialWorkouts);
 
     const workoutLayouts = useSharedValue<LayoutRectangle[]>([]);
@@ -128,6 +131,14 @@ export default function EditWorkouts() {
     const scrollNative = useMemo(() => Gesture.Native(), []);
 
     const AnimatedFontAwesome6 = Animated.createAnimatedComponent(FontAwesome6 as React.ComponentType<any>);
+
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            setPostUpdate(true);
+        }, 250);
+
+        return () => clearTimeout(timeoutId);
+    }, []);
 
     useEffect(() => {
         dragDropStart.value = false;
@@ -265,7 +276,6 @@ export default function EditWorkouts() {
 
     const updateWorkouts = (newWorkouts: Workouts) => {
         setWorkouts([...newWorkouts]);
-        setPostUpdate(true);
 
         requestAnimationFrame(() => {
             draggedExercise.value = null;
@@ -344,7 +354,6 @@ export default function EditWorkouts() {
     const handleDropWorkout = (newWorkouts: Workouts) => {
         setTimeout(() => {
             setWorkouts([...newWorkouts]);
-            setPostUpdate(true);
         }, TIMING_DURATION);
     };
 
@@ -490,7 +499,7 @@ export default function EditWorkouts() {
             })
             .onEnd((_e, success) => {
                 if (success) {
-                    console.log("Tapped");
+                    runOnJS(setModalVisible)(true);
                 }
             });
 
@@ -503,7 +512,7 @@ export default function EditWorkouts() {
             })
             .onEnd((_e, success) => {
                 if (success) {
-                    console.log("Long press confirmed");
+                    runOnJS(setModalVisible)(true);
                 }
             });
 
@@ -678,7 +687,9 @@ export default function EditWorkouts() {
                 // backgroundColor: "#ffffff2a",
                 marginTop: WORKOUT_TITLE_HEIGHT,
                 marginBottom: WORKOUT_MARGIN_BOTTOM,
-                height: withTiming(height, { duration: TIMING_DURATION })
+                height: isDragging
+                    ? withTiming(height, { duration: 1000 })
+                    : withTiming(height, { duration: TIMING_DURATION })
             };
         });
 
@@ -965,6 +976,10 @@ export default function EditWorkouts() {
                 </Animated.ScrollView>
             </GestureDetector>
         </GestureHandlerRootView>
+        <DraggableModal
+            visible={modalVisible}
+            onClose={() => setModalVisible(false)}
+        />
     </>);
 }
 
@@ -972,7 +987,8 @@ export default function EditWorkouts() {
 const styles = StyleSheet.create({
     wrapper: {
         paddingTop: SCREEN_TOP_PADDING,
-        paddingHorizontal: SCREEN_SIDE_PADDING
+        paddingHorizontal: SCREEN_SIDE_PADDING,
+        flex: 1
     },
     workoutTitle: {
         zIndex: 100,
