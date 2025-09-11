@@ -39,7 +39,7 @@ export default function DraggableModal({ visible, onClose }: { visible: boolean,
             startY.value = translateY.value;
         })
         .onUpdate((e) => {
-            translateY.value = startY.value + e.translationY;
+            translateY.value = Math.max(50, startY.value + e.translationY);
         })
         .onEnd((e) => {
             const target = SCREEN_HEIGHT - translateY.value;
@@ -72,8 +72,8 @@ export default function DraggableModal({ visible, onClose }: { visible: boolean,
             <Animated.View style={[styles.background, backgroundAnimStyle]} />
             <GestureDetector gesture={panGesture}>
                 <Animated.View style={[styles.modal, modalAnimStyle]}>
-                    <View style={styles.dragHandle} />                    
-                    
+                    <View style={styles.dragHandle} />
+
                 </Animated.View>
             </GestureDetector>
         </GestureHandlerRootView>
