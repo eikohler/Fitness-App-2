@@ -67,13 +67,49 @@ export default function DraggableModal({ visible, onClose }: { visible: boolean,
             }
         });
 
+    const bgTapGesture = Gesture.Tap()
+        .onEnd((_e, success) => {
+            if (success) {
+                translateY.value = withSpring(SCREEN_HEIGHT, {
+                    velocity: 0,
+                    damping: 15,
+                    stiffness: 150,
+                    overshootClamping: true,
+                }, (isFinished) => {
+                    if (isFinished) {
+                        runOnJS(onClose)();
+                    }
+                });
+            }
+        });
+
+    const bgLongPressGesture = Gesture.LongPress()
+        .onEnd((_e, success) => {
+            if (success) {
+                translateY.value = withSpring(SCREEN_HEIGHT, {
+                    velocity: 0,
+                    damping: 15,
+                    stiffness: 150,
+                    overshootClamping: true,
+                }, (isFinished) => {
+                    if (isFinished) {
+                        runOnJS(onClose)();
+                    }
+                });
+            }
+        });
+
+    // Long press overrides tap
+    const bgPressGesture = Gesture.Exclusive(bgLongPressGesture, bgTapGesture);
+
     return (
         <GestureHandlerRootView style={[styles.wrapper, { pointerEvents: visible ? "auto" : "none" }]}>
-            <Animated.View style={[styles.background, backgroundAnimStyle]} />
+            <GestureDetector gesture={bgPressGesture}>
+                <Animated.View style={[styles.background, backgroundAnimStyle]} />
+            </GestureDetector>
             <GestureDetector gesture={panGesture}>
                 <Animated.View style={[styles.modal, modalAnimStyle]}>
                     <View style={styles.dragHandle} />
-
                 </Animated.View>
             </GestureDetector>
         </GestureHandlerRootView>
