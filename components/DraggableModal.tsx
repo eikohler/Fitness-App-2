@@ -16,7 +16,12 @@ export default function DraggableModal({ visible, onClose }: { visible: boolean,
 
     useEffect(() => {
         if (visible) {
-            translateY.value = withSpring(MIDDLE, { damping: 20, stiffness: 120 });
+            translateY.value = withSpring(MIDDLE, {
+                stiffness: 250,
+                damping: 22,
+                mass: 0.9,
+                overshootClamping: false
+            });
         }
     }, [visible]);
 
@@ -55,7 +60,7 @@ export default function DraggableModal({ visible, onClose }: { visible: boolean,
                 translateY.value = withSpring(SCREEN_HEIGHT, {
                     velocity: velocity,
                     damping: 15,
-                    stiffness: 150,
+                    stiffness: 250,
                     overshootClamping: true,
                 }, (isFinished) => {
                     if (isFinished) {
@@ -63,7 +68,12 @@ export default function DraggableModal({ visible, onClose }: { visible: boolean,
                     }
                 });
             } else {
-                translateY.value = withSpring(finalSnap, { damping: 20, stiffness: 120 });
+                translateY.value = withSpring(finalSnap, {
+                    stiffness: 250,
+                    damping: 22,
+                    mass: 0.9,
+                    overshootClamping: false
+                });
             }
         });
 
