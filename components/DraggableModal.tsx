@@ -1,32 +1,38 @@
-import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, StyleSheet, Dimensions } from 'react-native';
 import Animated, { useAnimatedStyle, withSpring, useSharedValue, runOnJS, withTiming, Easing, withDecay } from 'react-native-reanimated';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
+import NotesField from './NotesField';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const MIN_VELOCITY = 100;
-const MIDDLE = SCREEN_HEIGHT * 0.5;
-const CLOSE = SCREEN_HEIGHT * 0.25;
-const POINTS = [MIDDLE, CLOSE];
+
+const TOP = SCREEN_HEIGHT * 0.25;
+const MIDDLE = SCREEN_HEIGHT * 0.60;
+const CLOSE = SCREEN_HEIGHT * 0.8;
+const BOTTOM = SCREEN_HEIGHT;
 
 export default function DraggableModal({ visible, onClose }: { visible: boolean, onClose: () => void }) {
-    const translateY = useSharedValue(SCREEN_HEIGHT);
+    const translateY = useSharedValue(BOTTOM);
     const startY = useSharedValue(0);
+    const [isFocusing, setIsFocusing] = useState(false);
 
     useEffect(() => {
         if (visible) {
-            translateY.value = withSpring(MIDDLE, {
+            translateY.value = withSpring(isFocusing ? TOP : MIDDLE, {
                 stiffness: 250,
                 damping: 22,
                 mass: 0.9,
                 overshootClamping: false
             });
         }
-    }, [visible]);
+    }, [visible, isFocusing]);
+
+    const updateIsFocusing = (state: boolean) => setIsFocusing(state);
 
     const backgroundAnimStyle = useAnimatedStyle(() => {
-        const invertedPercentage = ((SCREEN_HEIGHT - translateY.value) / (SCREEN_HEIGHT - MIDDLE));
+        const invertedPercentage = ((BOTTOM - translateY.value) / (BOTTOM - MIDDLE));
 
         return {
             opacity: invertedPercentage
@@ -44,20 +50,27 @@ export default function DraggableModal({ visible, onClose }: { visible: boolean,
             startY.value = translateY.value;
         })
         .onUpdate((e) => {
-            translateY.value = Math.max(50, startY.value + e.translationY);
+            const limit = isFocusing ? TOP - 20 : MIDDLE - 20;
+
+            translateY.value =
+                startY.value + e.translationY < limit
+                    ? limit + (startY.value + e.translationY - limit) * 0.2 // resistance factor
+                    : startY.value + e.translationY;
         })
         .onEnd((e) => {
-            const target = SCREEN_HEIGHT - translateY.value;
+            const points = [MIDDLE, CLOSE];
+            if (isFocusing) points.push(TOP);
 
-            const nearestSnap = POINTS.reduce((prev, curr) =>
+            const target = translateY.value;
+
+            const nearestSnap = points.reduce((prev, curr) =>
                 Math.abs(curr - target) < Math.abs(prev - target) ? curr : prev
             );
-            const finalSnap = SCREEN_HEIGHT - nearestSnap;
 
             if (nearestSnap === CLOSE) {
                 const velocity = Math.abs(e.velocityY) > MIN_VELOCITY ? e.velocityY : 0;
 
-                translateY.value = withSpring(SCREEN_HEIGHT, {
+                translateY.value = withSpring(BOTTOM, {
                     velocity: velocity,
                     damping: 15,
                     stiffness: 250,
@@ -68,25 +81,28 @@ export default function DraggableModal({ visible, onClose }: { visible: boolean,
                     }
                 });
             } else {
-                translateY.value = withSpring(finalSnap, {
+                translateY.value = withSpring(nearestSnap, {
                     stiffness: 250,
                     damping: 22,
                     mass: 0.9,
                     overshootClamping: false
                 });
             }
+
+            if (nearestSnap >= MIDDLE) runOnJS(setIsFocusing)(false);
         });
 
     const bgTapGesture = Gesture.Tap()
         .onEnd((_e, success) => {
             if (success) {
-                translateY.value = withSpring(SCREEN_HEIGHT, {
+                translateY.value = withSpring(BOTTOM, {
                     velocity: 0,
                     damping: 15,
-                    stiffness: 150,
+                    stiffness: 250,
                     overshootClamping: true,
                 }, (isFinished) => {
                     if (isFinished) {
+                        console.log("test");
                         runOnJS(onClose)();
                     }
                 });
@@ -96,10 +112,10 @@ export default function DraggableModal({ visible, onClose }: { visible: boolean,
     const bgLongPressGesture = Gesture.LongPress()
         .onEnd((_e, success) => {
             if (success) {
-                translateY.value = withSpring(SCREEN_HEIGHT, {
+                translateY.value = withSpring(BOTTOM, {
                     velocity: 0,
                     damping: 15,
-                    stiffness: 150,
+                    stiffness: 250,
                     overshootClamping: true,
                 }, (isFinished) => {
                     if (isFinished) {
@@ -120,6 +136,7 @@ export default function DraggableModal({ visible, onClose }: { visible: boolean,
             <GestureDetector gesture={panGesture}>
                 <Animated.View style={[styles.modal, modalAnimStyle]}>
                     <View style={styles.dragHandle} />
+                    <NotesField updateIsFocusing={updateIsFocusing} isFocusing={isFocusing} />
                 </Animated.View>
             </GestureDetector>
         </GestureHandlerRootView>
@@ -148,16 +165,13 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
         padding: 20,
-        alignItems: 'center',
     },
     dragHandle: {
         width: 80,
         height: 6,
         backgroundColor: 'rgba(255, 255, 255, 0.3)',
         borderRadius: 3,
-        marginBottom: 10,
+        marginBottom: 30,
+        marginHorizontal: "auto",
     },
-    modalText: { fontSize: 18, marginVertical: 20 },
-    closeButton: { backgroundColor: '#e74c3c', padding: 12, borderRadius: 8 },
-    buttonText: { color: 'white', fontWeight: 'bold' },
 });
