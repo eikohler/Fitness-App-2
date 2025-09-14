@@ -588,6 +588,7 @@ export default function EditWorkouts() {
             .activateAfterLongPress(PRESS_HOLD_LENGTH)
             .minDistance(0)
             .onStart(e => {
+                dragWorkoutStartDone.value = false;
                 dragWorkoutOpacity.value = 1;
                 dragWorkoutOpacity.value = withTiming(DRAG_OPACITY, { duration: TIMING_DURATION });
                 thisOpacity.value = 0;
@@ -877,7 +878,6 @@ export default function EditWorkouts() {
 
             if (!isActive) {
                 const exOrder = [...exerciseOrders.value[index]];
-                // const length = Math.max(1, exOrder.includes(0) ? exOrder.length - 1 : exOrder.length);
                 const length = Math.max(1, exOrder.length + 1);
                 const spacingHeight = EXERCISE_SPACING * (length - 1);
                 height = length * EXERCISE_HEIGHT + spacingHeight;
@@ -891,7 +891,6 @@ export default function EditWorkouts() {
                 left: SCREEN_SIDE_PADDING,
                 right: SCREEN_SIDE_PADDING,
                 opacity: isActive ? dragWorkoutOpacity.value : isExerciseActive ? 1 : 0,
-                // opacity: 1,
                 marginTop: WORKOUT_TITLE_HEIGHT,
                 height: withTiming(height, { duration: TIMING_DURATION }),
                 zIndex: 100,

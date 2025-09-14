@@ -17,17 +17,40 @@ export default function DraggableModal({ visible, onClose }: { visible: boolean,
     const translateY = useSharedValue(BOTTOM);
     const startY = useSharedValue(0);
     const [isFocusing, setIsFocusing] = useState(false);
+    const [tapClose, setTapClose] = useState(false);
+    const animInProgress = useSharedValue(false);
 
     useEffect(() => {
         if (visible) {
+            animInProgress.value = true;
             translateY.value = withSpring(isFocusing ? TOP : MIDDLE, {
                 stiffness: 250,
                 damping: 22,
                 mass: 0.9,
                 overshootClamping: false
+            }, function (isFinished) {
+                if (isFinished) {
+                    animInProgress.value = false;
+                }
             });
         }
     }, [visible, isFocusing]);
+
+    useEffect(() => {
+        if (tapClose) {
+            translateY.value = withSpring(BOTTOM, {
+                velocity: 0,
+                damping: 15,
+                stiffness: 250,
+                overshootClamping: true,
+            }, (isFinished) => {
+                if (isFinished) {
+                    runOnJS(onClose)();
+                    runOnJS(setTapClose)(false);
+                }
+            });
+        }
+    }, [tapClose]);
 
     const updateIsFocusing = (state: boolean) => setIsFocusing(state);
 
@@ -67,8 +90,10 @@ export default function DraggableModal({ visible, onClose }: { visible: boolean,
                 Math.abs(curr - target) < Math.abs(prev - target) ? curr : prev
             );
 
+            animInProgress.value = true;
+
             if (nearestSnap === CLOSE) {
-                const velocity = Math.abs(e.velocityY) > MIN_VELOCITY ? e.velocityY : 0;
+                const velocity = Math.abs(e.velocityY) > MIN_VELOCITY ? Math.abs(e.velocityY) : 0;
 
                 translateY.value = withSpring(BOTTOM, {
                     velocity: velocity,
@@ -77,6 +102,7 @@ export default function DraggableModal({ visible, onClose }: { visible: boolean,
                     overshootClamping: true,
                 }, (isFinished) => {
                     if (isFinished) {
+                        animInProgress.value = false;
                         runOnJS(onClose)();
                     }
                 });
@@ -86,42 +112,34 @@ export default function DraggableModal({ visible, onClose }: { visible: boolean,
                     damping: 22,
                     mass: 0.9,
                     overshootClamping: false
+                }, function (isFinished) {
+                    if (isFinished) {
+                        animInProgress.value = false;
+                    }
                 });
             }
 
             if (nearestSnap >= MIDDLE) runOnJS(setIsFocusing)(false);
         });
 
+    const handleTapClose = () => {
+        setIsFocusing(false);
+        setTapClose(true);
+    }
+
     const bgTapGesture = Gesture.Tap()
         .onEnd((_e, success) => {
+            if (animInProgress.value) return;
             if (success) {
-                translateY.value = withSpring(BOTTOM, {
-                    velocity: 0,
-                    damping: 15,
-                    stiffness: 250,
-                    overshootClamping: true,
-                }, (isFinished) => {
-                    if (isFinished) {
-                        console.log("test");
-                        runOnJS(onClose)();
-                    }
-                });
+                runOnJS(handleTapClose)();
             }
         });
 
     const bgLongPressGesture = Gesture.LongPress()
         .onEnd((_e, success) => {
+            if (animInProgress.value) return;
             if (success) {
-                translateY.value = withSpring(BOTTOM, {
-                    velocity: 0,
-                    damping: 15,
-                    stiffness: 250,
-                    overshootClamping: true,
-                }, (isFinished) => {
-                    if (isFinished) {
-                        runOnJS(onClose)();
-                    }
-                });
+                runOnJS(handleTapClose)();
             }
         });
 
