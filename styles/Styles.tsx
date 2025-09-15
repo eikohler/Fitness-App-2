@@ -2,15 +2,19 @@ import { StyleSheet } from "react-native";
 
 export const colors = {
     mainBG: "#0D0D0D",
+    black: "#000",
+    white: "#fff",
+    softWhite: "#BCC2E1",
     primaryText: "#ffffff",
     secondText: "#BCC2E1",
+    darkBlue: "#000074",
     arrowButtonBG: "#000074",
     firstSetBG: "#000074",
     secondSetBG: "#BCC2E1",
     plusButtonBG: "#BCC2E1",
     weekText: "#A486FF",
     largeButtonBG: "#0059FF",
-    modalBG: "#000074"
+    modalBG: "#000074",
 };
 
 
@@ -47,7 +51,7 @@ export const mainStyles = StyleSheet.create({
         backgroundColor: 'red'
     },
     focusedWrapper: {
-        paddingBottom: "80%"        
+        paddingBottom: "80%"
     },
     modalWrapper: {
         backgroundColor: colors.modalBG,
@@ -89,7 +93,7 @@ export const arrowButton = StyleSheet.create({
 });
 
 
-export const toggleButton = StyleSheet.create({    
+export const toggleButton = StyleSheet.create({
     wrapper: {
         borderRadius: 10,
         borderWidth: 1,
@@ -97,7 +101,7 @@ export const toggleButton = StyleSheet.create({
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        aspectRatio: 1/1
+        aspectRatio: 1 / 1
     },
     text: {
         color: colors.primaryText,
@@ -132,7 +136,7 @@ export const editButton = StyleSheet.create({
         color: colors.primaryText,
         fontWeight: 600,
         fontSize: 24
-    },    
+    },
     notesWrapper: {
         borderRadius: 10,
         borderColor: colors.primaryText,

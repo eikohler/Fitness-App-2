@@ -2,16 +2,13 @@ import { StyleSheet, TextInput } from 'react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import { colors } from '@/styles/Styles';
 
-const START_HEIGHT = 55;
-
-export default function NotesField({
+export default function TitleField({
     updateIsFocusing,
     isFocusing
 }: {
     updateIsFocusing: (state: boolean) => void,
     isFocusing: boolean
 }) {
-    const [height, setHeight] = useState(START_HEIGHT);
     const [value, setValue] = useState("");
     const inputRef = useRef<TextInput>(null);
 
@@ -24,29 +21,22 @@ export default function NotesField({
             ref={inputRef}
             onFocus={() => updateIsFocusing(true)}
             onBlur={() => updateIsFocusing(false)}
-            style={[styles.input, { minHeight: height }]}
-            multiline
+            style={styles.input}
             scrollEnabled={false}
             onChangeText={setValue}
             value={value}
-            placeholder="Notes"
+            placeholder="Exercise Name"
             placeholderTextColor={colors.softWhite}
             returnKeyType="done"
             submitBehavior="blurAndSubmit"
-            onContentSizeChange={(e) => {
-                setHeight(Math.max(START_HEIGHT, e.nativeEvent.contentSize.height));
-            }}
         />
     );
 }
 
 const styles = StyleSheet.create({
     input: {
-        borderRadius: 10,
-        borderColor: colors.white,
-        borderWidth: 1,
-        padding: 10,
         color: colors.white,
-        fontSize: 16,
-    },
+        fontSize: 25,
+        fontWeight: "700"
+    }
 });

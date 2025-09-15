@@ -460,7 +460,7 @@ export default function EditWorkouts() {
 
             return {
                 opacity: isActive ? 0 : thisOpacity.value,
-                backgroundColor: '#000074',
+                backgroundColor: colors.darkBlue,
                 pointerEvents: draggedExercise.value !== null ? "none" : "auto",
                 transform: [{
                     translateY: withTiming(targetY, { duration: TIMING_DURATION })
@@ -473,7 +473,7 @@ export default function EditWorkouts() {
                 <Text style={styles.exerciseText}>{exercise.title}</Text>
                 <GestureDetector gesture={dragGesture}>
                     <View style={styles.dragIcon}>
-                        <FontAwesome6 name="grip-vertical" size={14} color="#fff" />
+                        <FontAwesome6 name="grip-vertical" size={14} color={colors.white} />
                     </View>
                 </GestureDetector>
             </Animated.View>
@@ -543,7 +543,7 @@ export default function EditWorkouts() {
 
             return {
                 backgroundColor: isPressed.value
-                    ? withTiming("#fff", { duration: fast })
+                    ? withTiming(colors.white, { duration: fast })
                     : withTiming("transparent", { duration: slow }),
                 opacity: thisOpacity.value,
                 pointerEvents:
@@ -562,7 +562,7 @@ export default function EditWorkouts() {
             return {
                 color: isPressed.value
                     ? withTiming(colors.mainBG, { duration: fast })
-                    : withTiming("#fff", { duration: slow }),
+                    : withTiming(colors.white, { duration: slow }),
             };
         });
 
@@ -689,7 +689,6 @@ export default function EditWorkouts() {
             }
 
             return {
-                // backgroundColor: "#ffffff2a",
                 marginTop: WORKOUT_TITLE_HEIGHT,
                 marginBottom: WORKOUT_MARGIN_BOTTOM,
                 height: isDragging
@@ -740,7 +739,6 @@ export default function EditWorkouts() {
             targetY.value = posY;
 
             return {
-                // backgroundColor: "#ffffff2a",
                 position: "absolute",
                 top: 0,
                 left: SCREEN_SIDE_PADDING,
@@ -781,7 +779,7 @@ export default function EditWorkouts() {
 
             return {
                 zIndex: 100,
-                backgroundColor: "#fff",
+                backgroundColor: colors.white,
                 borderRadius: 10,
                 width: WORKOUT_BAR_LEFT_OFFSET - 10,
                 position: "absolute",
@@ -812,7 +810,7 @@ export default function EditWorkouts() {
             <Animated.View style={wrapperAnimStyle}>
                 <GestureDetector gesture={dragGesture}>
                     <Animated.View style={dragBarAnimStyle}>
-                        <FontAwesome6 name="grip-vertical" size={16} color="#000" />
+                        <FontAwesome6 name="grip-vertical" size={16} color={colors.black} />
                     </Animated.View>
                 </GestureDetector>
                 <Animated.Text style={styles.workoutTitle}>{workout.title}</Animated.Text>
@@ -850,7 +848,7 @@ export default function EditWorkouts() {
                     : isDragging
                         ? 1
                         : 0,
-                backgroundColor: '#000074',
+                backgroundColor: colors.darkBlue,
                 transform: [{
                     translateY: isActive ? translateY.value - WORKOUT_TITLE_HEIGHT : withTiming(targetY, { duration: TIMING_DURATION })
                 }]
@@ -861,7 +859,7 @@ export default function EditWorkouts() {
             <Animated.View style={[styles.exercise, animatedStyle]}>
                 <Text style={styles.exerciseText}>{exercise.title}</Text>
                 <View style={styles.dragIcon}>
-                    <FontAwesome6 name="grip-vertical" size={14} color="#fff" />
+                    <FontAwesome6 name="grip-vertical" size={14} color={colors.white} />
                 </View>
             </Animated.View>
         );
@@ -884,7 +882,6 @@ export default function EditWorkouts() {
             }
 
             return {
-                // backgroundColor: "#ffffff2a",
                 pointerEvents: "none",
                 position: "absolute",
                 top: 0,
@@ -917,7 +914,7 @@ export default function EditWorkouts() {
 
             return {
                 zIndex: 100,
-                backgroundColor: "#fff",
+                backgroundColor: colors.white,
                 borderRadius: 10,
                 width: WORKOUT_BAR_LEFT_OFFSET - 10,
                 position: "absolute",
@@ -951,7 +948,7 @@ export default function EditWorkouts() {
         return (<>
             <Animated.View style={wrapperAnimStyle}>
                 <Animated.View style={dragBarAnimStyle}>
-                    <FontAwesome6 name="grip-vertical" size={16} color="#000" />
+                    <FontAwesome6 name="grip-vertical" size={16} color={colors.black} />
                 </Animated.View>
                 <Animated.Text style={[styles.workoutTitle, titleAnimStyle]}>{workout.title}</Animated.Text>
                 <Animated.View style={workoutWrapperAnimStyle}>
@@ -1003,7 +1000,7 @@ const styles = StyleSheet.create({
         zIndex: 100,
         fontSize: 20,
         fontWeight: 700,
-        color: colors.primaryText,
+        color: colors.white,
         height: WORKOUT_TITLE_HEIGHT,
         position: "absolute",
         top: WORKOUT_TITLE_HEIGHT * -1,
@@ -1028,7 +1025,7 @@ const styles = StyleSheet.create({
         overflow: "hidden"
     },
     exerciseText: {
-        color: colors.primaryText,
+        color: colors.white,
         fontSize: 14,
         fontWeight: 500
     },
@@ -1044,7 +1041,7 @@ const styles = StyleSheet.create({
     },
     plusButton: {
         borderWidth: 1,
-        borderColor: "#fff",
+        borderColor: colors.white,
         borderRadius: 8,
         display: "flex",
         justifyContent: "center",

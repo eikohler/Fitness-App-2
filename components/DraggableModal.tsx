@@ -1,16 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Dimensions } from 'react-native';
-import Animated, { useAnimatedStyle, withSpring, useSharedValue, runOnJS, withTiming, Easing, withDecay } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, withSpring, useSharedValue, runOnJS, withTiming } from 'react-native-reanimated';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import NotesField from './NotesField';
 import LargeNumberField from './LargeNumberField';
+import TitleField from './TitleField';
+import MediumButton from './MediumButton';
+import { colors } from '@/styles/Styles';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const MIN_VELOCITY = 100;
 
-const TOP = SCREEN_HEIGHT * 0.25;
-const MIDDLE = SCREEN_HEIGHT * 0.60;
+const TOP = SCREEN_HEIGHT * 0.2;
+const MIDDLE = SCREEN_HEIGHT * 0.55;
 const CLOSE = SCREEN_HEIGHT * 0.8;
 const BOTTOM = SCREEN_HEIGHT;
 
@@ -155,10 +158,16 @@ export default function DraggableModal({ visible, onClose }: { visible: boolean,
             <GestureDetector gesture={panGesture}>
                 <Animated.View style={[styles.modal, modalAnimStyle]}>
                     <View style={styles.dragHandle} />
+                    <View style={{ marginBottom: 10 }}>
+                        <TitleField updateIsFocusing={updateIsFocusing} isFocusing={isFocusing} />
+                    </View>
                     <NotesField updateIsFocusing={updateIsFocusing} isFocusing={isFocusing} />
                     <View style={styles.largeInputsWrapper}>
                         <LargeNumberField updateIsFocusing={updateIsFocusing} isFocusing={isFocusing} fieldName='SETS' />
                         <LargeNumberField updateIsFocusing={updateIsFocusing} isFocusing={isFocusing} fieldName='REPS' />
+                    </View>
+                    <View style={{ marginTop: 25, display: "flex", alignItems: "center" }}>
+                        <MediumButton text="SAVE" />
                     </View>
                 </Animated.View>
             </GestureDetector>
@@ -184,7 +193,7 @@ const styles = StyleSheet.create({
         width: '100%',
         height: '100%',
         bottom: 0,
-        backgroundColor: '#000074',
+        backgroundColor: colors.darkBlue,
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
         padding: 20,
@@ -194,13 +203,13 @@ const styles = StyleSheet.create({
         height: 6,
         backgroundColor: 'rgba(255, 255, 255, 0.3)',
         borderRadius: 3,
-        marginBottom: 30,
+        marginBottom: 20,
         marginHorizontal: "auto",
     },
     largeInputsWrapper: {
         display: "flex",
         flexDirection: 'row',
         gap: 10,
-        marginTop: 15,
+        marginTop: 12,
     }
 });

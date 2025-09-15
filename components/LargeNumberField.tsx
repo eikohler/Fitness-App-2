@@ -36,7 +36,7 @@ export default function LargeNumberField({
                 onChangeText={handleChange}
                 value={value}
                 placeholder="0"
-                placeholderTextColor={colors.secondText}
+                placeholderTextColor={colors.softWhite}
                 returnKeyType="done"
                 submitBehavior="blurAndSubmit"
             />
@@ -51,16 +51,16 @@ const styles = StyleSheet.create({
     },
     input: {
         borderRadius: 10,
-        borderColor: "#fff",
+        borderColor: colors.white,
         borderWidth: 1,
         padding: 10,
         textAlign: "center",
-        color: colors.primaryText,
-        fontSize: 35,
-        fontWeight: "500"
+        color: colors.white,
+        fontSize: 28,
+        fontWeight: "600"
     },
     fieldName: {
-        color: colors.secondText,
+        color: colors.softWhite,
         fontSize: 14,
         textAlign: "center",
         marginTop: 5

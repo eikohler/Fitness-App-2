@@ -1,0 +1,68 @@
+import React from 'react'
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler'
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import { colors } from '@/styles/Styles';
+import { StyleSheet, Text } from 'react-native';
+
+export default function MediumButton({ text }: { text: string }) {
+    const isPressed = useSharedValue(false);
+    const fast = 50;
+    const slow = 150;
+
+    const tapGesture = Gesture.Tap()
+        .onBegin(() => {
+            isPressed.value = true;
+        })
+        .onFinalize(() => {
+            isPressed.value = false;
+        })
+        .onEnd((_e, success) => {
+            if (success) {
+                console.log('tapped');
+            }
+        });
+
+    const longPressGesture = Gesture.LongPress()
+        .onBegin(() => {
+            isPressed.value = true;
+        })
+        .onFinalize(() => {
+            isPressed.value = false;
+        })
+        .onEnd((_e, success) => {
+            if (success) {
+                console.log('long press');
+            }
+        });
+
+    // Long press overrides tap
+    const pressGesture = Gesture.Exclusive(longPressGesture, tapGesture);
+
+    const viewAnimStyle = useAnimatedStyle(() => {
+        return {
+            backgroundColor: isPressed.value
+                ? withTiming(colors.white, { duration: fast })
+                : withTiming(colors.softWhite, { duration: slow }),
+            padding: 8,
+            borderRadius: 10,
+            minWidth: 150
+        };
+    });
+
+    return (
+        <GestureDetector gesture={pressGesture}>
+            <Animated.View style={viewAnimStyle}>
+                <Text style={styles.text}>{text}</Text>
+            </Animated.View>
+        </GestureDetector>
+    )
+}
+
+const styles = StyleSheet.create({
+    text: {
+        color: colors.darkBlue,
+        textAlign: "center",
+        fontSize: 20,
+        fontWeight: "700"
+    }
+});
