@@ -3,6 +3,7 @@ import { View, StyleSheet, Dimensions } from 'react-native';
 import Animated, { useAnimatedStyle, withSpring, useSharedValue, runOnJS, withTiming, Easing, withDecay } from 'react-native-reanimated';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import NotesField from './NotesField';
+import LargeNumberField from './LargeNumberField';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -155,6 +156,10 @@ export default function DraggableModal({ visible, onClose }: { visible: boolean,
                 <Animated.View style={[styles.modal, modalAnimStyle]}>
                     <View style={styles.dragHandle} />
                     <NotesField updateIsFocusing={updateIsFocusing} isFocusing={isFocusing} />
+                    <View style={styles.largeInputsWrapper}>
+                        <LargeNumberField updateIsFocusing={updateIsFocusing} isFocusing={isFocusing} fieldName='SETS' />
+                        <LargeNumberField updateIsFocusing={updateIsFocusing} isFocusing={isFocusing} fieldName='REPS' />
+                    </View>
                 </Animated.View>
             </GestureDetector>
         </GestureHandlerRootView>
@@ -192,4 +197,10 @@ const styles = StyleSheet.create({
         marginBottom: 30,
         marginHorizontal: "auto",
     },
+    largeInputsWrapper: {
+        display: "flex",
+        flexDirection: 'row',
+        gap: 10,
+        marginTop: 15,
+    }
 });

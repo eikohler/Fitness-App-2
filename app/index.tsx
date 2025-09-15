@@ -1003,7 +1003,7 @@ const styles = StyleSheet.create({
         zIndex: 100,
         fontSize: 20,
         fontWeight: 700,
-        color: "#fff",
+        color: colors.primaryText,
         height: WORKOUT_TITLE_HEIGHT,
         position: "absolute",
         top: WORKOUT_TITLE_HEIGHT * -1,
@@ -1028,7 +1028,7 @@ const styles = StyleSheet.create({
         overflow: "hidden"
     },
     exerciseText: {
-        color: "#fff",
+        color: colors.primaryText,
         fontSize: 14,
         fontWeight: 500
     },

@@ -1,4 +1,4 @@
-import { View, StyleSheet, TextInput } from 'react-native';
+import { StyleSheet, TextInput } from 'react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import { colors } from '@/styles/Styles';
 
@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
         borderColor: "#fff",
         borderWidth: 1,
         padding: 10,
-        color: "#fff",
+        color: colors.primaryText,
         fontSize: 16,
     },
 });
