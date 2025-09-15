@@ -13,6 +13,7 @@ export default function LargeNumberField({
 }) {
     const [value, setValue] = useState("");
     const inputRef = useRef<TextInput>(null);
+    const [isFocused, setIsFocused] = useState(false);
 
     useEffect(() => {
         if (!isFocusing) inputRef.current?.blur();
@@ -23,20 +24,32 @@ export default function LargeNumberField({
         setValue(numeric);
     };
 
+    useEffect(() => {
+        if (!isFocusing) {
+            inputRef.current?.blur();
+            setIsFocused(false);
+        }
+    }, [isFocusing]);
+
+    const updateFocus = (state: boolean) => {
+        setIsFocused(state);
+        updateIsFocusing(state);
+    }
+
     return (
         <View style={styles.wrapper}>
             <TextInput
                 ref={inputRef}
-                onFocus={() => updateIsFocusing(true)}
-                onBlur={() => updateIsFocusing(false)}
+                onFocus={() => updateFocus(true)}
+                onBlur={() => updateFocus(false)}
                 style={styles.input}
                 multiline
                 keyboardType="number-pad"
                 scrollEnabled={false}
                 onChangeText={handleChange}
                 value={value}
-                placeholder="0"
-                placeholderTextColor={colors.softWhite}
+                placeholder={"0"}
+                placeholderTextColor={isFocused ? "transparent" : colors.softWhite}
                 returnKeyType="done"
                 submitBehavior="blurAndSubmit"
             />

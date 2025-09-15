@@ -14,23 +14,32 @@ export default function NotesField({
     const [height, setHeight] = useState(START_HEIGHT);
     const [value, setValue] = useState("");
     const inputRef = useRef<TextInput>(null);
+    const [isFocused, setIsFocused] = useState(false);
 
     useEffect(() => {
-        if (!isFocusing) inputRef.current?.blur();
+        if (!isFocusing) {
+            inputRef.current?.blur();
+            setIsFocused(false);
+        }
     }, [isFocusing]);
+
+    const updateFocus = (state: boolean) => {
+        setIsFocused(state);
+        updateIsFocusing(state);
+    }
 
     return (
         <TextInput
             ref={inputRef}
-            onFocus={() => updateIsFocusing(true)}
-            onBlur={() => updateIsFocusing(false)}
+            onFocus={() => updateFocus(true)}
+            onBlur={() => updateFocus(false)}
             style={[styles.input, { minHeight: height }]}
             multiline
             scrollEnabled={false}
             onChangeText={setValue}
             value={value}
-            placeholder="Notes"
-            placeholderTextColor={colors.softWhite}
+            placeholder={"Notes"}
+            placeholderTextColor={isFocused ? "transparent" : colors.softWhite}
             returnKeyType="done"
             submitBehavior="blurAndSubmit"
             onContentSizeChange={(e) => {
