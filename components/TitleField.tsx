@@ -4,10 +4,14 @@ import { colors } from '@/styles/Styles';
 
 export default function TitleField({
     updateIsFocusing,
-    isFocusing
+    isFocusing,
+    updateTitleIsFocused,
+    updateTitleValue
 }: {
     updateIsFocusing: (state: boolean) => void,
-    isFocusing: boolean
+    isFocusing: boolean,
+    updateTitleIsFocused: (state: boolean) => void,
+    updateTitleValue: (text: string) => void
 }) {
     const [value, setValue] = useState("");
     const inputRef = useRef<TextInput>(null);
@@ -17,12 +21,14 @@ export default function TitleField({
         if (!isFocusing) {
             inputRef.current?.blur();
             setIsFocused(false);
+            updateTitleIsFocused(false);
         }
     }, [isFocusing]);
 
     const updateFocus = (state: boolean) => {
         setIsFocused(state);
         updateIsFocusing(state);
+        updateTitleIsFocused(state);
     }
 
     return (
@@ -30,11 +36,17 @@ export default function TitleField({
             ref={inputRef}
             onFocus={() => updateFocus(true)}
             onBlur={() => updateFocus(false)}
-            style={styles.input}
+            style={[styles.input, {
+                borderColor: isFocused ? colors.softWhite : "transparent",
+                paddingBottom: isFocused ? 12 : 0
+            }]}
             scrollEnabled={false}
-            onChangeText={setValue}
+            onChangeText={(e) => {
+                setValue(e);
+                updateTitleValue(e);
+            }}
             value={value}
-            placeholder={"Exercise Name"}
+            placeholder={"Type exercise..."}
             placeholderTextColor={isFocused ? "transparent" : colors.softWhite}
             returnKeyType="done"
             submitBehavior="blurAndSubmit"
@@ -46,6 +58,8 @@ const styles = StyleSheet.create({
     input: {
         color: colors.white,
         fontSize: 25,
-        fontWeight: "700"
+        fontWeight: "700",
+        borderBottomWidth: 1,
+        paddingBottom: 10
     }
 });

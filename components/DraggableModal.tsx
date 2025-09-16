@@ -7,6 +7,7 @@ import LargeNumberField from './LargeNumberField';
 import TitleField from './TitleField';
 import MediumButton from './MediumButton';
 import { colors } from '@/styles/Styles';
+import InvertedButton from './InvertedButton';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -16,12 +17,36 @@ const TOP = SCREEN_HEIGHT * 0.2;
 const MIDDLE = SCREEN_HEIGHT * 0.55;
 const CLOSE = SCREEN_HEIGHT * 0.8;
 const BOTTOM = SCREEN_HEIGHT;
+const EXERCISES = [
+    "Push-Up",
+    "Pull-Up",
+    "Squat",
+    "Lunge",
+    "Deadlift",
+    "Bench Press",
+    "Shoulder Press",
+    "Bicep Curl",
+    "Tricep Dip",
+    "Plank",
+    "Mountain Climber",
+    "Burpee",
+    "Crunch",
+    "Leg Raise",
+    "Russian Twist",
+    "Hip Thrust",
+    "Calf Raise",
+    "Lat Pulldown",
+    "Row",
+    "Overhead Press"
+];
 
 export default function DraggableModal({ visible, onClose }: { visible: boolean, onClose: () => void }) {
     const translateY = useSharedValue(BOTTOM);
     const startY = useSharedValue(0);
     const [isFocusing, setIsFocusing] = useState(false);
     const [tapClose, setTapClose] = useState(false);
+    const [titleIsFocused, setTitleIsFocused] = useState(false);
+    const [titleValue, setTitleValue] = useState('');
     const animInProgress = useSharedValue(false);
 
     useEffect(() => {
@@ -150,6 +175,28 @@ export default function DraggableModal({ visible, onClose }: { visible: boolean,
     // Long press overrides tap
     const bgPressGesture = Gesture.Exclusive(bgLongPressGesture, bgTapGesture);
 
+    const filterExercises = (list: string[], value: string) => {
+        const query = value.toLowerCase().trim();
+        if (!query) return [];
+
+        return list
+            .filter(exercise => exercise.toLowerCase().includes(query))
+            .sort((a, b) => {
+                const aName = a.toLowerCase();
+                const bName = b.toLowerCase();
+
+                const aStarts = aName.startsWith(query);
+                const bStarts = bName.startsWith(query);
+
+                // Prioritize those that start with the query
+                if (aStarts && !bStarts) return -1;
+                if (!aStarts && bStarts) return 1;
+
+                // Otherwise, sort alphabetically
+                return aName.localeCompare(bName);
+            });
+    }
+
     return (
         <GestureHandlerRootView style={[styles.wrapper, { pointerEvents: visible ? "auto" : "none" }]}>
             <GestureDetector gesture={bgPressGesture}>
@@ -159,19 +206,32 @@ export default function DraggableModal({ visible, onClose }: { visible: boolean,
                 <Animated.View style={[styles.modal, modalAnimStyle]}>
                     <View style={styles.dragHandle} />
                     <View style={{ marginBottom: 10 }}>
-                        <TitleField updateIsFocusing={updateIsFocusing} isFocusing={isFocusing} />
+                        <TitleField
+                            updateIsFocusing={updateIsFocusing}
+                            isFocusing={isFocusing}
+                            updateTitleIsFocused={(state: boolean) => setTitleIsFocused(state)}
+                            updateTitleValue={(text: string) => setTitleValue(text)}
+                        />
                     </View>
-                    <NotesField updateIsFocusing={updateIsFocusing} isFocusing={isFocusing} />
-                    <View style={styles.largeInputsWrapper}>
-                        <LargeNumberField updateIsFocusing={updateIsFocusing} isFocusing={isFocusing} fieldName='SETS' />
-                        <LargeNumberField updateIsFocusing={updateIsFocusing} isFocusing={isFocusing} fieldName='REPS' />
-                    </View>
-                    <View style={{ marginTop: 25, display: "flex", alignItems: "center" }}>
-                        <MediumButton text="SAVE" />
-                    </View>
+                    {titleIsFocused ? (
+                        <View style={{ marginTop: 5, display: "flex", flexDirection: "row", flexWrap: "wrap", rowGap: 12, columnGap: 8 }}>
+                            {filterExercises(EXERCISES, titleValue)?.map((exercise: string, i) => (
+                                <InvertedButton key={i} text={exercise} />
+                            ))}
+                        </View>
+                    ) : (<>
+                        <NotesField updateIsFocusing={updateIsFocusing} isFocusing={isFocusing} />
+                        <View style={styles.largeInputsWrapper}>
+                            <LargeNumberField updateIsFocusing={updateIsFocusing} isFocusing={isFocusing} fieldName='SETS' />
+                            <LargeNumberField updateIsFocusing={updateIsFocusing} isFocusing={isFocusing} fieldName='REPS' />
+                        </View>
+                        <View style={{ marginTop: 25, display: "flex", alignItems: "center" }}>
+                            <MediumButton text="SAVE" />
+                        </View>
+                    </>)}
                 </Animated.View>
             </GestureDetector>
-        </GestureHandlerRootView>
+        </GestureHandlerRootView >
     );
 };
 
