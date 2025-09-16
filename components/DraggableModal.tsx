@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Dimensions } from 'react-native';
+import { View, StyleSheet, Dimensions, ScrollView } from 'react-native';
 import Animated, { useAnimatedStyle, withSpring, useSharedValue, runOnJS, withTiming } from 'react-native-reanimated';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import NotesField from './NotesField';
@@ -13,7 +13,7 @@ const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const MIN_VELOCITY = 100;
 
-const TOP = SCREEN_HEIGHT * 0.2;
+const TOP = 50;
 const MIDDLE = SCREEN_HEIGHT * 0.55;
 const CLOSE = SCREEN_HEIGHT * 0.8;
 const BOTTOM = SCREEN_HEIGHT;
@@ -177,7 +177,7 @@ export default function DraggableModal({ visible, onClose }: { visible: boolean,
 
     const filterExercises = (list: string[], value: string) => {
         const query = value.toLowerCase().trim();
-        if (!query) return [];
+        if (!query) return list;
 
         return list
             .filter(exercise => exercise.toLowerCase().includes(query))
@@ -214,11 +214,13 @@ export default function DraggableModal({ visible, onClose }: { visible: boolean,
                         />
                     </View>
                     {titleIsFocused ? (
-                        <View style={{ marginTop: 5, display: "flex", flexDirection: "row", flexWrap: "wrap", rowGap: 12, columnGap: 8 }}>
-                            {filterExercises(EXERCISES, titleValue)?.map((exercise: string, i) => (
-                                <InvertedButton key={i} text={exercise} />
-                            ))}
-                        </View>
+                        <ScrollView showsVerticalScrollIndicator={false}>
+                            <View style={styles.exerciseList}>
+                                {filterExercises(EXERCISES, titleValue)?.map((exercise: string, i) => (
+                                    <InvertedButton key={i} text={exercise} />
+                                ))}
+                            </View>
+                        </ScrollView>
                     ) : (<>
                         <NotesField updateIsFocusing={updateIsFocusing} isFocusing={isFocusing} />
                         <View style={styles.largeInputsWrapper}>
@@ -271,5 +273,14 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         gap: 10,
         marginTop: 12,
+    },
+    exerciseList: {
+        marginTop: 10,
+        display: "flex",
+        flexDirection: "row",
+        flexWrap: "wrap",
+        rowGap: 12,
+        columnGap: 8,
+        paddingBottom: SCREEN_HEIGHT * 0.5
     }
 });
