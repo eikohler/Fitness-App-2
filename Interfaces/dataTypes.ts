@@ -54,3 +54,10 @@ export interface WorkoutExerciseRow {
     alt_exercise_title: string | null;
     alt_exercise_note: string | null;
 }
+
+export interface AddedExercise {
+    title: string,
+    notes: string,
+    sets: number,
+    reps: number
+}

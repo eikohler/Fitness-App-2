@@ -16,6 +16,7 @@ import Animated, {
 import { FontAwesome6 } from "@expo/vector-icons";
 import { colors } from '@/styles/Styles';
 import DraggableModal from '@/components/DraggableModal';
+import { AddedExercise } from '@/Interfaces/dataTypes';
 
 interface Exercise {
     id: number;
@@ -97,6 +98,7 @@ export default function EditWorkouts() {
     const [postUpdate, setPostUpdate] = useState(false);
 
     const [modalVisible, setModalVisible] = useState(false);
+    const [modalWorkoutID, setModalWorkoutID] = useState<number | null>(null);
 
     const [workouts, setWorkouts] = useState<Workouts>(initialWorkouts);
 
@@ -425,7 +427,8 @@ export default function EditWorkouts() {
 
             const workoutIndex = workouts.findIndex(w => w.id === workout.id);
 
-            const isDragging = draggedWorkout.value !== null;
+            const isDraggingWorkout = draggedWorkout.value !== null;
+            const isDraggingExercise = draggedExercise.value !== null;
 
             let targetY;
 
@@ -447,7 +450,7 @@ export default function EditWorkouts() {
                 posY.value = targetY + workoutLayouts.value[workoutIndex].y;
             }
 
-            if (isDragging && thisIndex > 0) thisOpacity.value = withTiming(0, { duration: 200 });
+            if (isDraggingWorkout && thisIndex > 0) thisOpacity.value = withTiming(0, { duration: 200 });
             else if (thisOpacity.value === 0) {
                 if (wasActive.value) {
                     wasActive.value = false;
@@ -463,7 +466,7 @@ export default function EditWorkouts() {
                 backgroundColor: colors.darkBlue,
                 pointerEvents: draggedExercise.value !== null ? "none" : "auto",
                 transform: [{
-                    translateY: withTiming(targetY, { duration: TIMING_DURATION })
+                    translateY: isDraggingExercise ? withTiming(targetY, { duration: TIMING_DURATION }) : targetY
                 }]
             };
         });
@@ -502,6 +505,7 @@ export default function EditWorkouts() {
             .onEnd((_e, success) => {
                 if (success) {
                     runOnJS(setModalVisible)(true);
+                    runOnJS(setModalWorkoutID)(workout.id);
                 }
             });
 
@@ -515,6 +519,7 @@ export default function EditWorkouts() {
             .onEnd((_e, success) => {
                 if (success) {
                     runOnJS(setModalVisible)(true);
+                    runOnJS(setModalWorkoutID)(workout.id);
                 }
             });
 
@@ -523,7 +528,8 @@ export default function EditWorkouts() {
 
         const animStyle = useAnimatedStyle(() => {
             const workoutIndex = workouts.findIndex((w) => w.id === workout.id);
-            const isDragging = draggedWorkout.value !== null;
+            const isDraggingWorkout = draggedWorkout.value !== null;
+            const isDraggingExercise = draggedExercise.value !== null;
 
             const exOrder = dragDropStart.value
                 ? workouts[workoutIndex].exercises.map((ex) => ex.id)
@@ -533,7 +539,7 @@ export default function EditWorkouts() {
             const targetY =
                 index * EXERCISE_HEIGHT + index * EXERCISE_SPACING;
 
-            if (isDragging && index > 0) {
+            if (isDraggingWorkout && index > 0) {
                 thisOpacity.value = withTiming(0, { duration: 200 });
             } else if (thisOpacity.value === 0) {
                 thisOpacity.value = withTiming(1, { duration: 300 });
@@ -552,7 +558,7 @@ export default function EditWorkouts() {
                         : "auto",
                 transform: [
                     {
-                        translateY: withTiming(targetY, { duration: TIMING_DURATION }),
+                        translateY: isDraggingExercise ? withTiming(targetY, { duration: TIMING_DURATION }) : targetY
                     },
                 ],
             };
@@ -961,6 +967,41 @@ export default function EditWorkouts() {
         </>);
     };
 
+    const addExerciseToWorkout = (workoutID: number, data: AddedExercise) => {
+        const workoutIndex = workouts.findIndex((w) => w.id === workoutID);
+        if (workoutIndex === -1) return;
+
+        const exOrder = exerciseOrders.value;
+
+        const newExID = Math.max(...exOrder[workoutIndex]) + 1;
+
+        const newExOrderForWorkout = [...exOrder[workoutIndex], newExID];
+
+        const newExOrders = [...exOrder];
+        newExOrders[workoutIndex] = newExOrderForWorkout;
+
+        const newWorkouts = [...workouts];
+        newWorkouts[workoutIndex] = {
+            ...newWorkouts[workoutIndex],
+            exercises: [
+                ...newWorkouts[workoutIndex].exercises,
+                {
+                    id: newExID,
+                    title: `${data.title} ${data.sets}x${data.reps}`,
+                },
+            ],
+        };
+
+        requestAnimationFrame(() => {
+            exerciseOrders.value = [...newExOrders];
+        });
+
+        setWorkouts([...newWorkouts]);
+
+        setModalVisible(false);
+        setModalWorkoutID(null);
+    }
+
     return (<>
         {workouts.map((w, i) =>
             <DragWorkout key={i} workout={w} index={i} />
@@ -983,8 +1024,13 @@ export default function EditWorkouts() {
             </GestureDetector>
         </GestureHandlerRootView>
         <DraggableModal
+            modalWorkoutID={modalWorkoutID}
             visible={modalVisible}
-            onClose={() => setModalVisible(false)}
+            onClose={() => {
+                setModalVisible(false)
+                setModalWorkoutID(null);
+            }}
+            addExerciseToWorkout={addExerciseToWorkout}
         />
     </>);
 }

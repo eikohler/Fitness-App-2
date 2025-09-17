@@ -16,6 +16,8 @@
 - [x] Optimize drag and reorder
 
 ## Edit workouts
+- [] Change exercises and workouts to use UUID instead of integers
+- [] Add notes, sets and reps data to exercises
 - [] Add new exercise to workout
 - [] Edit workout title
 - [] Add sets and reps to exercises

@@ -1,10 +1,18 @@
 import React from 'react'
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler'
-import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { colors } from '@/styles/Styles';
 import { StyleSheet, Text } from 'react-native';
 
-export default function MediumButton({ text }: { text: string }) {
+export default function MediumButton({
+    text,
+    action,
+    disabled
+}: {
+    text: string,
+    action: () => void,
+    disabled: boolean
+}) {
     const isPressed = useSharedValue(false);
     const fast = 50;
     const slow = 150;
@@ -18,7 +26,7 @@ export default function MediumButton({ text }: { text: string }) {
         })
         .onEnd((_e, success) => {
             if (success) {
-                console.log('tapped');
+                runOnJS(action)();
             }
         });
 
@@ -31,7 +39,7 @@ export default function MediumButton({ text }: { text: string }) {
         })
         .onEnd((_e, success) => {
             if (success) {
-                console.log('long press');
+                runOnJS(action)();
             }
         });
 
@@ -45,7 +53,9 @@ export default function MediumButton({ text }: { text: string }) {
                 : withTiming(colors.softWhite, { duration: slow }),
             padding: 8,
             borderRadius: 10,
-            minWidth: 150
+            minWidth: 150,
+            pointerEvents: disabled ? "none" : "auto",
+            opacity: disabled ? withTiming(0.5) : withTiming(1)
         };
     });
 

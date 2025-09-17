@@ -8,6 +8,7 @@ import TitleField from './TitleField';
 import MediumButton from './MediumButton';
 import { colors } from '@/styles/Styles';
 import InvertedButton from './InvertedButton';
+import { AddedExercise } from '@/Interfaces/dataTypes';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -40,7 +41,17 @@ const EXERCISES = [
     "Overhead Press"
 ];
 
-export default function DraggableModal({ visible, onClose }: { visible: boolean, onClose: () => void }) {
+export default function DraggableModal({
+    visible,
+    onClose,
+    addExerciseToWorkout,
+    modalWorkoutID
+}: {
+    visible: boolean,
+    onClose: () => void,
+    addExerciseToWorkout: (workoutID: number, data: AddedExercise) => void,
+    modalWorkoutID: number | null
+}) {
     const translateY = useSharedValue(BOTTOM);
     const startY = useSharedValue(0);
     const [isFocusing, setIsFocusing] = useState(false);
@@ -57,6 +68,18 @@ export default function DraggableModal({ visible, onClose }: { visible: boolean,
         if (visible) {
             animInProgress.value = true;
             translateY.value = withSpring(isFocusing ? TOP : MIDDLE, {
+                stiffness: 250,
+                damping: 22,
+                mass: 0.9,
+                overshootClamping: false
+            }, function (isFinished) {
+                if (isFinished) {
+                    animInProgress.value = false;
+                }
+            });
+        } else {
+            animInProgress.value = true;
+            translateY.value = withSpring(BOTTOM, {
                 stiffness: 250,
                 damping: 22,
                 mass: 0.9,
@@ -241,7 +264,19 @@ export default function DraggableModal({ visible, onClose }: { visible: boolean,
                                 updateStoredValue={(text: string) => setSingleRepsValue(text)} />
                         </View>
                         <View style={{ marginTop: 25, display: "flex", alignItems: "center" }}>
-                            <MediumButton text="SAVE" />
+                            <MediumButton text="SAVE"
+                                disabled={(modalWorkoutID && titleValue && singleSetsValue && singleRepsValue) ? false : true}
+                                action={() => {
+                                    if (modalWorkoutID && titleValue && singleSetsValue && singleRepsValue) {
+                                        const data = {
+                                            title: titleValue,
+                                            notes: notesValue,
+                                            sets: parseFloat(singleSetsValue),
+                                            reps: parseFloat(singleRepsValue)
+                                        };
+                                        addExerciseToWorkout(modalWorkoutID, data);
+                                    }
+                                }} />
                         </View>
                     </>)}
                 </Animated.View>
