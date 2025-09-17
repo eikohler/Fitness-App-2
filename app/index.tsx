@@ -973,7 +973,7 @@ export default function EditWorkouts() {
 
         const exOrder = exerciseOrders.value;
 
-        const newExID = Math.max(...exOrder[workoutIndex]) + 1;
+        const newExID = Math.floor(Math.random() * (10000 - 100 + 1)) + 100;
 
         const newExOrderForWorkout = [...exOrder[workoutIndex], newExID];
 

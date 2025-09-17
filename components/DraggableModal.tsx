@@ -87,6 +87,10 @@ export default function DraggableModal({
             }, function (isFinished) {
                 if (isFinished) {
                     animInProgress.value = false;
+                    runOnJS(setTitleValue)("");
+                    runOnJS(setNotesValue)("");
+                    runOnJS(setSingleSetsValue)("");
+                    runOnJS(setSingleRepsValue)("");
                 }
             });
         }
