@@ -6,16 +6,24 @@ export default function TitleField({
     updateIsFocusing,
     isFocusing,
     updateTitleIsFocused,
-    updateTitleValue
+    updateTitleValue,
+    titleValue
 }: {
     updateIsFocusing: (state: boolean) => void,
     isFocusing: boolean,
     updateTitleIsFocused: (state: boolean) => void,
-    updateTitleValue: (text: string) => void
+    updateTitleValue: (text: string) => void,
+    titleValue: string
 }) {
     const [value, setValue] = useState("");
     const inputRef = useRef<TextInput>(null);
     const [isFocused, setIsFocused] = useState(false);
+
+    useEffect(() => {
+        if (titleValue !== value) {
+            setValue(titleValue);
+        }
+    }, [titleValue]);
 
     useEffect(() => {
         if (!isFocusing) {
@@ -47,7 +55,7 @@ export default function TitleField({
             }}
             value={value}
             placeholder={"Type exercise..."}
-            placeholderTextColor={isFocused ? "transparent" : colors.softWhite}
+            placeholderTextColor={colors.softWhite}
             returnKeyType="done"
             submitBehavior="blurAndSubmit"
         />

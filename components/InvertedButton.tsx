@@ -1,9 +1,9 @@
 import React from 'react'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
-import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { colors } from '@/styles/Styles';
 
-export default function InvertedButton({ text }: { text: string }) {
+export default function InvertedButton({ text, action }: { text: string, action: () => void }) {
     const isPressed = useSharedValue(false);
     const fast = 50;
     const slow = 150;
@@ -17,7 +17,7 @@ export default function InvertedButton({ text }: { text: string }) {
         })
         .onEnd((_e, success) => {
             if (success) {
-                console.log('tapped');
+                runOnJS(action)();
             }
         });
 
@@ -30,7 +30,7 @@ export default function InvertedButton({ text }: { text: string }) {
         })
         .onEnd((_e, success) => {
             if (success) {
-                console.log('long press');
+                runOnJS(action)();
             }
         });
 

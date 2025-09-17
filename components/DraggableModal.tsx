@@ -13,7 +13,7 @@ const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const MIN_VELOCITY = 100;
 
-const TOP = 50;
+const TOP = SCREEN_HEIGHT * 0.2;
 const MIDDLE = SCREEN_HEIGHT * 0.55;
 const CLOSE = SCREEN_HEIGHT * 0.8;
 const BOTTOM = SCREEN_HEIGHT;
@@ -46,8 +46,12 @@ export default function DraggableModal({ visible, onClose }: { visible: boolean,
     const [isFocusing, setIsFocusing] = useState(false);
     const [tapClose, setTapClose] = useState(false);
     const [titleIsFocused, setTitleIsFocused] = useState(false);
-    const [titleValue, setTitleValue] = useState('');
     const animInProgress = useSharedValue(false);
+
+    const [titleValue, setTitleValue] = useState('');
+    const [notesValue, setNotesValue] = useState('');
+    const [singleSetsValue, setSingleSetsValue] = useState('');
+    const [singleRepsValue, setSingleRepsValue] = useState('');
 
     useEffect(() => {
         if (visible) {
@@ -207,6 +211,7 @@ export default function DraggableModal({ visible, onClose }: { visible: boolean,
                     <View style={styles.dragHandle} />
                     <View style={{ marginBottom: 10 }}>
                         <TitleField
+                            titleValue={titleValue}
                             updateIsFocusing={updateIsFocusing}
                             isFocusing={isFocusing}
                             updateTitleIsFocused={(state: boolean) => setTitleIsFocused(state)}
@@ -217,15 +222,23 @@ export default function DraggableModal({ visible, onClose }: { visible: boolean,
                         <ScrollView showsVerticalScrollIndicator={false}>
                             <View style={styles.exerciseList}>
                                 {filterExercises(EXERCISES, titleValue)?.map((exercise: string, i) => (
-                                    <InvertedButton key={i} text={exercise} />
+                                    <InvertedButton key={i} text={exercise}
+                                        action={() => {
+                                            setTitleValue(exercise);
+                                        }} />
                                 ))}
                             </View>
                         </ScrollView>
                     ) : (<>
-                        <NotesField updateIsFocusing={updateIsFocusing} isFocusing={isFocusing} />
+                        <NotesField notesValue={notesValue} updateIsFocusing={updateIsFocusing}
+                            isFocusing={isFocusing} updateNotesValue={(text: string) => setNotesValue(text)} />
                         <View style={styles.largeInputsWrapper}>
-                            <LargeNumberField updateIsFocusing={updateIsFocusing} isFocusing={isFocusing} fieldName='SETS' />
-                            <LargeNumberField updateIsFocusing={updateIsFocusing} isFocusing={isFocusing} fieldName='REPS' />
+                            <LargeNumberField storedValue={singleSetsValue} updateIsFocusing={updateIsFocusing}
+                                isFocusing={isFocusing} fieldName='SETS'
+                                updateStoredValue={(text: string) => setSingleSetsValue(text)} />
+                            <LargeNumberField storedValue={singleRepsValue} updateIsFocusing={updateIsFocusing}
+                                isFocusing={isFocusing} fieldName='REPS'
+                                updateStoredValue={(text: string) => setSingleRepsValue(text)} />
                         </View>
                         <View style={{ marginTop: 25, display: "flex", alignItems: "center" }}>
                             <MediumButton text="SAVE" />
@@ -281,6 +294,6 @@ const styles = StyleSheet.create({
         flexWrap: "wrap",
         rowGap: 12,
         columnGap: 8,
-        paddingBottom: SCREEN_HEIGHT * 0.5
+        paddingBottom: SCREEN_HEIGHT * 0.65
     }
 });

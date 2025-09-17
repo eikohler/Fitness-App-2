@@ -6,15 +6,25 @@ const START_HEIGHT = 55;
 
 export default function NotesField({
     updateIsFocusing,
-    isFocusing
+    isFocusing,
+    notesValue,
+    updateNotesValue
 }: {
     updateIsFocusing: (state: boolean) => void,
-    isFocusing: boolean
+    isFocusing: boolean,
+    notesValue: string,
+    updateNotesValue: (text: string) => void,
 }) {
     const [height, setHeight] = useState(START_HEIGHT);
     const [value, setValue] = useState("");
     const inputRef = useRef<TextInput>(null);
     const [isFocused, setIsFocused] = useState(false);
+
+    useEffect(() => {
+        if (notesValue !== value) {
+            setValue(notesValue);
+        }
+    }, [notesValue]);
 
     useEffect(() => {
         if (!isFocusing) {
@@ -36,7 +46,10 @@ export default function NotesField({
             style={[styles.input, { minHeight: height }]}
             multiline
             scrollEnabled={false}
-            onChangeText={setValue}
+            onChangeText={(e) => {
+                setValue(e);
+                updateNotesValue(e);
+            }}
             value={value}
             placeholder={"Notes"}
             placeholderTextColor={isFocused ? "transparent" : colors.softWhite}

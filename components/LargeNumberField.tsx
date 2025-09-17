@@ -5,15 +5,25 @@ import { colors } from '@/styles/Styles';
 export default function LargeNumberField({
     updateIsFocusing,
     isFocusing,
-    fieldName
+    fieldName,
+    storedValue,
+    updateStoredValue
 }: {
     updateIsFocusing: (state: boolean) => void,
     isFocusing: boolean,
-    fieldName: string
+    fieldName: string,
+    storedValue: string,
+    updateStoredValue: (text: string) => void
 }) {
     const [value, setValue] = useState("");
     const inputRef = useRef<TextInput>(null);
     const [isFocused, setIsFocused] = useState(false);
+
+    useEffect(() => {
+        if (storedValue !== value) {
+            setValue(storedValue);
+        }
+    }, [storedValue]);
 
     useEffect(() => {
         if (!isFocusing) inputRef.current?.blur();
@@ -22,6 +32,7 @@ export default function LargeNumberField({
     const handleChange = (text: string) => {
         const numeric = text.replace(/[^0-9.]/g, "");
         setValue(numeric);
+        updateStoredValue(numeric);
     };
 
     useEffect(() => {
