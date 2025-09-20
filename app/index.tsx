@@ -20,6 +20,7 @@ import DraggableModal from '@/components/DraggableModal';
 import { AddedExercise } from '@/Interfaces/dataTypes';
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
+import TimesIcon from "@/assets/icons/times-icon.svg";
 
 
 interface Exercise {
@@ -529,7 +530,7 @@ export default function EditWorkouts() {
         return (
             <Animated.View style={[styles.exercise, wrapperAnimStyle]}>
                 <Text style={styles.exerciseText}>
-                    {exercise.title} {exercise.sets} x {exercise.reps}
+                    {exercise.title}  {exercise.sets}<TimesIcon width={12} height={9} fill={colors.white} />{exercise.reps}
                 </Text>
                 <GestureDetector gesture={dragGesture}>
                     <View style={styles.dragIcon}>
@@ -1129,8 +1130,8 @@ const styles = StyleSheet.create({
     },
     exerciseText: {
         color: colors.white,
-        fontSize: 14,
-        fontWeight: 500
+        fontSize: 15,
+        fontWeight: 600
     },
     dragIcon: {
         position: 'absolute',
