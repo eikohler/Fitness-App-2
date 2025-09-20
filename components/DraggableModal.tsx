@@ -49,8 +49,8 @@ export default function DraggableModal({
 }: {
     visible: boolean,
     onClose: () => void,
-    addExerciseToWorkout: (workoutID: number, data: AddedExercise) => void,
-    modalWorkoutID: number | null
+    addExerciseToWorkout: (workoutID: string, data: AddedExercise) => void,
+    modalWorkoutID: string | null
 }) {
     const translateY = useSharedValue(BOTTOM);
     const startY = useSharedValue(0);

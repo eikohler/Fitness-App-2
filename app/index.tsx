@@ -17,14 +17,17 @@ import { FontAwesome6 } from "@expo/vector-icons";
 import { colors } from '@/styles/Styles';
 import DraggableModal from '@/components/DraggableModal';
 import { AddedExercise } from '@/Interfaces/dataTypes';
+import 'react-native-get-random-values';
+import { v4 as uuidv4 } from 'uuid';
+
 
 interface Exercise {
-    id: number;
+    id: string;
     title: string;
 };
 
 interface Workout {
-    id: number;
+    id: string;
     title: string;
     exercises: Exercise[]
 }
@@ -33,39 +36,39 @@ type Workouts = Workout[];
 
 const initialWorkouts: Workouts = [
     {
-        id: 1,
+        id: uuidv4(),
         title: "Upper Body",
         exercises: [
-            { id: 1, title: 'Bench Press 3x10' },
-            { id: 2, title: 'Shoulder Press 3x10' },
-            { id: 3, title: 'DB Curls 3x10' }
+            { id: uuidv4(), title: 'Bench Press 3x10' },
+            { id: uuidv4(), title: 'Shoulder Press 3x10' },
+            { id: uuidv4(), title: 'DB Curls 3x10' }
         ]
     },
     {
-        id: 2,
+        id: uuidv4(),
         title: "Leg Day",
         exercises: [
-            { id: 4, title: 'Leg Press 3x10' },
-            { id: 5, title: 'Deadlifts 3x10' },
-            { id: 6, title: 'Leg Curls 3x10' }
+            { id: uuidv4(), title: 'Leg Press 3x10' },
+            { id: uuidv4(), title: 'Deadlifts 3x10' },
+            { id: uuidv4(), title: 'Leg Curls 3x10' }
         ]
     },
     {
-        id: 3,
+        id: uuidv4(),
         title: "Calisthenics Day",
         exercises: [
-            { id: 7, title: 'Leg Raises 3x10' },
-            { id: 8, title: 'Pullups 3x10' },
-            { id: 9, title: 'Pushups 3x10' }
+            { id: uuidv4(), title: 'Leg Raises 3x10' },
+            { id: uuidv4(), title: 'Pullups 3x10' },
+            { id: uuidv4(), title: 'Pushups 3x10' }
         ]
     },
     {
-        id: 4,
+        id: uuidv4(),
         title: "Back Day",
         exercises: [
-            { id: 10, title: 'Lat Pulldowns 3x10' },
-            { id: 11, title: 'Cable Rows 3x10' },
-            { id: 12, title: 'Bent over rows 3x10' }
+            { id: uuidv4(), title: 'Lat Pulldowns 3x10' },
+            { id: uuidv4(), title: 'Cable Rows 3x10' },
+            { id: uuidv4(), title: 'Bent over rows 3x10' }
         ]
     }
 ];
@@ -93,24 +96,26 @@ const DRAG_OPACITY = 0.6;
 
 const PRESS_HOLD_LENGTH = 200;
 
+const cloneExID = "clone";
+
 export default function EditWorkouts() {
 
     const [postUpdate, setPostUpdate] = useState(false);
 
     const [modalVisible, setModalVisible] = useState(false);
-    const [modalWorkoutID, setModalWorkoutID] = useState<number | null>(null);
+    const [modalWorkoutID, setModalWorkoutID] = useState<string | null>(null);
 
     const [workouts, setWorkouts] = useState<Workouts>(initialWorkouts);
 
     const workoutLayouts = useSharedValue<LayoutRectangle[]>([]);
 
-    const workoutsOrder = useSharedValue<number[]>(workouts.map(w => w.id));
+    const workoutsOrder = useSharedValue<string[]>(workouts.map(w => w.id));
 
-    const exerciseOrders = useSharedValue<number[][]>(workouts.map(w => w.exercises.map(ex => ex.id)));
+    const exerciseOrders = useSharedValue<string[][]>(workouts.map(w => w.exercises.map(ex => ex.id)));
 
-    const draggedWorkout = useSharedValue<{ workoutID: number, workoutTitle: string } | null>(null);
+    const draggedWorkout = useSharedValue<{ workoutID: string, workoutTitle: string } | null>(null);
 
-    const draggedExercise = useSharedValue<{ workoutID: number, exerciseID: number, exerciseTitle: string } | null>(null);
+    const draggedExercise = useSharedValue<{ workoutID: string, exerciseID: string, exerciseTitle: string } | null>(null);
 
     const dragExerciseOpacity = useSharedValue(0);
 
@@ -171,7 +176,6 @@ export default function EditWorkouts() {
             const layout = workoutLayouts.value[i];
             if (!layout) continue;
 
-            // const offset = (EXERCISE_HEIGHT / 2) + EXERCISE_SPACING;
             const offset = EXERCISE_HEIGHT / 2
 
             if (y + offset >= layout.y && y - offset <= layout.y + layout.height) {
@@ -182,10 +186,10 @@ export default function EditWorkouts() {
     };
 
     const getExerciseOrderByTouchPosition = (
-        exerciseID: number,
+        exerciseID: string,
         touchY: number,
         layout: LayoutRectangle,
-        exOrders: number[]
+        exOrders: string[]
     ) => {
         const exerciseIndex = exOrders.findIndex(id => id === exerciseID);
         const length = exOrders.length;
@@ -202,7 +206,7 @@ export default function EditWorkouts() {
         return exOrders;
     }
 
-    const handleHover = (touchY: number, exerciseID: number) => {
+    const handleHover = (touchY: number, exerciseID: string) => {
         const hoverIndex = getHoverLayoutIndex(touchY);
 
         const newExOrders = [...exerciseOrders.value];
@@ -212,7 +216,7 @@ export default function EditWorkouts() {
         if (hoverIndex === null) {
             for (let index = 0; index < newExOrders.length; index++) {
                 if (newExOrders[index].includes(exerciseID)) {
-                    newExOrders[index] = newExOrders[index].map(id => id === exerciseID ? 0 : id);
+                    newExOrders[index] = newExOrders[index].map(id => id === exerciseID ? cloneExID : id);
                     break;
                 }
             }
@@ -223,14 +227,14 @@ export default function EditWorkouts() {
         // ELSE hovering workout
 
         // IF that workout has the original placement, swap with Exercise ID
-        if (newExOrders[hoverIndex].includes(0)) {
-            newExOrders[hoverIndex] = newExOrders[hoverIndex].map(id => id === 0 ? exerciseID : id);
+        if (newExOrders[hoverIndex].includes(cloneExID)) {
+            newExOrders[hoverIndex] = newExOrders[hoverIndex].map(id => id === cloneExID ? exerciseID : id);
 
             // ELSE remove 0 from last list
         } else {
             for (let index = 0; index < newExOrders.length; index++) {
-                if (newExOrders[index].includes(0)) {
-                    newExOrders[index] = newExOrders[index].filter(id => id !== 0);
+                if (newExOrders[index].includes(cloneExID)) {
+                    newExOrders[index] = newExOrders[index].filter(id => id !== cloneExID);
                     break;
                 }
                 if (index !== hoverIndex && newExOrders[index].includes(exerciseID)) {
@@ -256,7 +260,7 @@ export default function EditWorkouts() {
         });
     };
 
-    const handleHoverWorkout = (workoutID: number) => {
+    const handleHoverWorkout = (workoutID: string) => {
         const touchY = absY.value + scrollY.value;
 
         const order = [...workoutsOrder.value];
@@ -299,8 +303,8 @@ export default function EditWorkouts() {
             const newWorkout = { ...workout };
             newWorkout.exercises = [...workout.exercises];
 
-            if (exOrders[i].includes(0)) {
-                exOrders[i] = exOrders[i].map(id => id === 0 ? dragValue.exerciseID : id);
+            if (exOrders[i].includes(cloneExID)) {
+                exOrders[i] = exOrders[i].map(id => id === cloneExID ? dragValue.exerciseID : id);
             }
 
             // Boolean: Exercise is in the order list
@@ -845,7 +849,6 @@ export default function EditWorkouts() {
 
             const exOrder = [...exerciseOrders.value[workoutIndex]];
             const exerciseIndex = exOrder.findIndex(id => id === exercise.id);
-            // const newExIndex = exOrder.findIndex(id => id === 0) === 0 ? exerciseIndex - 1 : exerciseIndex;
             const targetY = exerciseIndex * EXERCISE_HEIGHT + (exerciseIndex * EXERCISE_SPACING);
 
             return {
@@ -912,7 +915,6 @@ export default function EditWorkouts() {
 
             if (!isActive) {
                 const exOrder = [...exerciseOrders.value[index]];
-                // const length = Math.max(1, exOrder.includes(0) ? exOrder.length - 1 : exOrder.length);
                 const length = Math.max(1, exOrder.length + 1);
                 const spacingHeight = EXERCISE_SPACING * (length - 1);
                 height = length * EXERCISE_HEIGHT + spacingHeight + WORKOUT_TITLE_HEIGHT;
@@ -967,13 +969,13 @@ export default function EditWorkouts() {
         </>);
     };
 
-    const addExerciseToWorkout = (workoutID: number, data: AddedExercise) => {
+    const addExerciseToWorkout = (workoutID: string, data: AddedExercise) => {
         const workoutIndex = workouts.findIndex((w) => w.id === workoutID);
         if (workoutIndex === -1) return;
 
         const exOrder = exerciseOrders.value;
 
-        const newExID = Math.floor(Math.random() * (10000 - 100 + 1)) + 100;
+        const newExID = uuidv4();
 
         const newExOrderForWorkout = [...exOrder[workoutIndex], newExID];
 
