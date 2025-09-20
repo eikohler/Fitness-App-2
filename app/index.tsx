@@ -25,6 +25,9 @@ import { v4 as uuidv4 } from 'uuid';
 interface Exercise {
     id: string;
     title: string;
+    sets: number;
+    reps: number;
+    notes?: string;
 };
 
 interface Workout {
@@ -40,36 +43,36 @@ const initialWorkouts: Workouts = [
         id: uuidv4(),
         title: "Upper Body",
         exercises: [
-            { id: uuidv4(), title: 'Bench Press 3x10' },
-            { id: uuidv4(), title: 'Shoulder Press 3x10' },
-            { id: uuidv4(), title: 'DB Curls 3x10' }
+            { id: uuidv4(), title: 'Bench Press', sets: 3, reps: 10 },
+            { id: uuidv4(), title: 'Shoulder Press', sets: 3, reps: 10 },
+            { id: uuidv4(), title: 'DB Curls', sets: 3, reps: 10 }
         ]
     },
     {
         id: uuidv4(),
         title: "Leg Day",
         exercises: [
-            { id: uuidv4(), title: 'Leg Press 3x10' },
-            { id: uuidv4(), title: 'Deadlifts 3x10' },
-            { id: uuidv4(), title: 'Leg Curls 3x10' }
+            { id: uuidv4(), title: 'Leg Press', sets: 3, reps: 10 },
+            { id: uuidv4(), title: 'Deadlifts', sets: 3, reps: 10 },
+            { id: uuidv4(), title: 'Leg Curls', sets: 3, reps: 10 }
         ]
     },
     {
         id: uuidv4(),
         title: "Calisthenics Day",
         exercises: [
-            { id: uuidv4(), title: 'Leg Raises 3x10' },
-            { id: uuidv4(), title: 'Pullups 3x10' },
-            { id: uuidv4(), title: 'Pushups 3x10' }
+            { id: uuidv4(), title: 'Leg Raises', sets: 3, reps: 10 },
+            { id: uuidv4(), title: 'Pullups', sets: 3, reps: 10 },
+            { id: uuidv4(), title: 'Pushups', sets: 3, reps: 10 }
         ]
     },
     {
         id: uuidv4(),
         title: "Back Day",
         exercises: [
-            { id: uuidv4(), title: 'Lat Pulldowns 3x10' },
-            { id: uuidv4(), title: 'Cable Rows 3x10' },
-            { id: uuidv4(), title: 'Bent over rows 3x10' }
+            { id: uuidv4(), title: 'Lat Pulldowns', sets: 3, reps: 10 },
+            { id: uuidv4(), title: 'Cable Rows', sets: 3, reps: 10 },
+            { id: uuidv4(), title: 'Bent over rows', sets: 3, reps: 10 }
         ]
     }
 ];
@@ -116,7 +119,13 @@ export default function EditWorkouts() {
 
     const draggedWorkout = useSharedValue<{ workoutID: string, workoutTitle: string } | null>(null);
 
-    const draggedExercise = useSharedValue<{ workoutID: string, exerciseID: string, exerciseTitle: string } | null>(null);
+    const draggedExercise = useSharedValue<{
+        workoutID: string,
+        exerciseID: string,
+        exerciseTitle: string,
+        exerciseSets: number,
+        exerciseReps: number
+    } | null>(null);
 
     const dragExerciseOpacity = useSharedValue(0);
 
@@ -332,7 +341,12 @@ export default function EditWorkouts() {
 
                 // ELSE IF exercise is NOT in the workout but in the order list then ADD to the workout
             } else if (!exINWorkout && exINOrderList) {
-                newWorkout.exercises.push({ id: dragValue.exerciseID, title: dragValue.exerciseTitle });
+                newWorkout.exercises.push({
+                    id: dragValue.exerciseID,
+                    title: dragValue.exerciseTitle,
+                    sets: dragValue.exerciseSets,
+                    reps: dragValue.exerciseReps
+                });
                 destIndex = i;
 
             } else if (exINWorkout) destIndex = i;
@@ -415,7 +429,13 @@ export default function EditWorkouts() {
                 dragExerciseStartDone.value = false;
 
                 // Set active dragged exercise value to this exercise
-                draggedExercise.value = { workoutID: workout.id, exerciseID: exercise.id, exerciseTitle: exercise.title };
+                draggedExercise.value = {
+                    workoutID: workout.id,
+                    exerciseID: exercise.id,
+                    exerciseTitle: exercise.title,
+                    exerciseSets: exercise.sets,
+                    exerciseReps: exercise.reps
+                };
 
                 absY.value = e.absoluteY;
 
@@ -508,7 +528,9 @@ export default function EditWorkouts() {
 
         return (
             <Animated.View style={[styles.exercise, wrapperAnimStyle]}>
-                <Text style={styles.exerciseText}>{exercise.title}</Text>
+                <Text style={styles.exerciseText}>
+                    {exercise.title} {exercise.sets} x {exercise.reps}
+                </Text>
                 <GestureDetector gesture={dragGesture}>
                     <View style={styles.dragIcon}>
                         <FontAwesome6 name="grip-vertical" size={14} color={colors.white} />
@@ -1020,7 +1042,9 @@ export default function EditWorkouts() {
                 ...newWorkouts[workoutIndex].exercises,
                 {
                     id: newExID,
-                    title: `${data.title} ${data.sets}x${data.reps}`,
+                    title: `${data.title}`,
+                    sets: data.sets,
+                    reps: data.reps
                 },
             ],
         };
