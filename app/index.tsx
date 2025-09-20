@@ -126,7 +126,9 @@ export default function EditWorkouts() {
 
     const dragWorkoutStartDone = useSharedValue(false);
 
-    const dragDropStart = useSharedValue(false);
+    const dragExerciseDropStart = useSharedValue(false);
+
+    const dragWorkoutDropStart = useSharedValue(false);
 
     const translateY = useSharedValue(0);
 
@@ -151,7 +153,7 @@ export default function EditWorkouts() {
     }, []);
 
     useEffect(() => {
-        dragDropStart.value = false;
+        dragWorkoutDropStart.value = false;
     }, [workouts]);
 
     useDerivedValue(() => {
@@ -222,6 +224,11 @@ export default function EditWorkouts() {
                 }
             }
             exerciseOrders.value = newExOrders;
+
+            if (dragExerciseDropStart.value) {
+                handleDrop();
+            }
+
             return;
         }
 
@@ -259,6 +266,10 @@ export default function EditWorkouts() {
         requestAnimationFrame(() => {
             exerciseOrders.value = newExOrders;
         });
+
+        if (dragExerciseDropStart.value) {
+            handleDrop();
+        }
     };
 
     const handleHoverWorkout = (workoutID: string) => {
@@ -287,6 +298,7 @@ export default function EditWorkouts() {
         setWorkouts([...newWorkouts]);
 
         requestAnimationFrame(() => {
+            dragExerciseDropStart.value = false;
             draggedExercise.value = null;
         });
     }
@@ -374,7 +386,8 @@ export default function EditWorkouts() {
             return {
                 touchY: absY.value + scrollY.value,
                 exID: draggedExercise.value.exerciseID,
-                auto: isAutoScrolling.value // included so reaction fires when isAutoScrolling flips/animates
+                auto: isAutoScrolling.value, // included so reaction fires when isAutoScrolling flips/animates
+                dropStart: dragExerciseDropStart.value
             };
         },
         (data) => {
@@ -435,7 +448,8 @@ export default function EditWorkouts() {
             })
             .onEnd(() => {
                 isAutoScrolling.value = 0;
-                runOnJS(handleDrop)();
+                dragExerciseDropStart.value = true;
+                // runOnJS(handleDrop)();
             });
 
         scrollNative.requireExternalGestureToFail(dragGesture);
@@ -455,7 +469,7 @@ export default function EditWorkouts() {
 
             let thisIndex;
 
-            if (dragDropStart.value) {
+            if (dragWorkoutDropStart.value) {
                 const tempExOrder = workouts[workoutIndex].exercises.map(ex => ex.id);
                 const exerciseIndex = tempExOrder.findIndex(id => id === exercise.id);
                 thisIndex = exerciseIndex;
@@ -552,7 +566,7 @@ export default function EditWorkouts() {
             const isDraggingWorkout = draggedWorkout.value !== null;
             const isDraggingExercise = draggedExercise.value !== null;
 
-            const exOrder = dragDropStart.value
+            const exOrder = dragWorkoutDropStart.value
                 ? workouts[workoutIndex].exercises.map((ex) => ex.id)
                 : [...exerciseOrders.value[workoutIndex]];
             const index = exOrder.length;
@@ -632,7 +646,7 @@ export default function EditWorkouts() {
                 });
             })
             .onUpdate(e => {
-                if (dragDropStart.value) return;
+                if (dragWorkoutDropStart.value) return;
 
                 absY.value = e.absoluteY;
 
@@ -652,7 +666,7 @@ export default function EditWorkouts() {
             .onEnd(() => {
                 const check = () => {
                     if (dragWorkoutStartDone.value && dragHeightChange.value) {
-                        dragDropStart.value = true;
+                        dragWorkoutDropStart.value = true;
 
                         const order = [...workoutsOrder.value];
 
@@ -742,7 +756,7 @@ export default function EditWorkouts() {
             let height = WORKOUT_DRAG_HEIGHT;
 
             if (!isDraggingWorkout) {
-                const workoutIndex = dragDropStart.value
+                const workoutIndex = dragWorkoutDropStart.value
                     ? workoutsOrder.value.findIndex((id) => id === workout.id)
                     : index;
 
@@ -794,7 +808,7 @@ export default function EditWorkouts() {
             let height = WORKOUT_DRAG_HEIGHT + WORKOUT_TITLE_HEIGHT;
 
             if (!isDragging) {
-                const workoutIndex = dragDropStart.value
+                const workoutIndex = dragWorkoutDropStart.value
                     ? workoutsOrder.value.findIndex((id) => id === workout.id)
                     : index;
 
