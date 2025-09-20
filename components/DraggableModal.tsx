@@ -236,7 +236,7 @@ export default function DraggableModal({
             <GestureDetector gesture={panGesture}>
                 <Animated.View style={[styles.modal, modalAnimStyle]}>
                     <View style={styles.dragHandle} />
-                    <View style={{ marginBottom: 10 }}>
+                    <View>
                         <TitleField
                             titleValue={titleValue}
                             updateIsFocusing={updateIsFocusing}
@@ -256,7 +256,7 @@ export default function DraggableModal({
                                 ))}
                             </View>
                         </ScrollView>
-                    ) : (<>
+                    ) : (<View style={{ marginTop: 10 }}>
                         <NotesField notesValue={notesValue} updateIsFocusing={updateIsFocusing}
                             isFocusing={isFocusing} updateNotesValue={(text: string) => setNotesValue(text)} />
                         <View style={styles.largeInputsWrapper}>
@@ -282,7 +282,7 @@ export default function DraggableModal({
                                     }
                                 }} />
                         </View>
-                    </>)}
+                    </View>)}
                 </Animated.View>
             </GestureDetector>
         </GestureHandlerRootView >
@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
         marginTop: 12,
     },
     exerciseList: {
-        marginTop: 10,
+        marginTop: 20,
         display: "flex",
         flexDirection: "row",
         flexWrap: "wrap",
