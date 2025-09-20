@@ -7,6 +7,7 @@ import Animated, {
     runOnJS,
     runOnUI,
     scrollTo,
+    useAnimatedReaction,
     useAnimatedRef,
     useAnimatedStyle,
     useDerivedValue,
@@ -96,7 +97,7 @@ const DRAG_OPACITY = 0.6;
 
 const PRESS_HOLD_LENGTH = 200;
 
-const cloneExID = "clone";
+const CLONE_EX_ID = "clone";
 
 export default function EditWorkouts() {
 
@@ -216,7 +217,7 @@ export default function EditWorkouts() {
         if (hoverIndex === null) {
             for (let index = 0; index < newExOrders.length; index++) {
                 if (newExOrders[index].includes(exerciseID)) {
-                    newExOrders[index] = newExOrders[index].map(id => id === exerciseID ? cloneExID : id);
+                    newExOrders[index] = newExOrders[index].map(id => id === exerciseID ? CLONE_EX_ID : id);
                     break;
                 }
             }
@@ -227,14 +228,14 @@ export default function EditWorkouts() {
         // ELSE hovering workout
 
         // IF that workout has the original placement, swap with Exercise ID
-        if (newExOrders[hoverIndex].includes(cloneExID)) {
-            newExOrders[hoverIndex] = newExOrders[hoverIndex].map(id => id === cloneExID ? exerciseID : id);
+        if (newExOrders[hoverIndex].includes(CLONE_EX_ID)) {
+            newExOrders[hoverIndex] = newExOrders[hoverIndex].map(id => id === CLONE_EX_ID ? exerciseID : id);
 
             // ELSE remove 0 from last list
         } else {
             for (let index = 0; index < newExOrders.length; index++) {
-                if (newExOrders[index].includes(cloneExID)) {
-                    newExOrders[index] = newExOrders[index].filter(id => id !== cloneExID);
+                if (newExOrders[index].includes(CLONE_EX_ID)) {
+                    newExOrders[index] = newExOrders[index].filter(id => id !== CLONE_EX_ID);
                     break;
                 }
                 if (index !== hoverIndex && newExOrders[index].includes(exerciseID)) {
@@ -303,8 +304,8 @@ export default function EditWorkouts() {
             const newWorkout = { ...workout };
             newWorkout.exercises = [...workout.exercises];
 
-            if (exOrders[i].includes(cloneExID)) {
-                exOrders[i] = exOrders[i].map(id => id === cloneExID ? dragValue.exerciseID : id);
+            if (exOrders[i].includes(CLONE_EX_ID)) {
+                exOrders[i] = exOrders[i].map(id => id === CLONE_EX_ID ? dragValue.exerciseID : id);
             }
 
             // Boolean: Exercise is in the order list
@@ -365,6 +366,25 @@ export default function EditWorkouts() {
         }, TIMING_DURATION);
     };
 
+    useAnimatedReaction(
+        () => {
+            // only produce a value when we have a dragged exercise and auto-scroll or dragging is happening
+            if (draggedExercise.value === null) return null;
+            // returning this object causes the reaction to re-fire whenever absY or scrollY change
+            return {
+                touchY: absY.value + scrollY.value,
+                exID: draggedExercise.value.exerciseID,
+                auto: isAutoScrolling.value // included so reaction fires when isAutoScrolling flips/animates
+            };
+        },
+        (data) => {
+            if (data !== null) {
+                // call your JS handler with the current touch position and exercise id
+                runOnJS(handleHover)(data.touchY, data.exID);
+            }
+        }
+    );
+
     const RenderExercise = ({ workout, exercise, scrollNative }: {
         workout: Workout;
         exercise: Exercise;
@@ -412,12 +432,9 @@ export default function EditWorkouts() {
                 } else {
                     isAutoScrolling.value = 0;
                 }
-
-                const touchY = e.absoluteY + scrollY.value;
-
-                runOnJS(handleHover)(touchY, exercise.id);
             })
             .onEnd(() => {
+                isAutoScrolling.value = 0;
                 runOnJS(handleDrop)();
             });
 
