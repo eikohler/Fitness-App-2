@@ -17,7 +17,7 @@ import Animated, {
 import { FontAwesome6 } from "@expo/vector-icons";
 import { colors } from '@/styles/Styles';
 import DraggableModal from '@/components/DraggableModal';
-import { AddedExercise } from '@/Interfaces/dataTypes';
+import { ExerciseData, ModalExercise } from '@/Interfaces/dataTypes';
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 import TimesIcon from "@/assets/icons/times-icon.svg";
@@ -109,6 +109,7 @@ export default function EditWorkouts() {
 
     const [modalVisible, setModalVisible] = useState(false);
     const [modalWorkoutID, setModalWorkoutID] = useState<string | null>(null);
+    const [modalExerciseData, setModalExerciseData] = useState<ExerciseData | null>(null);
 
     const [workouts, setWorkouts] = useState<Workouts>(initialWorkouts);
 
@@ -470,7 +471,6 @@ export default function EditWorkouts() {
             .onEnd(() => {
                 isAutoScrolling.value = 0;
                 dragExerciseDropStart.value = true;
-                // runOnJS(handleDrop)();
             });
 
         scrollNative.requireExternalGestureToFail(dragGesture);
@@ -519,7 +519,6 @@ export default function EditWorkouts() {
 
             return {
                 opacity: isActive ? 0 : thisOpacity.value,
-                backgroundColor: colors.darkBlue,
                 pointerEvents: draggedExercise.value !== null ? "none" : "auto",
                 transform: [{
                     translateY: isDraggingExercise ? withTiming(targetY, { duration: TIMING_DURATION }) : targetY
@@ -527,11 +526,64 @@ export default function EditWorkouts() {
             };
         });
 
+        const isPressed = useSharedValue(false);
+
+        const tapGesture = Gesture.Tap()
+            .onBegin(() => {
+                isPressed.value = true;
+            })
+            .onFinalize(() => {
+                isPressed.value = false;
+            })
+            .onEnd((_e, success) => {
+                if (success) {
+                    runOnJS(setModalVisible)(true);
+                    runOnJS(setModalWorkoutID)(workout.id);
+                    runOnJS(setModalExerciseData)({
+                        id: exercise.id, title: exercise.title, sets: exercise.sets, reps: exercise.reps
+                    });
+                }
+            });
+
+        const longPressGesture = Gesture.LongPress()
+            .onBegin(() => {
+                isPressed.value = true;
+            })
+            .onFinalize(() => {
+                isPressed.value = false;
+            })
+            .onEnd((_e, success) => {
+                if (success) {
+                    runOnJS(setModalVisible)(true);
+                    runOnJS(setModalWorkoutID)(workout.id);
+                    runOnJS(setModalExerciseData)({
+                        id: exercise.id, title: exercise.title, sets: exercise.sets, reps: exercise.reps
+                    });
+                }
+            });
+
+        // Long press overrides tap
+        const pressGesture = Gesture.Exclusive(longPressGesture, tapGesture);
+        const fast = 50;
+        const slow = 150;
+
+        const contentStyles = useAnimatedStyle(() => {
+            return {
+                backgroundColor: isPressed.value
+                    ? withTiming("#0000cbff", { duration: fast })
+                    : withTiming(colors.darkBlue, { duration: slow })
+            };
+        });
+
         return (
             <Animated.View style={[styles.exercise, wrapperAnimStyle]}>
-                <Text style={styles.exerciseText}>
-                    {exercise.title}  {exercise.sets}<TimesIcon width={12} height={9} fill={colors.white} />{exercise.reps}
-                </Text>
+                <GestureDetector gesture={pressGesture}>
+                    <Animated.View style={[styles.exerciseContent, contentStyles]}>
+                        <Text style={styles.exerciseText}>
+                            {exercise.title}  {exercise.sets}<TimesIcon width={12} height={9} fill={colors.white} />{exercise.reps}
+                        </Text>
+                    </Animated.View>
+                </GestureDetector>
                 <GestureDetector gesture={dragGesture}>
                     <View style={styles.dragIcon}>
                         <FontAwesome6 name="grip-vertical" size={14} color={colors.white} />
@@ -920,7 +972,11 @@ export default function EditWorkouts() {
 
         return (
             <Animated.View style={[styles.exercise, animatedStyle]}>
-                <Text style={styles.exerciseText}>{exercise.title}</Text>
+                <View style={styles.exerciseContent}>
+                    <Text style={styles.exerciseText}>
+                        {exercise.title}  {exercise.sets}<TimesIcon width={12} height={9} fill={colors.white} />{exercise.reps}
+                    </Text>
+                </View>
                 <View style={styles.dragIcon}>
                     <FontAwesome6 name="grip-vertical" size={14} color={colors.white} />
                 </View>
@@ -1023,7 +1079,7 @@ export default function EditWorkouts() {
         </>);
     };
 
-    const addExerciseToWorkout = (workoutID: string, data: AddedExercise) => {
+    const addExerciseToWorkout = (workoutID: string, data: ModalExercise) => {
         const workoutIndex = workouts.findIndex((w) => w.id === workoutID);
         if (workoutIndex === -1) return;
 
@@ -1060,6 +1116,38 @@ export default function EditWorkouts() {
         setModalWorkoutID(null);
     }
 
+    const updateExercise = (workoutID: string, exerciseID: string, data: ModalExercise) => {
+        const workoutIndex = workouts.findIndex((w) => w.id === workoutID);
+        if (workoutIndex === -1) return;
+
+        const exerciseIndex = workouts[workoutIndex].exercises.findIndex((ex) => ex.id === exerciseID);
+        if (exerciseIndex === -1) return;
+
+        setWorkouts(prev => {
+            const newWorkouts = [...prev];
+            const newExercises = [...newWorkouts[workoutIndex].exercises];
+
+            newExercises[exerciseIndex] = {
+                ...newExercises[exerciseIndex],
+                title: data.title,
+                sets: data.sets,
+                reps: data.reps,
+                notes: data.notes,
+            };
+
+            newWorkouts[workoutIndex] = {
+                ...newWorkouts[workoutIndex],
+                exercises: newExercises,
+            };
+
+            return newWorkouts;
+        });
+
+        setModalVisible(false);
+        setModalWorkoutID(null);
+        setModalExerciseData(null);
+    }
+
     return (<>
         {workouts.map((w, i) =>
             <DragWorkout key={i} workout={w} index={i} />
@@ -1083,12 +1171,14 @@ export default function EditWorkouts() {
         </GestureHandlerRootView>
         <DraggableModal
             modalWorkoutID={modalWorkoutID}
+            modalExerciseData={modalExerciseData}
             visible={modalVisible}
             onClose={() => {
-                setModalVisible(false)
+                setModalVisible(false);
                 setModalWorkoutID(null);
             }}
             addExerciseToWorkout={addExerciseToWorkout}
+            updateExercise={updateExercise}
         />
     </>);
 }
@@ -1116,17 +1206,19 @@ const styles = StyleSheet.create({
     },
     exercise: {
         height: EXERCISE_HEIGHT,
-        paddingHorizontal: 16,
         borderRadius: 5,
+        top: 0,
+        right: 0,
+        position: "absolute",
+        left: WORKOUT_BAR_LEFT_OFFSET,
+        overflow: "hidden"
+    },
+    exerciseContent: {
+        height: "100%",
+        paddingHorizontal: 16,
         display: "flex",
         flexDirection: "row",
         alignItems: "center",
-        justifyContent: "space-between",
-        position: "absolute",
-        top: 0,
-        left: WORKOUT_BAR_LEFT_OFFSET,
-        right: 0,
-        overflow: "hidden"
     },
     exerciseText: {
         color: colors.white,

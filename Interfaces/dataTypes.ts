@@ -55,7 +55,15 @@ export interface WorkoutExerciseRow {
     alt_exercise_note: string | null;
 }
 
-export interface AddedExercise {
+export interface ExerciseData {
+    id: string;
+    title: string;
+    sets: number;
+    reps: number;
+    notes?: string;
+}
+
+export interface ModalExercise {
     title: string,
     notes: string,
     sets: number,

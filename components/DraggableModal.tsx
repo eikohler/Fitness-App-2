@@ -8,7 +8,7 @@ import TitleField from './TitleField';
 import MediumButton from './MediumButton';
 import { colors } from '@/styles/Styles';
 import InvertedButton from './InvertedButton';
-import { AddedExercise } from '@/Interfaces/dataTypes';
+import { ExerciseData, ModalExercise } from '@/Interfaces/dataTypes';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -45,12 +45,16 @@ export default function DraggableModal({
     visible,
     onClose,
     addExerciseToWorkout,
-    modalWorkoutID
+    updateExercise,
+    modalWorkoutID,
+    modalExerciseData
 }: {
     visible: boolean,
     onClose: () => void,
-    addExerciseToWorkout: (workoutID: string, data: AddedExercise) => void,
-    modalWorkoutID: string | null
+    addExerciseToWorkout: (workoutID: string, data: ModalExercise) => void,
+    updateExercise: (workoutID: string, exerciseID: string, data: ModalExercise) => void,
+    modalWorkoutID: string | null,
+    modalExerciseData: ExerciseData | null
 }) {
     const translateY = useSharedValue(BOTTOM);
     const startY = useSharedValue(0);
@@ -63,6 +67,15 @@ export default function DraggableModal({
     const [notesValue, setNotesValue] = useState('');
     const [singleSetsValue, setSingleSetsValue] = useState('');
     const [singleRepsValue, setSingleRepsValue] = useState('');
+
+    useEffect(() => {
+        if (modalExerciseData) {
+            setTitleValue(modalExerciseData.title);
+            setNotesValue(modalExerciseData.notes ?? "");
+            setSingleSetsValue(modalExerciseData.sets.toString());
+            setSingleRepsValue(modalExerciseData.reps.toString());
+        }
+    }, [modalExerciseData]);
 
     useEffect(() => {
         if (visible) {
@@ -278,7 +291,11 @@ export default function DraggableModal({
                                             sets: parseFloat(singleSetsValue),
                                             reps: parseFloat(singleRepsValue)
                                         };
-                                        addExerciseToWorkout(modalWorkoutID, data);
+                                        if (modalExerciseData) {
+                                            updateExercise(modalWorkoutID, modalExerciseData.id, data);
+                                        } else {
+                                            addExerciseToWorkout(modalWorkoutID, data);
+                                        }
                                     }
                                 }} />
                         </View>
