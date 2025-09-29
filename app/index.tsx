@@ -14,13 +14,14 @@ import Animated, {
     useSharedValue,
     withTiming
 } from 'react-native-reanimated';
-import { FontAwesome6 } from "@expo/vector-icons";
 import { colors } from '@/styles/Styles';
 import DraggableModal from '@/components/DraggableModal';
 import { ExerciseData, ModalExercise } from '@/Interfaces/dataTypes';
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
+import { FontAwesome6 } from "@expo/vector-icons";
 import TimesIcon from "@/assets/icons/times-icon.svg";
+import Feather from '@expo/vector-icons/Feather';
 
 
 interface Exercise {
@@ -910,6 +911,7 @@ export default function EditWorkouts() {
             };
         });
 
+        const [thisTitleIsFocused, setThisTitleIsFocused] = useState(false);
         const [tempTitle, setTempTitle] = useState(workout.title);
 
         const scrollToTitle = () => {
@@ -919,6 +921,8 @@ export default function EditWorkouts() {
             if (!layout) return;
 
             scrollRef.current?.scrollTo({ y: layout.y - SCREEN_HEIGHT * 0.4, animated: true });
+
+            setThisTitleIsFocused(true);
         }
 
         const updateWorkoutTitle = () => {
@@ -926,6 +930,8 @@ export default function EditWorkouts() {
             requestAnimationFrame(() => {
                 titleIsFocused.value = false;
             });
+
+            setThisTitleIsFocused(false);
 
             if (tempTitle === workout.title) return;
             setWorkouts(prev => {
@@ -963,16 +969,25 @@ export default function EditWorkouts() {
                         style={{
                             fontSize: 20,
                             fontWeight: 700,
-                            color: colors.white,
+                            color: colors.white
                         }}
                         scrollEnabled={false}
                         onChangeText={setTempTitle}
                         value={tempTitle}
                         placeholder={""}
+                        maxLength={30}
                         placeholderTextColor={colors.white}
                         returnKeyType="done"
                         submitBehavior="blurAndSubmit"
                     />
+                    <Feather style={{
+                        position: "absolute",
+                        top: 2,
+                        right: 0,
+                        opacity: thisTitleIsFocused ? 0.5 : 1,
+                        pointerEvents: 'none'
+                    }}
+                        name="edit-2" size={16} color={colors.white} />
                 </View>
                 <Animated.View style={styles.workoutsWrapper}>
                     {workout.exercises.map((ex) =>
