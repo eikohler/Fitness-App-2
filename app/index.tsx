@@ -1,4 +1,4 @@
-import { Text, LayoutRectangle, StyleSheet, View, Dimensions } from 'react-native';
+import { Text, LayoutRectangle, StyleSheet, View, Dimensions, TextInput } from 'react-native';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, {
@@ -106,6 +106,8 @@ const CLONE_EX_ID = "clone";
 export default function EditWorkouts() {
 
     const [postUpdate, setPostUpdate] = useState(false);
+
+    const titleIsFocused = useSharedValue(false);
 
     const [modalVisible, setModalVisible] = useState(false);
     const [modalWorkoutID, setModalWorkoutID] = useState<string | null>(null);
@@ -908,6 +910,31 @@ export default function EditWorkouts() {
             };
         });
 
+        const [tempTitle, setTempTitle] = useState(workout.title);
+
+        const scrollToTitle = () => {
+            titleIsFocused.value = true;
+
+            const layout = workoutLayouts.value[index];
+            if (!layout) return;
+
+            scrollRef.current?.scrollTo({ y: layout.y - SCREEN_HEIGHT * 0.4, animated: true });
+        }
+
+        const updateWorkoutTitle = () => {
+
+            requestAnimationFrame(() => {
+                titleIsFocused.value = false;
+            });
+
+            if (tempTitle === workout.title) return;
+            setWorkouts(prev => {
+                const newWorkouts = [...prev];
+                newWorkouts[index] = { ...newWorkouts[index], title: tempTitle };
+                return newWorkouts;
+            });
+        }
+
         return (<>
             <Animated.View style={placementAnimStyle} onLayout={(e) => {
                 const layout = e.nativeEvent.layout;
@@ -929,7 +956,24 @@ export default function EditWorkouts() {
                         <FontAwesome6 name="grip-vertical" size={16} color={colors.black} />
                     </Animated.View>
                 </GestureDetector>
-                <Animated.Text style={styles.workoutTitle}>{workout.title}</Animated.Text>
+                <View style={styles.workoutTitle}>
+                    <TextInput
+                        onFocus={() => scrollToTitle()}
+                        onBlur={() => updateWorkoutTitle()}
+                        style={{
+                            fontSize: 20,
+                            fontWeight: 700,
+                            color: colors.white,
+                        }}
+                        scrollEnabled={false}
+                        onChangeText={setTempTitle}
+                        value={tempTitle}
+                        placeholder={""}
+                        placeholderTextColor={colors.white}
+                        returnKeyType="done"
+                        submitBehavior="blurAndSubmit"
+                    />
+                </View>
                 <Animated.View style={styles.workoutsWrapper}>
                     {workout.exercises.map((ex) =>
                         <RenderExercise key={ex.id} workout={workout} exercise={ex} scrollNative={scrollNative} />
@@ -1148,6 +1192,18 @@ export default function EditWorkouts() {
         setModalExerciseData(null);
     }
 
+    const mainWrapperAnim = useAnimatedStyle(() => {
+        return {
+            marginBottom: titleIsFocused.value
+                ? SCREEN_HEIGHT / 2
+                : withTiming(0, {
+                    duration: 400,
+                    easing: Easing.out(Easing.sin),
+                    reduceMotion: ReduceMotion.System
+                })
+        }
+    });
+
     return (<>
         {workouts.map((w, i) =>
             <DragWorkout key={i} workout={w} index={i} />
@@ -1161,11 +1217,11 @@ export default function EditWorkouts() {
                     onScroll={e => {
                         scrollY.value = e.nativeEvent.contentOffset.y;
                     }}>
-                    <View style={styles.wrapper}>
+                    <Animated.View style={[styles.wrapper, mainWrapperAnim]}>
                         {workouts.map((w, i) =>
                             <RenderWorkout key={i} workout={w} index={i} scrollNative={scrollNative} />
                         )}
-                    </View>
+                    </Animated.View>
                 </Animated.ScrollView>
             </GestureDetector>
         </GestureHandlerRootView>
@@ -1198,7 +1254,9 @@ const styles = StyleSheet.create({
         height: WORKOUT_TITLE_HEIGHT,
         position: "absolute",
         top: WORKOUT_TITLE_HEIGHT * -1,
-        left: WORKOUT_BAR_LEFT_OFFSET
+        left: WORKOUT_BAR_LEFT_OFFSET,
+        right: 0,
+        width: "auto"
     },
     workoutsWrapper: {
         overflow: "hidden",

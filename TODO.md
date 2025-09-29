@@ -21,6 +21,5 @@
 - [x] Reset the popup when visible is null
 - [x] Change exercises and workouts to use UUID instead of integers
 - [x] Add new exercise to workout
-- [] Add notes, sets and reps data to exercises
+- [x] Add sets and reps data to exercises
 - [] Edit workout title
-- [] Add sets and reps to exercises
