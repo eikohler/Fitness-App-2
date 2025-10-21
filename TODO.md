@@ -22,4 +22,4 @@
 - [x] Change exercises and workouts to use UUID instead of integers
 - [x] Add new exercise to workout
 - [x] Add sets and reps data to exercises
-- [] Edit workout title
+- [x] Edit workout title

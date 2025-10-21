@@ -1,24 +1,24 @@
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import React, { useLayoutEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 import { colors, fonts } from '@/styles/Styles';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Href, router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 
-export default function Header(props: {
-    title: string; 
-    subtext: string; 
-    headerHeight: number;
-    updateHeaderHeight: (height: number)=>void;
-    notes?: string; 
-    bolt?: boolean; 
-    modal?: boolean; 
+export default function Header({
+    title,
+    subtext,
+    bolt,
+    backBtn,
+    editURL
+}: {
+    title: string;
+    subtext: string;
+    bolt?: boolean;
     backBtn?: boolean;
     editURL?: Href;
 }) {
-
-    const { title, subtext, notes, bolt, modal, backBtn, editURL, updateHeaderHeight, headerHeight } = props;
 
     const fixedTitle = title.replace(" ", "  ");
 
@@ -26,42 +26,27 @@ export default function Header(props: {
 
     const navigation = useNavigation();
 
-    useLayoutEffect(() => {
-        headerRef.current?.measure((x:number, y:number, width:number, height:number) => updateHeaderHeight(height));        
-    }, []);
-
     return (
         <View ref={headerRef} style={[styles.container, {
-                boxShadow: modal ? "0px 5px 5px #000074" : "0px 5px 5px #0D0D0D",
-                paddingTop: modal ? 50 : 70
-            }]}>
-            <LinearGradient colors={modal ? [colors.modalBG, 'rgba(0, 0, 116, 0.85)'] : ['#0D0D46', 'rgba(13, 13, 13, 0.85)']} 
-            style={[styles.background, {height: headerHeight}]} />
-            <View style={styles.layout}>
-                <View style={styles.wrapper}>
-                    <View style={styles.content}>
-                        {backBtn && 
-                            <Pressable style={{marginBottom: 3}} onPress={() => navigation.goBack()}>
-                                <MaterialIcons name="arrow-back" size={32} color={colors.secondText} />
-                            </Pressable>
-                        }
-                        <View>
-                            <View  style={styles.subTextWrapper}>
-                                <Text style={[styles.subText, bolt && {marginRight: -2, color: colors.weekText}, modal && {color: colors.primaryText}]}>{subtext}</Text>
-                                {bolt && <MaterialIcons name="bolt" size={18} color={modal ? colors.primaryText : colors.weekText} />}
-                            </View>
-                            <Text style={styles.title}>{fixedTitle}</Text>
-                        </View>
-                    </View>
-                    {editURL && (
-                        <Pressable onPress={()=>router.push(editURL)}>
-                            <MaterialIcons style={{marginBottom: 3}} name="edit" size={30} color={colors.secondText} />
+            boxShadow: "0px 0px 5px rgba(13, 13, 13, 1)",
+        }]}>
+            <LinearGradient colors={['#000048', 'rgba(13, 13, 13, 0.925)']}
+                style={[styles.gradient]} />
+            <View style={styles.wrapper}>
+                <View style={styles.content}>
+                    {backBtn &&
+                        <Pressable style={{ marginBottom: 3 }} onPress={() => navigation.goBack()}>
+                            <MaterialIcons name="arrow-back" size={32} color={colors.secondText} />
                         </Pressable>
-                    )}
+                    }
+                    <View>
+                        {/* <View style={styles.subTextWrapper}>
+                                <Text style={[styles.subText, bolt && { marginRight: -2, color: colors.weekText }, { color: colors.primaryText }]}>{subtext}</Text>
+                                {bolt && <MaterialIcons name="bolt" size={18} color={colors.weekText} />}
+                            </View> */}
+                        <Text style={styles.title}>{fixedTitle}</Text>
+                    </View>
                 </View>
-                { notes && (
-                    <Text style={styles.notesText}>{notes}</Text>
-                )}
             </View>
         </View>
     )
@@ -69,28 +54,28 @@ export default function Header(props: {
 
 const styles = StyleSheet.create({
     container: {
-        paddingBottom: 10,
         position: "absolute",
         top: 0,
         left: 0,
-        zIndex: 9,
+        zIndex: 9999,
         width: "100%",
+        height: 100
     },
-    background: {
+    gradient: {
         position: "absolute",
         bottom: 0,
         left: 0,
-        width: "100%"
+        width: "100%",
+        height: "100%"
     },
-    layout: {
-        width: "90%",
-        marginHorizontal: "auto"
-    },
-    wrapper: {                
+    wrapper: {
+        paddingBottom: 5,
+        paddingHorizontal: 15,
         display: "flex",
         flexDirection: 'row',
         alignItems: "flex-end",
         justifyContent: "space-between",
+        height: "100%"
     },
     content: {
         display: "flex",
@@ -100,7 +85,7 @@ const styles = StyleSheet.create({
     },
     title: {
         color: colors.primaryText,
-        fontSize: 32,
+        fontSize: 24,
         textTransform: "uppercase",
         fontWeight: "900",
         fontStyle: "italic",
@@ -108,7 +93,6 @@ const styles = StyleSheet.create({
         letterSpacing: -3
     },
     subTextWrapper: {
-        marginBottom: 5,        
         display: "flex",
         flexDirection: "row",
         alignItems: "center",
@@ -118,11 +102,5 @@ const styles = StyleSheet.create({
         color: colors.secondText,
         textTransform: "uppercase",
         fontSize: 16,
-    },
-    notesText: {
-        paddingTop: 10,
-        color: colors.secondText,
-        fontSize: 14,
-        fontFamily: fonts.mainFont
     }
 });

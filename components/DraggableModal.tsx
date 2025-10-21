@@ -312,7 +312,8 @@ const styles = StyleSheet.create({
         bottom: 0,
         left: 0,
         right: 0,
-        top: 0
+        top: 0,
+        zIndex: 99999
     },
     background: {
         width: "100%",

@@ -22,6 +22,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { FontAwesome6 } from "@expo/vector-icons";
 import TimesIcon from "@/assets/icons/times-icon.svg";
 import Feather from '@expo/vector-icons/Feather';
+import Header from '@/components/Header';
 
 
 interface Exercise {
@@ -82,7 +83,7 @@ const initialWorkouts: Workouts = [
 const EXERCISE_HEIGHT = 45;
 const EXERCISE_SPACING = 10;
 
-const SCREEN_TOP_PADDING = 70;
+const SCREEN_TOP_PADDING = 125;
 const SCREEN_SIDE_PADDING = 15;
 
 const WORKOUT_BAR_LEFT_OFFSET = 42;
@@ -969,13 +970,13 @@ export default function EditWorkouts() {
                         style={{
                             fontSize: 20,
                             fontWeight: 700,
-                            color: colors.white
+                            color: colors.white,
+                            paddingRight: 20
                         }}
                         scrollEnabled={false}
                         onChangeText={setTempTitle}
                         value={tempTitle}
                         placeholder={""}
-                        maxLength={30}
                         placeholderTextColor={colors.white}
                         returnKeyType="done"
                         submitBehavior="blurAndSubmit"
@@ -1220,6 +1221,7 @@ export default function EditWorkouts() {
     });
 
     return (<>
+        <Header title={'Workouts'} subtext={'Week 3'} bolt editURL={'/edit-workouts'} />
         {workouts.map((w, i) =>
             <DragWorkout key={i} workout={w} index={i} />
         )}
