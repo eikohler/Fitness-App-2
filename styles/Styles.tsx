@@ -8,6 +8,7 @@ export const colors = {
     primaryText: "#ffffff",
     secondText: "#BCC2E1",
     darkBlue: "#000074",
+    brightPurple: "#A486FF",
     arrowButtonBG: "#000074",
     firstSetBG: "#000074",
     secondSetBG: "#BCC2E1",

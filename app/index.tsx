@@ -83,7 +83,7 @@ const initialWorkouts: Workouts = [
 const EXERCISE_HEIGHT = 45;
 const EXERCISE_SPACING = 10;
 
-const SCREEN_TOP_PADDING = 125;
+const SCREEN_TOP_PADDING = 135;
 const SCREEN_SIDE_PADDING = 15;
 
 const WORKOUT_BAR_LEFT_OFFSET = 42;
@@ -1221,7 +1221,7 @@ export default function EditWorkouts() {
     });
 
     return (<>
-        <Header title={'Workouts'} subtext={'Week 3'} bolt editURL={'/edit-workouts'} />
+        <Header cancel={() => { console.log('test') }} btnText={'Save'} />
         {workouts.map((w, i) =>
             <DragWorkout key={i} workout={w} index={i} />
         )}

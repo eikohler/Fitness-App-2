@@ -1,26 +1,24 @@
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import React, { useRef } from 'react';
 import { colors, fonts } from '@/styles/Styles';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { Href, router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 
 export default function Header({
     title,
-    subtext,
-    bolt,
-    backBtn,
-    editURL
+    btnText,
+    showWeek,
+    cancel
 }: {
-    title: string;
-    subtext: string;
-    bolt?: boolean;
-    backBtn?: boolean;
-    editURL?: Href;
+    title?: string;
+    btnText: string;
+    showWeek?: boolean;
+    cancel?: () => void
 }) {
-
-    const fixedTitle = title.replace(" ", "  ");
+    const fixedTitle = title?.replace(" ", "  ");
 
     const headerRef = useRef<any>(null);
 
@@ -29,23 +27,36 @@ export default function Header({
     return (
         <View ref={headerRef} style={[styles.container, {
             boxShadow: "0px 0px 5px rgba(13, 13, 13, 1)",
+            height: 110
         }]}>
             <LinearGradient colors={['#000048', 'rgba(13, 13, 13, 0.925)']}
                 style={[styles.gradient]} />
             <View style={styles.wrapper}>
                 <View style={styles.content}>
-                    {backBtn &&
-                        <Pressable style={{ marginBottom: 3 }} onPress={() => navigation.goBack()}>
-                            <MaterialIcons name="arrow-back" size={32} color={colors.secondText} />
-                        </Pressable>
-                    }
                     <View>
-                        {/* <View style={styles.subTextWrapper}>
-                                <Text style={[styles.subText, bolt && { marginRight: -2, color: colors.weekText }, { color: colors.primaryText }]}>{subtext}</Text>
-                                {bolt && <MaterialIcons name="bolt" size={18} color={colors.weekText} />}
-                            </View> */}
-                        <Text style={styles.title}>{fixedTitle}</Text>
+                        {showWeek && (
+                            <View style={styles.weekWrapper}>
+                                <Text style={styles.weekText}>WEEK 3</Text>
+                                <MaterialIcons name="bolt" size={18} color={colors.brightPurple} />
+                            </View>
+                        )}
+                        {fixedTitle && (
+                            <Text style={styles.title}>{fixedTitle}</Text>
+                        )}
+                        {cancel && (
+                            <Pressable style={styles.cancelWrapper} onPress={() => cancel()}>
+                                <View style={styles.cancelArrow}>
+                                    {/* <Ionicons name="arrow-back-sharp" size={20} color={colors.darkBlue} /> */}
+                                    {/* <MaterialCommunityIcons name="arrow-left-thick" size={22} color={colors.darkBlue} /> */}
+                                    <FontAwesome5 name="arrow-left" size={16} color={colors.darkBlue} />
+                                </View>
+                                <Text style={styles.cancelText}>CANCEL</Text>
+                            </Pressable>
+                        )}
                     </View>
+                    <Pressable style={styles.button} onPress={() => navigation.goBack()}>
+                        <Text style={styles.buttonText}>{btnText}</Text>
+                    </Pressable>
                 </View>
             </View>
         </View>
@@ -58,8 +69,7 @@ const styles = StyleSheet.create({
         top: 0,
         left: 0,
         zIndex: 9999,
-        width: "100%",
-        height: 100
+        width: "100%"
     },
     gradient: {
         position: "absolute",
@@ -69,7 +79,7 @@ const styles = StyleSheet.create({
         height: "100%"
     },
     wrapper: {
-        paddingBottom: 5,
+        paddingBottom: 10,
         paddingHorizontal: 15,
         display: "flex",
         flexDirection: 'row',
@@ -81,26 +91,59 @@ const styles = StyleSheet.create({
         display: "flex",
         flexDirection: "row",
         alignItems: "flex-end",
+        justifyContent: "space-between",
+        width: "100%",
         gap: 15
     },
     title: {
-        color: colors.primaryText,
+        color: colors.white,
         fontSize: 24,
         textTransform: "uppercase",
         fontWeight: "900",
         fontStyle: "italic",
         fontFamily: fonts.mainFont,
+        marginBottom: -6,
         letterSpacing: -3
     },
-    subTextWrapper: {
+    button: {
+        backgroundColor: colors.white,
+        borderRadius: 8,
+        paddingVertical: 4,
+        paddingHorizontal: 12
+    },
+    buttonText: {
+        color: colors.darkBlue,
+        fontWeight: 700,
+        fontSize: 18,
+        textTransform: "uppercase"
+    },
+    weekWrapper: {
         display: "flex",
         flexDirection: "row",
-        alignItems: "center",
+        alignItems: "center"
     },
-    subText: {
-        fontFamily: fonts.mainFont,
-        color: colors.secondText,
-        textTransform: "uppercase",
-        fontSize: 16,
+    weekText: {
+        color: colors.brightPurple,
+        fontSize: 16
+    },
+    cancelWrapper: {
+        display: "flex",
+        flexDirection: "row",
+        alignItems: 'center',
+        gap: 10
+    },
+    cancelArrow: {
+        backgroundColor: colors.white,
+        borderRadius: 100,
+        width: 28,
+        height: 28,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center"
+    },
+    cancelText: {
+        color: colors.white,
+        fontWeight: 700,
+        fontSize: 20
     }
 });
