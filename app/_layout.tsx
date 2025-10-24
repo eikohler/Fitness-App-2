@@ -33,7 +33,7 @@ export default function RootLayout() {
     <GestureHandlerRootView>
       <ThemeProvider value={CustomTheme}>
         <SQLiteProvider databaseName="fitness.db" onInit={initDB}>
-          <Stack>
+          <Stack screenOptions={{ animation: 'fade' }}>
             <Stack.Screen name="index" options={{ headerShown: false }} />
             {/* <Stack.Screen name="edit-workouts" options={{
               presentation: 'modal',

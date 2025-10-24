@@ -1,85 +1,89 @@
-import { Text, StyleSheet, Pressable, View, useAnimatedValue, Animated } from 'react-native';
+import { Text, StyleSheet, Pressable, View } from 'react-native';
 import React from 'react';
-import { colors, fonts } from '@/styles/Styles';
+import Animated, {
+    useSharedValue,
+    withTiming,
+    useAnimatedStyle,
+    runOnJS,
+} from 'react-native-reanimated';
+import { colors } from '@/styles/Styles';
 
-export default function LargeButton(props: { text: string; action?: ()=>void, textFocused?: number }) {
-
-    const { text, action, textFocused } = props;
-
-    const x = useAnimatedValue(0);
-    const y = useAnimatedValue(0);
+export default function LargeButton({
+    text,
+    action,
+}: {
+    text: string;
+    action?: () => void;
+}) {
+    const x = useSharedValue(0);
+    const y = useSharedValue(0);
+    const bgColor = useSharedValue(colors.darkBlue);
+    const isPressed = useSharedValue(false);
 
     const pressInAnim = () => {
-        Animated.parallel([
-            Animated.timing(x, {
-                toValue: -10,
-                duration: 100,
-                useNativeDriver: true
-            }),
-            Animated.timing(y, {
-                toValue: 10,
-                duration: 100,
-                useNativeDriver: true
-            })
-        ]).start();
-    }
+        bgColor.value = withTiming('#0000d4ff', { duration: 100 });
+        x.value = withTiming(-8, { duration: 100 });
+        y.value = withTiming(8, { duration: 100 });
+    };
 
     const pressOutAnim = () => {
-        Animated.parallel([
-            Animated.timing(x, {
-                toValue: 0,
-                duration: 200,
-                useNativeDriver: true
-            }),
-            Animated.timing(y, {
-                toValue: 0,
-                duration: 200,
-                useNativeDriver: true
-            })
-        ]).start();
-    }
+        bgColor.value = withTiming(colors.darkBlue, { duration: 200 });
+        x.value = withTiming(0, { duration: 200 });
+        y.value = withTiming(0, { duration: 200 }, (finished) => {
+            if (finished && action && isPressed.value) {
+                isPressed.value = false;
+                runOnJS(action)();
+            }
+        });
+    };
 
-    return (<>
-        <Pressable onPressOut={pressOutAnim} onPressIn={pressInAnim} 
-        style={[styles.wrapper, {opacity: textFocused !== undefined && textFocused > -1 ? 0 : 1}]} onPress={action}>    
+    const animatedStyle = useAnimatedStyle(() => ({
+        transform: [{ translateX: x.value }, { translateY: y.value }],
+        backgroundColor: bgColor.value,
+    }));
+
+    return (
+        <Pressable
+            onPressIn={pressInAnim}
+            onPressOut={pressOutAnim}
+            onPress={() => { isPressed.value = true }}
+            style={styles.wrapper}
+        >
             <View style={styles.shadow}>
-                <Text style={[styles.text, {color: "#000000"}]}>{text}</Text>
+                <Text style={[styles.text, { color: '#000000' }]}>{text}</Text>
             </View>
-            <Animated.View style={[styles.overlay, {
-                transform: [ { translateX: x }, { translateY: y } ]
-            }]}>
+
+            <Animated.View style={[styles.overlay, animatedStyle]}>
                 <Text style={styles.text}>{text}</Text>
             </Animated.View>
         </Pressable>
-    </>)
+    );
 }
 
 const styles = StyleSheet.create({
     wrapper: {
-        marginHorizontal: "auto",
-        position: "relative",
+        marginHorizontal: 'auto',
+        position: 'relative',
     },
     shadow: {
-        borderRadius: 32,
-        backgroundColor: "#000000",
-        paddingHorizontal: 50,
-        paddingVertical: 30
+        borderRadius: 10,
+        backgroundColor: '#000000',
+        paddingHorizontal: 34,
+        paddingVertical: 20,
     },
     overlay: {
-        borderRadius: 32,
-        backgroundColor: colors.largeButtonBG,
-        paddingHorizontal: 50,
-        paddingVertical: 30,        
-        position: "absolute",
-        left: 10,
-        bottom: 10
+        borderRadius: 10,
+        paddingHorizontal: 34,
+        paddingVertical: 20,
+        position: 'absolute',
+        left: 8,
+        bottom: 8,
     },
     text: {
-        color: colors.primaryText,
-        fontWeight: 700,
-        textTransform: "uppercase",
-        fontSize: 20,
+        color: colors.white,
+        fontWeight: '700',
+        textTransform: 'uppercase',
+        fontSize: 22,
         letterSpacing: 1,
-        fontFamily: fonts.mainFont,        
-    }
+    },
 });

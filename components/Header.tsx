@@ -1,22 +1,23 @@
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import React, { useRef } from 'react';
-import { colors, fonts } from '@/styles/Styles';
+import { colors, fonts, headerHeight, wrapperPaddingHorizontal } from '@/styles/Styles';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { MaterialIcons } from '@expo/vector-icons';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 
 export default function Header({
     title,
     btnText,
     showWeek,
+    btnAction,
     cancel
 }: {
     title?: string;
     btnText: string;
     showWeek?: boolean;
-    cancel?: () => void
+    btnAction: () => void;
+    cancel?: () => void;
 }) {
     const fixedTitle = title?.replace(" ", "  ");
 
@@ -27,7 +28,7 @@ export default function Header({
     return (
         <View ref={headerRef} style={[styles.container, {
             boxShadow: "0px 0px 5px rgba(13, 13, 13, 1)",
-            height: 110
+            height: headerHeight
         }]}>
             <LinearGradient colors={['#000048', 'rgba(13, 13, 13, 0.925)']}
                 style={[styles.gradient]} />
@@ -44,17 +45,15 @@ export default function Header({
                             <Text style={styles.title}>{fixedTitle}</Text>
                         )}
                         {cancel && (
-                            <Pressable style={styles.cancelWrapper} onPress={() => cancel()}>
+                            <Pressable style={styles.cancelWrapper} onPress={cancel}>
                                 <View style={styles.cancelArrow}>
-                                    {/* <Ionicons name="arrow-back-sharp" size={20} color={colors.darkBlue} /> */}
-                                    {/* <MaterialCommunityIcons name="arrow-left-thick" size={22} color={colors.darkBlue} /> */}
                                     <FontAwesome5 name="arrow-left" size={16} color={colors.darkBlue} />
                                 </View>
                                 <Text style={styles.cancelText}>CANCEL</Text>
                             </Pressable>
                         )}
                     </View>
-                    <Pressable style={styles.button} onPress={() => navigation.goBack()}>
+                    <Pressable style={styles.button} onPress={btnAction}>
                         <Text style={styles.buttonText}>{btnText}</Text>
                     </Pressable>
                 </View>
@@ -79,8 +78,8 @@ const styles = StyleSheet.create({
         height: "100%"
     },
     wrapper: {
+        paddingHorizontal: wrapperPaddingHorizontal,
         paddingBottom: 10,
-        paddingHorizontal: 15,
         display: "flex",
         flexDirection: 'row',
         alignItems: "flex-end",

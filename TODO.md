@@ -23,3 +23,6 @@
 - [x] Add new exercise to workout
 - [x] Add sets and reps data to exercises
 - [x] Edit workout title
+
+## Start Page
+- [ ] Show Add workout button 
