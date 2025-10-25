@@ -23,6 +23,9 @@
 - [x] Add new exercise to workout
 - [x] Add sets and reps data to exercises
 - [x] Edit workout title
+- [ ] Save workouts to DB
 
 ## Start Page
-- [ ] Show Add workout button 
+- [x] Show Add workout button 
+- [x] Show Workouts
+- [ ] Load workouts from DB

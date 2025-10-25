@@ -4,7 +4,7 @@ import { colors, fonts, headerHeight, wrapperPaddingHorizontal } from '@/styles/
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+import ArrowIcon from "@/assets/icons/arrow-icon.svg";
 
 export default function Header({
     title,
@@ -47,7 +47,7 @@ export default function Header({
                         {cancel && (
                             <Pressable style={styles.cancelWrapper} onPress={cancel}>
                                 <View style={styles.cancelArrow}>
-                                    <FontAwesome5 name="arrow-left" size={16} color={colors.darkBlue} />
+                                    <ArrowIcon style={{ transform: [{ rotate: '180deg' }] }} width={16} height={16} fill={colors.darkBlue} />
                                 </View>
                                 <Text style={styles.cancelText}>CANCEL</Text>
                             </Pressable>

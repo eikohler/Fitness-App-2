@@ -23,7 +23,7 @@ import { FontAwesome6 } from "@expo/vector-icons";
 import TimesIcon from "@/assets/icons/times-icon.svg";
 import Feather from '@expo/vector-icons/Feather';
 import Header from '@/components/Header';
-
+import { useNavigation } from '@react-navigation/native';
 
 interface Exercise {
   id: string;
@@ -1220,8 +1220,10 @@ export default function EditWorkouts() {
     }
   });
 
+  const navigation = useNavigation();
+
   return (<>
-    <Header cancel={() => { console.log('cancel') }} btnText={'Save'} btnAction={() => { console.log('save') }} />
+    <Header cancel={() => { navigation.goBack(); }} btnText={'Save'} btnAction={() => { console.log('save') }} />
     {workouts.map((w, i) =>
       <DragWorkout key={i} workout={w} index={i} />
     )}
@@ -1297,7 +1299,7 @@ const styles = StyleSheet.create({
   },
   exerciseText: {
     color: colors.white,
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: 600
   },
   dragIcon: {
