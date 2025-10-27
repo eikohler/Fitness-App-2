@@ -1222,8 +1222,12 @@ export default function EditWorkouts() {
 
   const navigation = useNavigation();
 
+  const handleSave = () => {
+    console.log('save');
+  }
+
   return (<>
-    <Header cancel={() => { navigation.goBack(); }} btnText={'Save'} btnAction={() => { console.log('save') }} />
+    <Header cancel={() => { navigation.goBack(); }} btnText={'Save'} btnAction={() => handleSave()} />
     {workouts.map((w, i) =>
       <DragWorkout key={i} workout={w} index={i} />
     )}

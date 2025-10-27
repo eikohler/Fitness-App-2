@@ -3,55 +3,46 @@ import { type SQLiteDatabase } from 'expo-sqlite';
 
 export const initDB = async (db: SQLiteDatabase) => {
     try {
-        await db.execAsync(`     
+        await db.execAsync(`
             CREATE TABLE IF NOT EXISTS workouts (
-                id INTEGER PRIMARY KEY,
+                workout_id VARCHAR(100) PRIMARY KEY,
                 title VARCHAR(100) NOT NULL UNIQUE,
                 date DATETIME DEFAULT CURRENT_TIMESTAMP,
-                note VARCHAR(100),
-                is_deload INTEGER DEFAULT 0,
-                is_deload_active INTEGER DEFAULT 0
+                note VARCHAR(100)                
             );
 
             CREATE TABLE IF NOT EXISTS exercises (
-                id INTEGER PRIMARY KEY,
+                exercise_id VARCHAR(100) PRIMARY KEY,
                 title VARCHAR(100) NOT NULL UNIQUE,
                 note VARCHAR(100)
-            );
-
-            CREATE TABLE IF NOT EXISTS deload_workouts (
-                original_workout_id INTEGER,
-                deload_workout_id INTEGER,    
-                FOREIGN KEY (original_workout_id) REFERENCES workouts (id),
-                FOREIGN KEY (deload_workout_id) REFERENCES workouts (id)
-            );
+            );            
 
             CREATE TABLE IF NOT EXISTS workout_exercises (
-                id INTEGER PRIMARY KEY,
-                workout_id INTEGER,
-                exercise_id INTEGER,
-                alt_exercise_id INTEGER,
+                w_ex_id VARCHAR(100) PRIMARY KEY,
+                workout_id VARCHAR(100),
+                exercise_id VARCHAR(100),
+                alt_w_ex_id VARCHAR(100),
                 set_count INTEGER NOT NULL,
                 rep_count INTEGER NOT NULL,
-                is_alt_active INTEGER DEFAULT 0,
-                FOREIGN KEY (workout_id) REFERENCES workouts (id),
-                FOREIGN KEY (exercise_id) REFERENCES exercises (id),
-                FOREIGN KEY (alt_exercise_id) REFERENCES exercises (id),
-                UNIQUE( workout_id, exercise_id)
+                note VARCHAR(100),
+                is_alt INTEGER DEFAULT 0,
+                FOREIGN KEY (workout_id) REFERENCES workouts (workout_id),
+                FOREIGN KEY (exercise_id) REFERENCES exercises (exercise_id),
+                FOREIGN KEY (alt_w_ex_id) REFERENCES workout_exercises (w_ex_id)                
             );
 
-            CREATE TABLE IF NOT EXISTS set_reps (
-                id INTEGER PRIMARY KEY,
-                exercise_id INTEGER,
-                sets INTEGER NOT NULL,
-                reps INTEGER NOT NULL,
+            CREATE TABLE IF NOT EXISTS set_weights (
+                sw_id VARCHAR(100) PRIMARY KEY,
+                exercise_id VARCHAR(100),
+                set_count INTEGER NOT NULL,
+                rep_count INTEGER NOT NULL,
                 weight FLOAT NOT NULL,
                 rir INTEGER NOT NULL,
                 date DATETIME DEFAULT CURRENT_TIMESTAMP,
                 note VARCHAR(100),
-                FOREIGN KEY (exercise_id) REFERENCES exercises (id)
-            );     
-                        
+                is_deload INTEGER DEFAULT 0,
+                FOREIGN KEY (exercise_id) REFERENCES exercises (exercise_id)
+            );
       `)
         console.log("DB Initialized");
 

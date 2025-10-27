@@ -5,6 +5,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import ArrowIcon from "@/assets/icons/arrow-icon.svg";
+import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 
 export default function Header({
     title,
@@ -25,39 +27,84 @@ export default function Header({
 
     const navigation = useNavigation();
 
+    const isPressed = useSharedValue(false);
+
+    const tapGesture = Gesture.Tap()
+        .onBegin(() => {
+            isPressed.value = true;
+        })
+        .onFinalize(() => {
+            isPressed.value = false;
+        })
+        .onEnd((_e, success) => {
+            if (success) {
+                runOnJS(btnAction)();
+            }
+        });
+
+    const longPressGesture = Gesture.LongPress()
+        .onBegin(() => {
+            isPressed.value = true;
+        })
+        .onFinalize(() => {
+            isPressed.value = false;
+        })
+        .onEnd((_e, success) => {
+            if (success) {
+                runOnJS(btnAction)();
+            }
+        });
+
+    // Long press overrides tap
+    const pressGesture = Gesture.Exclusive(longPressGesture, tapGesture);
+    const fast = 50;
+    const slow = 150;
+
+    const btnAnimStyles = useAnimatedStyle(() => {
+        return {
+            backgroundColor: isPressed.value
+                ? withTiming(colors.softWhite, { duration: fast })
+                : withTiming(colors.white, { duration: slow })
+        }
+    });
+
     return (
         <View ref={headerRef} style={[styles.container, {
             boxShadow: "0px 0px 5px rgba(13, 13, 13, 1)",
             height: headerHeight
         }]}>
-            <LinearGradient colors={['#000048', 'rgba(13, 13, 13, 0.925)']}
-                style={[styles.gradient]} />
-            <View style={styles.wrapper}>
-                <View style={styles.content}>
-                    <View>
-                        {showWeek && (
-                            <View style={styles.weekWrapper}>
-                                <Text style={styles.weekText}>WEEK 3</Text>
-                                <MaterialIcons name="bolt" size={18} color={colors.brightPurple} />
-                            </View>
-                        )}
-                        {fixedTitle && (
-                            <Text style={styles.title}>{fixedTitle}</Text>
-                        )}
-                        {cancel && (
-                            <Pressable style={styles.cancelWrapper} onPress={cancel}>
-                                <View style={styles.cancelArrow}>
-                                    <ArrowIcon style={{ transform: [{ rotate: '180deg' }] }} width={16} height={16} fill={colors.darkBlue} />
+            <GestureHandlerRootView>
+                <LinearGradient colors={['#000048', 'rgba(13, 13, 13, 0.925)']}
+                    style={[styles.gradient]} />
+                <View style={styles.wrapper}>
+                    <View style={styles.content}>
+                        <View>
+                            {showWeek && (
+                                <View style={styles.weekWrapper}>
+                                    <Text style={styles.weekText}>WEEK 3</Text>
+                                    <MaterialIcons name="bolt" size={18} color={colors.brightPurple} />
                                 </View>
-                                <Text style={styles.cancelText}>CANCEL</Text>
-                            </Pressable>
-                        )}
+                            )}
+                            {fixedTitle && (
+                                <Text style={styles.title}>{fixedTitle}</Text>
+                            )}
+                            {cancel && (
+                                <Pressable style={styles.cancelWrapper} onPress={cancel}>
+                                    <View style={styles.cancelArrow}>
+                                        <ArrowIcon style={{ transform: [{ rotate: '180deg' }] }} width={16} height={16} fill={colors.darkBlue} />
+                                    </View>
+                                    <Text style={styles.cancelText}>CANCEL</Text>
+                                </Pressable>
+                            )}
+                        </View>
+                        <GestureDetector gesture={pressGesture}>
+                            <Animated.View style={[styles.button, btnAnimStyles]}>
+                                <Text style={styles.buttonText}>{btnText}</Text>
+                            </Animated.View>
+                        </GestureDetector>
                     </View>
-                    <Pressable style={styles.button} onPress={btnAction}>
-                        <Text style={styles.buttonText}>{btnText}</Text>
-                    </Pressable>
                 </View>
-            </View>
+            </GestureHandlerRootView>
         </View>
     )
 }
@@ -105,7 +152,6 @@ const styles = StyleSheet.create({
         letterSpacing: -3
     },
     button: {
-        backgroundColor: colors.white,
         borderRadius: 8,
         paddingVertical: 4,
         paddingHorizontal: 12
