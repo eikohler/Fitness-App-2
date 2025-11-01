@@ -3,8 +3,8 @@ import React, { useEffect, useState, forwardRef, useImperativeHandle, useRef } f
 import { colors, editButton } from '@/styles/Styles';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useSQLiteContext } from 'expo-sqlite';
-import { SingleWorkout } from '@/Interfaces/dataTypes';
-import { getSingleWorkout } from '@/utilities/db-functions';
+import { SingleWorkout } from '@/Interfaces/exercises';
+import { getSingleWorkout } from '@/utilities/dbFunctions';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';

@@ -1,94 +1,19 @@
 import Header from "@/components/Header";
 import LargeButton from "@/components/LargeButton";
 import { colors, wrapperPaddingHorizontal, wrapperPaddingTop } from "@/styles/Styles";
-import { getWorkouts } from "@/utilities/db-functions";
 import { router } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
-import { useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import 'react-native-get-random-values';
-import { v4 as uuidv4 } from 'uuid';
 import TimesIcon from "@/assets/icons/times-icon.svg";
 import ArrowIcon from "@/assets/icons/arrow-icon.svg";
-
-interface Exercise {
-    id: string;
-    title: string;
-    sets: number;
-    reps: number;
-    notes?: string;
-}
-
-interface Workout {
-    id: string;
-    title: string;
-    date: string;
-    exercises: Exercise[];
-}
-
-type Workouts = Workout[];
-
-const initialWorkouts: Workouts = [
-    {
-        id: uuidv4(),
-        title: "Upper Body",
-        date: "JAN. 15",
-        exercises: [
-            { id: uuidv4(), title: 'Bench Press', sets: 3, reps: 10 },
-            { id: uuidv4(), title: 'Shoulder Press', sets: 3, reps: 10 },
-            { id: uuidv4(), title: 'DB Curls', sets: 3, reps: 10 }
-        ]
-    },
-    {
-        id: uuidv4(),
-        title: "Leg Day",
-        date: "FEB. 2",
-        exercises: [
-            { id: uuidv4(), title: 'Leg Press', sets: 3, reps: 10 },
-            { id: uuidv4(), title: 'Deadlifts', sets: 3, reps: 10 },
-            { id: uuidv4(), title: 'Leg Curls', sets: 3, reps: 10 }
-        ]
-    },
-    {
-        id: uuidv4(),
-        title: "Calisthenics Day",
-        date: "MAR. 21",
-        exercises: [
-            { id: uuidv4(), title: 'Leg Raises', sets: 3, reps: 10 },
-            { id: uuidv4(), title: 'Pullups', sets: 3, reps: 10 },
-            { id: uuidv4(), title: 'Pushups', sets: 3, reps: 10 }
-        ]
-    },
-    {
-        id: uuidv4(),
-        title: "Back Day",
-        date: "APR. 8",
-        exercises: [
-            { id: uuidv4(), title: 'Lat Pulldowns', sets: 3, reps: 10 },
-            { id: uuidv4(), title: 'Cable Rows', sets: 3, reps: 10 },
-            { id: uuidv4(), title: 'Bent Over Rows', sets: 3, reps: 10 }
-        ]
-    }
-];
-
+import { Exercise, Workout } from "@/interfaces/allTypes";
+import { useWorkouts } from "@/hooks/useWorkouts";
 
 export default function StartScreen() {
 
-    // Fetch workouts from DB
-    // const db = useSQLiteContext();
-    // const [workouts, setWorkouts] = useState<IDList[] | undefined>();
-    // useEffect(() => {
-    //     getWorkouts(db)
-    //         .then((res) => {
-    //             if (res) {
-    //                 setWorkouts(res);
-    //             }
-    //         })
-    //         .catch((err) => console.log(err));
-    // }, []);
-
-    const [workouts, setWorkouts] = useState<Workouts>(initialWorkouts);
-    // const [workouts, setWorkouts] = useState<Workouts>([]);
+    const db = useSQLiteContext();
+    const { workouts } = useWorkouts(db);
 
     const RenderExercise = ({ exercise }: { exercise: Exercise }) => {
         return (
@@ -106,8 +31,10 @@ export default function StartScreen() {
             <View style={styles.workoutWrapper}>
                 <View style={styles.workoutHeading}>
                     <Text style={styles.workoutTitle}>{workout.title}</Text>
-                    <Text style={[styles.workoutDate, { marginBottom: 3 }]}> / </Text>
-                    <Text style={[styles.workoutDate, { marginBottom: 2 }]}>{workout.date}</Text>
+                    {workout.date && (<>
+                        <Text style={[styles.workoutDate, { marginBottom: 3 }]}> / </Text>
+                        <Text style={[styles.workoutDate, { marginBottom: 2 }]}>{workout.date}</Text>
+                    </>)}
                 </View>
                 {workout.exercises.map((ex) => (
                     <RenderExercise exercise={ex} key={ex.id} />
@@ -122,7 +49,7 @@ export default function StartScreen() {
             showWeek btnText="EDIT"
             btnAction={() => { router.push({ pathname: "/edit-workouts" }) }}
         />
-        {workouts.length > 1 ? (
+        {workouts.length ? (
             <ScrollView showsVerticalScrollIndicator={false}>
                 <View style={styles.wrapper}>
                     {workouts.map((w) => (

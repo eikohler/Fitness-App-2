@@ -23,9 +23,12 @@
 - [x] Add new exercise to workout
 - [x] Add sets and reps data to exercises
 - [x] Edit workout title
-- [ ] Save workouts to DB
+  - [ ] FIX: When plus button pressed, clears title changes
+- [x] Save workouts to DB
+- [ ] FIX: Load workouts from DB race condition for workout undefined vs is array
+- [ ] FIX: Notes not saving in the edit screen modal
 
 ## Start Page
 - [x] Show Add workout button 
 - [x] Show Workouts
-- [ ] Load workouts from DB
+- [x] Load workouts from DB

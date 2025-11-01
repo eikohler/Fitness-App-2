@@ -3,8 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { colors, editButton } from '@/styles/Styles';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useSQLiteContext } from 'expo-sqlite';
-import { SetRow } from '@/Interfaces/dataTypes';
-import { getSingleSet } from '@/utilities/db-functions';
+import { SetRow } from '@/Interfaces/exercises';
+import { getSingleSet } from '@/utilities/dbFunctions';
 
 export default function EditSetButton(props: { exID: number, sets: number, reps: number, line?: boolean }) {
 

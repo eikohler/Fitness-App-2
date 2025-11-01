@@ -4,8 +4,8 @@ import { arrowButton, colors, mainStyles, toggleButton } from '@/styles/Styles';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { router } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
-import { type SingleWorkout } from '@/Interfaces/dataTypes';
-import { getSingleWorkout } from '@/utilities/db-functions';
+import { type SingleWorkout } from '@/Interfaces/exercises';
+import { getSingleWorkout } from '@/utilities/dbFunctions';
 import { parseDate } from '@/utilities/helpers';
 
 export default function WorkoutButton(props: { id: number; }) {

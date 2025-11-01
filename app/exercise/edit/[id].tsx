@@ -8,8 +8,8 @@ import EditSetButton from '@/components/EditSetButton'
 import LargeButton from '@/components/LargeButton'
 import { useLocalSearchParams } from 'expo-router'
 import { useSQLiteContext } from 'expo-sqlite'
-import { SingleWorkoutExercise } from '@/Interfaces/dataTypes'
-import { getSingleWorkoutExercise } from '@/utilities/db-functions'
+import { SingleWorkoutExercise } from '@/Interfaces/exercises'
+import { getSingleWorkoutExercise } from '@/utilities/dbFunctions'
 
 export default function EditSingleExercise() {
 

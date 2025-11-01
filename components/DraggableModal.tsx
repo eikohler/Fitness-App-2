@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Dimensions, ScrollView } from 'react-native';
 import Animated, { useAnimatedStyle, withSpring, useSharedValue, runOnJS, withTiming } from 'react-native-reanimated';
-import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import NotesField from './NotesField';
 import LargeNumberField from './LargeNumberField';
 import TitleField from './TitleField';
 import MediumButton from './MediumButton';
 import { colors } from '@/styles/Styles';
 import InvertedButton from './InvertedButton';
-import { ExerciseData, ModalExercise } from '@/Interfaces/dataTypes';
+import { Exercise } from '@/interfaces/allTypes';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -51,10 +51,10 @@ export default function DraggableModal({
 }: {
     visible: boolean,
     onClose: () => void,
-    addExerciseToWorkout: (workoutID: string, data: ModalExercise) => void,
-    updateExercise: (workoutID: string, exerciseID: string, data: ModalExercise) => void,
+    addExerciseToWorkout: (workoutID: string, data: Exercise) => void,
+    updateExercise: (workoutID: string, exerciseID: string, data: Exercise) => void,
     modalWorkoutID: string | null,
-    modalExerciseData: ExerciseData | null
+    modalExerciseData: Exercise | null
 }) {
     const translateY = useSharedValue(BOTTOM);
     const startY = useSharedValue(0);
@@ -242,7 +242,7 @@ export default function DraggableModal({
     }
 
     return (
-        <GestureHandlerRootView style={[styles.wrapper, { pointerEvents: visible ? "auto" : "none" }]}>
+        <View style={[styles.wrapper, { pointerEvents: visible ? "auto" : "none" }]}>
             <GestureDetector gesture={bgPressGesture}>
                 <Animated.View style={[styles.background, backgroundAnimStyle]} />
             </GestureDetector>
@@ -286,6 +286,7 @@ export default function DraggableModal({
                                 action={() => {
                                     if (modalWorkoutID && titleValue && singleSetsValue && singleRepsValue) {
                                         const data = {
+                                            id: "", // Not used | Placeholder for data type
                                             title: titleValue,
                                             notes: notesValue,
                                             sets: parseFloat(singleSetsValue),
@@ -302,7 +303,7 @@ export default function DraggableModal({
                     </View>)}
                 </Animated.View>
             </GestureDetector>
-        </GestureHandlerRootView >
+        </View >
     );
 };
 

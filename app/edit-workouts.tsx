@@ -1,6 +1,6 @@
 import { Text, LayoutRectangle, StyleSheet, View, Dimensions, TextInput } from 'react-native';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   Easing,
   ReduceMotion,
@@ -16,7 +16,6 @@ import Animated, {
 } from 'react-native-reanimated';
 import { colors, headerHeight, wrapperPaddingHorizontal, wrapperPaddingTop } from '@/styles/Styles';
 import DraggableModal from '@/components/DraggableModal';
-import { ExerciseData, ModalExercise } from '@/Interfaces/dataTypes';
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 import { FontAwesome6 } from "@expo/vector-icons";
@@ -24,61 +23,49 @@ import TimesIcon from "@/assets/icons/times-icon.svg";
 import Feather from '@expo/vector-icons/Feather';
 import Header from '@/components/Header';
 import { useNavigation } from '@react-navigation/native';
+import { Exercise, Workout, Workouts } from '@/interfaces/allTypes';
+import { useSQLiteContext } from 'expo-sqlite';
+import { useWorkouts } from '@/hooks/useWorkouts';
+import { saveWorkoutsToDB } from '@/utilities/dbFunctions';
 
-interface Exercise {
-  id: string;
-  title: string;
-  sets: number;
-  reps: number;
-  notes?: string;
-};
-
-interface Workout {
-  id: string;
-  title: string;
-  exercises: Exercise[]
-}
-
-type Workouts = Workout[];
-
-const initialWorkouts: Workouts = [
-  {
-    id: uuidv4(),
-    title: "Upper Body",
-    exercises: [
-      { id: uuidv4(), title: 'Bench Press', sets: 3, reps: 10 },
-      { id: uuidv4(), title: 'Shoulder Press', sets: 3, reps: 10 },
-      { id: uuidv4(), title: 'DB Curls', sets: 3, reps: 10 }
-    ]
-  },
-  {
-    id: uuidv4(),
-    title: "Leg Day",
-    exercises: [
-      { id: uuidv4(), title: 'Leg Press', sets: 3, reps: 10 },
-      { id: uuidv4(), title: 'Deadlifts', sets: 3, reps: 10 },
-      { id: uuidv4(), title: 'Leg Curls', sets: 3, reps: 10 }
-    ]
-  },
-  {
-    id: uuidv4(),
-    title: "Calisthenics Day",
-    exercises: [
-      { id: uuidv4(), title: 'Leg Raises', sets: 3, reps: 10 },
-      { id: uuidv4(), title: 'Pullups', sets: 3, reps: 10 },
-      { id: uuidv4(), title: 'Pushups', sets: 3, reps: 10 }
-    ]
-  },
-  {
-    id: uuidv4(),
-    title: "Back Day",
-    exercises: [
-      { id: uuidv4(), title: 'Lat Pulldowns', sets: 3, reps: 10 },
-      { id: uuidv4(), title: 'Cable Rows', sets: 3, reps: 10 },
-      { id: uuidv4(), title: 'Bent over rows', sets: 3, reps: 10 }
-    ]
-  }
-];
+// const initialWorkouts: Workouts = [
+//   {
+//     id: uuidv4(),
+//     title: "Upper Body",
+//     exercises: [
+//       { id: uuidv4(), title: 'Bench Press', sets: 3, reps: 10 },
+//       { id: uuidv4(), title: 'Shoulder Press', sets: 3, reps: 10 },
+//       { id: uuidv4(), title: 'DB Curls', sets: 3, reps: 10 }
+//     ]
+//   },
+//   {
+//     id: uuidv4(),
+//     title: "Leg Day",
+//     exercises: [
+//       { id: uuidv4(), title: 'Leg Press', sets: 3, reps: 10 },
+//       { id: uuidv4(), title: 'Deadlifts', sets: 3, reps: 10 },
+//       { id: uuidv4(), title: 'Leg Curls', sets: 3, reps: 10 }
+//     ]
+//   },
+//   {
+//     id: uuidv4(),
+//     title: "Calisthenics Day",
+//     exercises: [
+//       { id: uuidv4(), title: 'Leg Raises', sets: 3, reps: 10 },
+//       { id: uuidv4(), title: 'Pullups', sets: 3, reps: 10 },
+//       { id: uuidv4(), title: 'Pushups', sets: 3, reps: 10 }
+//     ]
+//   },
+//   {
+//     id: uuidv4(),
+//     title: "Back Day",
+//     exercises: [
+//       { id: uuidv4(), title: 'Lat Pulldowns', sets: 3, reps: 10 },
+//       { id: uuidv4(), title: 'Cable Rows', sets: 3, reps: 10 },
+//       { id: uuidv4(), title: 'Bent over rows', sets: 3, reps: 10 }
+//     ]
+//   }
+// ];
 
 const EXERCISE_HEIGHT = 45;
 const EXERCISE_SPACING = 10;
@@ -107,21 +94,23 @@ const CLONE_EX_ID = "clone";
 
 export default function EditWorkouts() {
 
+  const db = useSQLiteContext();
   const [postUpdate, setPostUpdate] = useState(false);
 
   const titleIsFocused = useSharedValue(false);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [modalWorkoutID, setModalWorkoutID] = useState<string | null>(null);
-  const [modalExerciseData, setModalExerciseData] = useState<ExerciseData | null>(null);
+  const [modalExerciseData, setModalExerciseData] = useState<Exercise | null>(null);
 
-  const [workouts, setWorkouts] = useState<Workouts>(initialWorkouts);
+  const { workouts: workoutsData, loading: workoutDBLoading } = useWorkouts(db);
+  const [workouts, setWorkouts] = useState<Workouts>([]);
 
   const workoutLayouts = useSharedValue<LayoutRectangle[]>([]);
 
-  const workoutsOrder = useSharedValue<string[]>(workouts.map(w => w.id));
+  const workoutsOrder = useSharedValue<string[]>([]);
 
-  const exerciseOrders = useSharedValue<string[][]>(workouts.map(w => w.exercises.map(ex => ex.id)));
+  const exerciseOrders = useSharedValue<string[][]>([]);
 
   const draggedWorkout = useSharedValue<{ workoutID: string, workoutTitle: string } | null>(null);
 
@@ -160,12 +149,25 @@ export default function EditWorkouts() {
   const AnimatedFontAwesome6 = Animated.createAnimatedComponent(FontAwesome6 as React.ComponentType<any>);
 
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      setPostUpdate(true);
-    }, 250);
+    if (!workoutDBLoading) {
+      // Initialize workouts from DB or fallback
+      const initializedWorkouts = Array.isArray(workoutsData) && workoutsData.length > 0
+        ? workoutsData
+        : [{
+          id: uuidv4(),
+          title: "Workout Title",
+          exercises: []
+        }];
 
-    return () => clearTimeout(timeoutId);
-  }, []);
+      setWorkouts(initializedWorkouts);
+
+      // Update state variables that rely on workouts
+      workoutsOrder.value = initializedWorkouts.map(w => w.id);
+      exerciseOrders.value = initializedWorkouts.map(w => w.exercises.map(ex => ex.id));
+
+      setPostUpdate(true);
+    }
+  }, [workoutsData, workoutDBLoading]);
 
   useEffect(() => {
     dragWorkoutDropStart.value = false;
@@ -1139,7 +1141,7 @@ export default function EditWorkouts() {
     </>);
   };
 
-  const addExerciseToWorkout = (workoutID: string, data: ModalExercise) => {
+  const addExerciseToWorkout = (workoutID: string, data: Exercise) => {
     const workoutIndex = workouts.findIndex((w) => w.id === workoutID);
     if (workoutIndex === -1) return;
 
@@ -1176,7 +1178,7 @@ export default function EditWorkouts() {
     setModalWorkoutID(null);
   }
 
-  const updateExercise = (workoutID: string, exerciseID: string, data: ModalExercise) => {
+  const updateExercise = (workoutID: string, exerciseID: string, data: Exercise) => {
     const workoutIndex = workouts.findIndex((w) => w.id === workoutID);
     if (workoutIndex === -1) return;
 
@@ -1223,31 +1225,35 @@ export default function EditWorkouts() {
   const navigation = useNavigation();
 
   const handleSave = () => {
-    console.log('save');
+    console.log('save function');
+    saveWorkoutsToDB(db, workouts);
   }
+
+
+  if (workoutDBLoading) return <Text style={{ color: "#fff" }}>Loading</Text>;
+  if (workouts.length === 0) return <Text style={{ color: "#fff" }}>Loading</Text>;
+
 
   return (<>
     <Header cancel={() => { navigation.goBack(); }} btnText={'Save'} btnAction={() => handleSave()} />
     {workouts.map((w, i) =>
       <DragWorkout key={i} workout={w} index={i} />
     )}
-    <GestureHandlerRootView>
-      <GestureDetector gesture={scrollNative}>
-        <Animated.ScrollView
-          showsVerticalScrollIndicator={false}
-          ref={scrollRef}
-          scrollEventThrottle={16}
-          onScroll={e => {
-            scrollY.value = e.nativeEvent.contentOffset.y;
-          }}>
-          <Animated.View style={[styles.wrapper, mainWrapperAnim]}>
-            {workouts.map((w, i) =>
-              <RenderWorkout key={i} workout={w} index={i} scrollNative={scrollNative} />
-            )}
-          </Animated.View>
-        </Animated.ScrollView>
-      </GestureDetector>
-    </GestureHandlerRootView>
+    <GestureDetector gesture={scrollNative}>
+      <Animated.ScrollView
+        showsVerticalScrollIndicator={false}
+        ref={scrollRef}
+        scrollEventThrottle={16}
+        onScroll={e => {
+          scrollY.value = e.nativeEvent.contentOffset.y;
+        }}>
+        <Animated.View style={[styles.wrapper, mainWrapperAnim]}>
+          {workouts.map((w, i) =>
+            <RenderWorkout key={i} workout={w} index={i} scrollNative={scrollNative} />
+          )}
+        </Animated.View>
+      </Animated.ScrollView>
+    </GestureDetector>
     <DraggableModal
       modalWorkoutID={modalWorkoutID}
       modalExerciseData={modalExerciseData}

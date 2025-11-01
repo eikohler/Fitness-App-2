@@ -6,7 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import ArrowIcon from "@/assets/icons/arrow-icon.svg";
 import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
-import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 
 export default function Header({
     title,
@@ -73,7 +73,7 @@ export default function Header({
             boxShadow: "0px 0px 5px rgba(13, 13, 13, 1)",
             height: headerHeight
         }]}>
-            <GestureHandlerRootView>
+            <View>
                 <LinearGradient colors={['#000048', 'rgba(13, 13, 13, 0.925)']}
                     style={[styles.gradient]} />
                 <View style={styles.wrapper}>
@@ -104,7 +104,7 @@ export default function Header({
                         </GestureDetector>
                     </View>
                 </View>
-            </GestureHandlerRootView>
+            </View>
         </View>
     )
 }

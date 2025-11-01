@@ -3,8 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { colors, editButton } from '@/styles/Styles';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useSQLiteContext } from 'expo-sqlite';
-import { SingleWorkoutExercise } from '@/Interfaces/dataTypes';
-import { getSingleWorkoutExercise } from '@/utilities/db-functions';
+import { SingleWorkoutExercise } from '@/Interfaces/exercises';
+import { getSingleWorkoutExercise } from '@/utilities/dbFunctions';
 
 export default function EditExerciseButton(props: { id: number, line?: boolean }) {
 

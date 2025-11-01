@@ -2,8 +2,8 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { colors, fonts } from '@/styles/Styles';
 import { useSQLiteContext } from 'expo-sqlite';
-import { type SetRow } from '@/Interfaces/dataTypes';
-import { getSetRow } from '@/utilities/db-functions';
+import { type SetRow } from '@/Interfaces/exercises';
+import { getSetRow } from '@/utilities/dbFunctions';
 import { getDateDiffInDays } from '@/utilities/helpers';
 
 export default function SetButton(props: { exID: number, sets: number, reps: number }) {

@@ -7,8 +7,8 @@ import EditWorkoutButton, { EditWorkoutRef } from '@/components/EditWorkoutButto
 import PlusButton from '@/components/PlusButton';
 import LargeButton from '@/components/LargeButton';
 import { useSQLiteContext } from 'expo-sqlite';
-import { IDList } from '@/Interfaces/dataTypes';
-import { addMultipleWorkouts, deleteMultipleWorkouts, getWorkouts } from '@/utilities/db-functions';
+import { IDList } from '@/Interfaces/exercises';
+import { addMultipleWorkouts, deleteMultipleWorkouts, getWorkouts } from '@/utilities/dbFunctions';
 import { useNavigation } from '@react-navigation/native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, runOnJS } from 'react-native-reanimated'

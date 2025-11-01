@@ -1,9 +1,9 @@
 import ExerciseButton from "@/components/ExerciseButton";
 import Header from "@/components/Header";
 import LargeButton from "@/components/LargeButton";
-import { type IDList, type SingleWorkout } from "@/Interfaces/dataTypes";
+import { type IDList, type SingleWorkout } from "@/Interfaces/exercises";
 import { mainStyles } from "@/styles/Styles";
-import { getSingleWorkout, getWorkoutExercises } from "@/utilities/db-functions";
+import { getSingleWorkout, getWorkoutExercises } from "@/utilities/dbFunctions";
 import { parseDate } from "@/utilities/helpers";
 import { useLocalSearchParams } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
