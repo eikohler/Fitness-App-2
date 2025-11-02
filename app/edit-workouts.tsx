@@ -104,6 +104,7 @@ export default function EditWorkouts() {
   const [modalExerciseData, setModalExerciseData] = useState<Exercise | null>(null);
 
   const { workouts: workoutsData, loading: workoutDBLoading } = useWorkouts(db);
+  const [workoutsLoading, setWorkoutsLoading] = useState(true);
   const [workouts, setWorkouts] = useState<Workouts>([]);
 
   const workoutLayouts = useSharedValue<LayoutRectangle[]>([]);
@@ -171,6 +172,9 @@ export default function EditWorkouts() {
 
   useEffect(() => {
     dragWorkoutDropStart.value = false;
+    if (Array.isArray(workouts) && workouts.length > 0) {
+      setWorkoutsLoading(false);
+    }
   }, [workouts]);
 
   useDerivedValue(() => {
@@ -1230,8 +1234,8 @@ export default function EditWorkouts() {
   }
 
 
-  if (workoutDBLoading) return <Text style={{ color: "#fff" }}>Loading</Text>;
-  if (workouts.length === 0) return <Text style={{ color: "#fff" }}>Loading</Text>;
+  if (workoutsLoading) return <Text style={{ color: "#fff" }}>Loading</Text>;
+  if (workouts.length === 0) return <Text style={{ color: "#fff" }}>Unable to Load Workouts</Text>;
 
 
   return (<>
