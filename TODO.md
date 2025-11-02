@@ -1,4 +1,4 @@
-# Fitness App Progress
+# FITNESS APP PROGRESS
 
 ## FEATURES
 ### START SCREEN
