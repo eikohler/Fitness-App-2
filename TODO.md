@@ -5,7 +5,7 @@
 - [x] Show Add workout button 
 - [x] Show Workouts
 - [x] Load workouts from DB
-- [ ] Show new workout changes from edit screen save
+- [x] Show new workout changes from edit screen save
 
 ### EDIT SCREEN
 - [x] Drag and Reorder Exercises within workout
@@ -23,12 +23,12 @@
 - [x] Add sets and reps data to exercises
 - [x] Save workouts to DB
 - [x] Edit workout title
-- [ ] On Save, go back to start screen
-- [ ] Add workout button
+- [x] On Save, go back to start screen
+- [ ] Only allow SAVE if changes were made
 - [ ] On cancel, IF changes made, add are you sure popup
+- [ ] Add workout button
 - [ ] Delete workout button
 - [ ] Delete exercise button
-- [ ] Only allow SAVE if changes were made
 
 
 ## BUGS
