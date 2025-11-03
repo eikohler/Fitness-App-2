@@ -1,7 +1,7 @@
 import Header from "@/components/Header";
 import LargeButton from "@/components/LargeButton";
 import { colors, wrapperPaddingHorizontal, wrapperPaddingTop } from "@/styles/Styles";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import 'react-native-get-random-values';
@@ -9,11 +9,18 @@ import TimesIcon from "@/assets/icons/times-icon.svg";
 import ArrowIcon from "@/assets/icons/arrow-icon.svg";
 import { Exercise, Workout } from "@/interfaces/allTypes";
 import { useWorkouts } from "@/hooks/useWorkouts";
+import { useCallback } from "react";
 
 export default function StartScreen() {
 
     const db = useSQLiteContext();
-    const { workouts } = useWorkouts(db);
+    const { workouts, refresh } = useWorkouts(db);
+
+    useFocusEffect(
+        useCallback(() => {
+            refresh();
+        }, [refresh])
+    );
 
     const RenderExercise = ({ exercise }: { exercise: Exercise }) => {
         return (

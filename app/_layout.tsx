@@ -18,7 +18,7 @@ export default function RootLayout() {
     colors: {
       ...DarkTheme.colors,
       background: colors.mainBG,
-      text: colors.primaryText,
+      text: colors.white,
     },
   };
 
@@ -29,7 +29,6 @@ export default function RootLayout() {
           <Stack screenOptions={{ animation: 'fade' }}>
             <Stack.Screen name="index" options={{ headerShown: false }} />
             <Stack.Screen name="edit-workouts" options={{ headerShown: false }} />
-            {/* <Stack.Screen name="workout/[id]" options={{ headerShown: false }} /> */}
           </Stack>
           <StatusBar style="auto" />
         </ThemeProvider>

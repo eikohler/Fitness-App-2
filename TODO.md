@@ -23,12 +23,12 @@
 - [x] Add sets and reps data to exercises
 - [x] Save workouts to DB
 - [x] Edit workout title
+- [ ] On Save, go back to start screen
 - [ ] Add workout button
 - [ ] On cancel, IF changes made, add are you sure popup
 - [ ] Delete workout button
 - [ ] Delete exercise button
 - [ ] Only allow SAVE if changes were made
-- [ ] On Save, go back to start screen
 
 
 ## BUGS

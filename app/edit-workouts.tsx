@@ -1228,9 +1228,10 @@ export default function EditWorkouts() {
 
   const navigation = useNavigation();
 
-  const handleSave = () => {
-    console.log('save function');
-    saveWorkoutsToDB(db, workouts);
+  const handleSave = async () => {
+    console.log("Saving workouts...");
+    await saveWorkoutsToDB(db, workouts);
+    navigation.goBack();
   }
 
 
