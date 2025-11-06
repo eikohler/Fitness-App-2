@@ -11,15 +11,21 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 export default function Header({
     title,
     btnText,
+    btnStyle = true,
     showWeek,
     btnAction,
-    cancel
+    cancel,
+    middleText,
+    hasUpdate = true
 }: {
     title?: string;
     btnText: string;
+    btnStyle?: boolean;
     showWeek?: boolean;
     btnAction: () => void;
     cancel?: () => void;
+    middleText?: string;
+    hasUpdate?: boolean;
 }) {
     const fixedTitle = title?.replace(" ", "  ");
 
@@ -62,9 +68,16 @@ export default function Header({
 
     const btnAnimStyles = useAnimatedStyle(() => {
         return {
-            backgroundColor: isPressed.value
-                ? withTiming(colors.softWhite, { duration: fast })
-                : withTiming(colors.white, { duration: slow })
+            pointerEvents: hasUpdate ? "auto" : "none",
+            opacity: hasUpdate ? 1 : 0.3,
+            backgroundColor: btnStyle
+                ? isPressed.value
+                    ? withTiming("#5B6ED2", { duration: fast })
+                    : withTiming("#222C5E", { duration: slow })
+                : "",
+            borderRadius: btnStyle ? 8 : 0,
+            paddingVertical: btnStyle ? 5 : 0,
+            paddingHorizontal: btnStyle ? 12 : 0
         }
     });
 
@@ -74,7 +87,7 @@ export default function Header({
             height: headerHeight
         }]}>
             <View>
-                <LinearGradient colors={['#000048', 'rgba(13, 13, 13, 0.925)']}
+                <LinearGradient colors={['#000048', 'rgba(13, 13, 13, 0.85)']}
                     style={[styles.gradient]} />
                 <View style={styles.wrapper}>
                     <View style={styles.content}>
@@ -91,15 +104,18 @@ export default function Header({
                             {cancel && (
                                 <Pressable style={styles.cancelWrapper} onPress={cancel}>
                                     <View style={styles.cancelArrow}>
-                                        <ArrowIcon style={{ transform: [{ rotate: '180deg' }] }} width={16} height={16} fill={colors.darkBlue} />
+                                        <ArrowIcon style={{ transform: [{ rotate: '180deg' }] }} width={16} height={16} fill={colors.white} />
                                     </View>
-                                    <Text style={styles.cancelText}>CANCEL</Text>
+                                    <Text style={styles.defaultText}>Cancel</Text>
                                 </Pressable>
                             )}
                         </View>
+                        {middleText && (
+                            <Text style={styles.defaultText}>{middleText}</Text>
+                        )}
                         <GestureDetector gesture={pressGesture}>
                             <Animated.View style={[styles.button, btnAnimStyles]}>
-                                <Text style={styles.buttonText}>{btnText}</Text>
+                                <Text style={styles.defaultText}>{btnText}</Text>
                             </Animated.View>
                         </GestureDetector>
                     </View>
@@ -116,6 +132,11 @@ const styles = StyleSheet.create({
         left: 0,
         zIndex: 9999,
         width: "100%"
+    },
+    defaultText: {
+        color: colors.white,
+        fontWeight: 700,
+        fontSize: 16
     },
     gradient: {
         position: "absolute",
@@ -143,7 +164,7 @@ const styles = StyleSheet.create({
     },
     title: {
         color: colors.white,
-        fontSize: 24,
+        fontSize: 26,
         textTransform: "uppercase",
         fontWeight: "900",
         fontStyle: "italic",
@@ -155,12 +176,6 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         paddingVertical: 4,
         paddingHorizontal: 12
-    },
-    buttonText: {
-        color: colors.darkBlue,
-        fontWeight: 700,
-        fontSize: 18,
-        textTransform: "uppercase"
     },
     weekWrapper: {
         display: "flex",
@@ -178,17 +193,12 @@ const styles = StyleSheet.create({
         gap: 10
     },
     cancelArrow: {
-        backgroundColor: colors.white,
+        backgroundColor: colors.softBlue,
         borderRadius: 100,
         width: 28,
         height: 28,
         display: "flex",
         alignItems: "center",
         justifyContent: "center"
-    },
-    cancelText: {
-        color: colors.white,
-        fontWeight: 700,
-        fontSize: 20
     }
 });

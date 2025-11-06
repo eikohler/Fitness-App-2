@@ -28,7 +28,9 @@ export default function StartScreen() {
                 <Text style={styles.exerciseText}>
                     {exercise.title}  {exercise.sets}<TimesIcon width={12} height={9} fill={colors.white} />{exercise.reps}
                 </Text>
-                <ArrowIcon width={18} height={18} fill={colors.white} />
+                <View style={styles.arrowWrapper}>
+                    <ArrowIcon width={18} height={18} fill={colors.white} />
+                </View>
             </View>
         );
     }
@@ -53,7 +55,8 @@ export default function StartScreen() {
     return (<>
         <Header
             title={'Workouts'}
-            showWeek btnText="EDIT"
+            showWeek
+            btnText="Edit"
             btnAction={() => { router.push({ pathname: "/edit-workouts" }) }}
         />
         {workouts.length ? (
@@ -88,7 +91,7 @@ const styles = StyleSheet.create({
     },
     workoutWrapper: {
         display: "flex",
-        gap: 8
+        gap: 10
     },
     workoutHeading: {
         display: "flex",
@@ -114,11 +117,25 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         gap: 10,
         justifyContent: "space-between",
-        alignItems: "center"
+        alignItems: "center",
+        height: 40
     },
     exerciseText: {
         color: colors.white,
         fontSize: 16,
         fontWeight: 600
+    },
+    arrowWrapper: {
+        position: "absolute",
+        right: 0,
+        top: 0,
+        paddingHorizontal: 12,
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: colors.darkerBlue,
+        height: 40,
+        borderTopRightRadius: 5,
+        borderBottomRightRadius: 5,
     }
 });

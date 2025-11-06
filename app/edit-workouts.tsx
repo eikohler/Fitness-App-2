@@ -1,4 +1,4 @@
-import { Text, LayoutRectangle, StyleSheet, View, Dimensions, TextInput } from 'react-native';
+import { Text, LayoutRectangle, StyleSheet, View, Dimensions, TextInput, Alert } from 'react-native';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -67,7 +67,7 @@ import { saveWorkoutsToDB } from '@/utilities/dbFunctions';
 //   }
 // ];
 
-const EXERCISE_HEIGHT = 45;
+const EXERCISE_HEIGHT = 40;
 const EXERCISE_SPACING = 10;
 
 const SCREEN_TOP_PADDING = wrapperPaddingTop;
@@ -98,6 +98,8 @@ export default function EditWorkouts() {
   const [postUpdate, setPostUpdate] = useState(false);
 
   const titleIsFocused = useSharedValue(false);
+
+  const [hasUpdate, setHasUpdate] = useState(false);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [modalWorkoutID, setModalWorkoutID] = useState<string | null>(null);
@@ -317,6 +319,7 @@ export default function EditWorkouts() {
 
   const updateWorkouts = (newWorkouts: Workouts) => {
     setWorkouts([...newWorkouts]);
+    setHasUpdate(true);
 
     requestAnimationFrame(() => {
       dragExerciseDropStart.value = false;
@@ -401,6 +404,7 @@ export default function EditWorkouts() {
   const handleDropWorkout = (newWorkouts: Workouts) => {
     setTimeout(() => {
       setWorkouts([...newWorkouts]);
+      setHasUpdate(true);
     }, TIMING_DURATION);
   };
 
@@ -906,8 +910,8 @@ export default function EditWorkouts() {
       return {
         zIndex: 100,
         backgroundColor: colors.white,
-        borderRadius: 10,
-        width: WORKOUT_BAR_LEFT_OFFSET - 10,
+        borderRadius: 8,
+        width: WORKOUT_BAR_LEFT_OFFSET - 12,
         position: "absolute",
         left: 0,
         height: withTiming(height, { duration: TIMING_DURATION }),
@@ -946,6 +950,7 @@ export default function EditWorkouts() {
         newWorkouts[index] = { ...newWorkouts[index], title: tempTitle };
         return newWorkouts;
       });
+      setHasUpdate(true);
     }
 
     return (<>
@@ -1099,8 +1104,8 @@ export default function EditWorkouts() {
       return {
         zIndex: 100,
         backgroundColor: colors.white,
-        borderRadius: 10,
-        width: WORKOUT_BAR_LEFT_OFFSET - 10,
+        borderRadius: 8,
+        width: WORKOUT_BAR_LEFT_OFFSET - 12,
         position: "absolute",
         left: 0,
         top: WORKOUT_TITLE_HEIGHT * -1,
@@ -1177,6 +1182,7 @@ export default function EditWorkouts() {
     });
 
     setWorkouts([...newWorkouts]);
+    setHasUpdate(true);
 
     setModalVisible(false);
     setModalWorkoutID(null);
@@ -1209,6 +1215,7 @@ export default function EditWorkouts() {
       return newWorkouts;
     });
 
+    setHasUpdate(true);
     setModalVisible(false);
     setModalWorkoutID(null);
     setModalExerciseData(null);
@@ -1234,13 +1241,31 @@ export default function EditWorkouts() {
     navigation.goBack();
   }
 
+  const handleCancel = () => {
+    if (hasUpdate) {
+      Alert.alert(
+        "Discard changes?",
+        "If you go back now, you'll lose your changes.",
+        [
+          { text: "Discard", style: "destructive", onPress: () => navigation.goBack() },
+          { text: "Keep editing" }
+        ]
+      );
+    } else {
+      navigation.goBack();
+    }
+  }
+
 
   if (workoutsLoading) return <Text style={{ color: "#fff" }}>Loading</Text>;
   if (workouts.length === 0) return <Text style={{ color: "#fff" }}>Unable to Load Workouts</Text>;
 
 
   return (<>
-    <Header cancel={() => { navigation.goBack(); }} btnText={'Save'} btnAction={() => handleSave()} />
+    <Header hasUpdate={hasUpdate}
+      cancel={() => handleCancel()}
+      btnText={'Save'} btnAction={() => handleSave()}
+    />
     {workouts.map((w, i) =>
       <DragWorkout key={i} workout={w} index={i} />
     )}
@@ -1325,7 +1350,8 @@ const styles = StyleSheet.create({
     width: 40,
     display: "flex",
     justifyContent: "center",
-    alignItems: "center"
+    alignItems: "center",
+    backgroundColor: colors.darkerBlue
   },
   plusButton: {
     borderWidth: 1,

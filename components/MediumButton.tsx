@@ -51,7 +51,7 @@ export default function MediumButton({
             backgroundColor: isPressed.value
                 ? withTiming(colors.white, { duration: fast })
                 : withTiming(colors.softWhite, { duration: slow }),
-            padding: 8,
+            padding: 10,
             borderRadius: 10,
             minWidth: 150,
             pointerEvents: disabled ? "none" : "auto",

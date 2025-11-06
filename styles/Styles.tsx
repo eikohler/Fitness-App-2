@@ -9,8 +9,10 @@ export const colors = {
     black: "#000",
     white: "#fff",
     softWhite: "#BCC2E1",
-    darkBlue: "#000074",
-    brightPurple: "#A486FF"
+    darkBlue: "rgba(0, 0, 116, 1)",
+    darkerBlue: "rgba(0, 0, 80, 1)",
+    brightPurple: "#A486FF",
+    softBlue: "#222C5E"
 };
 
 export const fonts = {
