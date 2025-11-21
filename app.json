@@ -47,12 +47,13 @@
         "expo-font",
         {
           "fonts": [
-            "./assets/fonts/Inter.ttf"
+            "./assets/fonts/Inter-Variable.ttf"
           ]
         }
       ],
       "expo-sqlite",
-      "expo-localization"
+      "expo-localization",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true
