@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "fitness-app-2",
-    "slug": "fitness-app-2",
+    "name": "fitness-app",
+    "slug": "fitness-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
@@ -62,8 +62,9 @@
         "origin": false
       },
       "eas": {
-        "projectId": "96dcf9cd-797f-49f8-b5b2-b2a1dde76cf9"
+        "projectId": "53edaf57-f0bd-447e-9e01-240b9536f14e"
       }
-    }
+    },
+    "owner": "eikohler"
   }
 }

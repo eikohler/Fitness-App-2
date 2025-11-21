@@ -1,4 +1,4 @@
-# Fitness App 2
+# Fitness App
 
 To update Expo Go dependencies
 ```console

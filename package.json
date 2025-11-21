@@ -1,5 +1,5 @@
 {
-  "name": "fitness-app-2",
+  "name": "fitness-app",
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
